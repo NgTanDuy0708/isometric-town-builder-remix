@@ -165,6 +165,7 @@ export function initInputHandler(container, ctx) {
   const { signal } = abortController;
 
   let isMouseDown = false;
+  let touchDeferred = null; // thao tác cảm ứng đang chờ nhả tay
   let isPanning = false;
   let panStartX = 0;
   let panStartY = 0;
@@ -332,6 +333,122 @@ export function initInputHandler(container, ctx) {
     return true;
   }
 
+  // ===== TOUCH GESTURES: chụm 2 ngón = zoom, kéo 2 ngón = di chuyển bản đồ =====
+  // Đăng ký TRƯỚC các handler pointer chính; khi đang có cử chỉ 2 ngón thì chặn handler chính chạy.
+  const activePointers = new Map(); // pointerId -> {x, y} (toạ độ theo container, chỉ cảm ứng/bút)
+  let pinchActive = false;
+  let pinchLock = false; // sau khi nhả 1 ngón, ngón còn lại bị khoá tới khi nhả hết (tránh click/kéo nhầm)
+  let pinchLastDist = 0;
+  let pinchLastCx = 0;
+  let pinchLastCy = 0;
+
+  function cancelPendingInteractions() {
+    touchDeferred = null;
+    isMouseDown = false;
+    isPanning = false;
+    container.classList.remove("panning");
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    isLongPressPicked = false;
+    pendingBuildingClick = null;
+    pendingFarmlandClick = null;
+    pendingSpecialClick = null;
+    pendingDecorationClick = null;
+    if (isSweepHarvesting) {
+      isSweepHarvesting = false;
+      ctx.deactivateFarmTool();
+    }
+    hoverCell = null;
+    if (ctx.setHoverCell) ctx.setHoverCell(null);
+  }
+
+  function getPinchMetrics() {
+    const pts = Array.from(activePointers.values());
+    const a = pts[0];
+    const b = pts[1];
+    return {
+      dist: Math.max(Math.hypot(a.x - b.x, a.y - b.y), 1),
+      cx: (a.x + b.x) / 2,
+      cy: (a.y + b.y) / 2
+    };
+  }
+
+  container.addEventListener("pointerdown", function(e) {
+    if (e.pointerType === "mouse") return;
+    const rect = container.getBoundingClientRect();
+    activePointers.set(e.pointerId, { x: e.clientX - rect.left, y: e.clientY - rect.top });
+
+    if (activePointers.size === 2) {
+      // Ngón thứ hai: hủy mọi click/brush/long-press đang chờ rồi bắt đầu cử chỉ 2 ngón
+      cancelPendingInteractions();
+      const m = getPinchMetrics();
+      pinchActive = true;
+      pinchLock = false;
+      pinchLastDist = m.dist;
+      pinchLastCx = m.cx;
+      pinchLastCy = m.cy;
+      ctx.requestRender();
+      e.stopImmediatePropagation();
+    } else if (activePointers.size > 2 || pinchLock) {
+      e.stopImmediatePropagation();
+    }
+  }, { signal });
+
+  window.addEventListener("pointermove", function(e) {
+    if (e.pointerType === "mouse") return;
+    const p = activePointers.get(e.pointerId);
+    if (!p) return;
+    const rect = container.getBoundingClientRect();
+    p.x = e.clientX - rect.left;
+    p.y = e.clientY - rect.top;
+
+    if (pinchActive && activePointers.size >= 2) {
+      const m = getPinchMetrics();
+      // Zoom quanh tâm 2 ngón (tâm của khung trước), rồi tịnh tiến theo độ dịch của tâm
+      ctx.applyZoom(ctx.getCamera().zoom * (m.dist / pinchLastDist), pinchLastCx, pinchLastCy);
+      const camera = ctx.getCamera();
+      camera.x += m.cx - pinchLastCx;
+      camera.y += m.cy - pinchLastCy;
+      ctx.clampCamera();
+      ctx.requestRender();
+      pinchLastDist = m.dist;
+      pinchLastCx = m.cx;
+      pinchLastCy = m.cy;
+      e.stopImmediatePropagation();
+    } else if (pinchLock) {
+      e.stopImmediatePropagation();
+    }
+  }, { signal });
+
+  const onGestureEnd = function(e) {
+    if (e.pointerType === "mouse") return;
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.delete(e.pointerId);
+
+    if (pinchActive) {
+      if (activePointers.size < 2) {
+        pinchActive = false;
+        pinchLock = activePointers.size > 0;
+      }
+      e.stopImmediatePropagation();
+    } else if (pinchLock) {
+      e.stopImmediatePropagation();
+    }
+    if (activePointers.size === 0) {
+      pinchActive = false;
+      pinchLock = false;
+    }
+  };
+  window.addEventListener("pointerup", onGestureEnd, { signal });
+  window.addEventListener("pointercancel", onGestureEnd, { signal });
+  window.addEventListener("blur", function() {
+    activePointers.clear();
+    pinchActive = false;
+    pinchLock = false;
+  }, { signal });
+
   // Zoom via Scroll Wheel
   container.addEventListener('wheel', function(e) {
     e.preventDefault();
@@ -345,7 +462,8 @@ export function initInputHandler(container, ctx) {
   }, { passive: false, signal });
 
   // MOUSE DOWN
-  container.addEventListener("mousedown", function(e) {
+  const handlePointerDown = function(e) {
+    if (!e.isPrimary) return; // chỉ xử lý ngón/chuột chính; cử chỉ nhiều ngón sẽ làm ở bước sau
     initAudio();
     if (!getAudioState().isMuted) startBGM();
 
@@ -821,10 +939,81 @@ export function initInputHandler(container, ctx) {
       }
       ctx.showToast("Con trỏ tự do (Ấn giữ chuột để nhấc & di chuyển vật phẩm • R: Xoay)", "info");
     }
+  };
+
+  // ===== TOUCH: hoãn hành động khi đang có công cụ (brush/hạt giống/dụng cụ/di chuyển) =====
+  // Chạm -> ô sáng lên + xem trước; nhả tay -> mới thực hiện; kéo > 10px -> chỉ di chuyển bản đồ.
+  container.addEventListener("pointerdown", function(e) {
+    if (!e.isPrimary) return;
+    if (e.pointerType !== "mouse" && e.button === 0) {
+      const toolActive = ctx.getActiveBrush() || ctx.getActiveSeedBrush() ||
+                         ctx.getActiveFarmTool() || ctx.getMovingBuilding();
+      if (toolActive) {
+        initAudio();
+        if (!getAudioState().isMuted) startBGM();
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        touchDeferred = { id: e.pointerId, clientX: e.clientX, clientY: e.clientY, x: x, y: y, pointerType: e.pointerType, moved: false };
+        const world = ctx.screenToWorldCoords(x, y);
+        const cell = ctx.worldToCell(world.x, world.y);
+        hoverCell = cell;
+        if (ctx.setHoverCell) ctx.setHoverCell(cell);
+        ctx.requestRender();
+        return;
+      }
+    }
+    handlePointerDown(e);
+  }, { signal });
+
+  window.addEventListener("pointermove", function(e) {
+    const d = touchDeferred;
+    if (!d || e.pointerId !== d.id) return;
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (!d.moved) {
+      if (Math.hypot(x - d.x, y - d.y) > 10) {
+        d.moved = true;
+        const camera = ctx.getCamera();
+        isPanning = true;
+        panStartX = d.x - camera.x;
+        panStartY = d.y - camera.y;
+        hoverCell = null;
+        if (ctx.setHoverCell) ctx.setHoverCell(null);
+      } else {
+        d.clientX = e.clientX;
+        d.clientY = e.clientY;
+      }
+    }
+  }, { signal });
+
+  window.addEventListener("pointerup", function(e) {
+    const d = touchDeferred;
+    if (!d || e.pointerId !== d.id) return;
+    touchDeferred = null;
+    if (d.moved) return; // đã kéo bản đồ: handler chính tự kết thúc
+    handlePointerDown({
+      clientX: d.clientX, clientY: d.clientY, button: 0, isPrimary: true,
+      pointerType: d.pointerType, preventDefault() {}, stopPropagation() {}
+    });
+    hoverCell = null;
+    if (ctx.setHoverCell) ctx.setHoverCell(null);
+    ctx.requestRender();
+  }, { signal });
+
+  window.addEventListener("pointercancel", function(e) {
+    if (touchDeferred && e.pointerId === touchDeferred.id) {
+      touchDeferred = null;
+      hoverCell = null;
+      if (ctx.setHoverCell) ctx.setHoverCell(null);
+      ctx.requestRender();
+    }
   }, { signal });
 
   // MOUSE MOVE
-  window.addEventListener("mousemove", function(e) {
+  window.addEventListener("pointermove", function(e) {
+    if (!e.isPrimary) return;
     const rect = container.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -972,7 +1161,8 @@ export function initInputHandler(container, ctx) {
   }, { signal });
 
   // MOUSE UP
-  window.addEventListener("mouseup", function() {
+  const onPointerUp = function(e) {
+    if (e && e.isPrimary === false) return;
     isMouseDown = false;
     if (isSweepHarvesting) {
       isSweepHarvesting = false;
@@ -1056,6 +1246,29 @@ export function initInputHandler(container, ctx) {
       isPanning = false;
       if (!isSpacePressed) container.classList.remove("panning");
     }
+  };
+  window.addEventListener("pointerup", onPointerUp, { signal });
+
+  // POINTER CANCEL: hệ thống (iOS) ngắt cử chỉ -> hủy mọi thao tác đang chờ, KHÔNG thực hiện click
+  window.addEventListener("pointercancel", function(e) {
+    if (e && e.isPrimary === false) return;
+    isMouseDown = false;
+    isPanning = false;
+    container.classList.remove("panning");
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    isLongPressPicked = false;
+    pendingBuildingClick = null;
+    pendingFarmlandClick = null;
+    pendingSpecialClick = null;
+    pendingDecorationClick = null;
+    if (isSweepHarvesting) {
+      isSweepHarvesting = false;
+      ctx.deactivateFarmTool();
+    }
+    ctx.requestRender();
   }, { signal });
 
   // WINDOW BLUR (Reset drag/sweep state when window loses focus)
@@ -1175,7 +1388,7 @@ export function initInputHandler(container, ctx) {
     }
   }, { signal });
 
-  container.addEventListener("mouseleave", function() {
+  container.addEventListener("pointerleave", function() {
     hoverCell = null;
     if (ctx.setHoverCell) ctx.setHoverCell(null);
     ctx.requestRender();

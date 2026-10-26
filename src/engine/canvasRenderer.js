@@ -330,6 +330,35 @@ export function createCanvasRenderer(ctx) {
   });
 
   // 2. Khởi tạo Image Cache cho Cây trồng (Crops)
+  const farmSproutImg = new Image();
+  farmSproutImg.src = "/assets/decorations/farmland_sprout.png";
+  farmSproutImg.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+  const farmGrowImg = new Image();
+  farmGrowImg.src = "/assets/decorations/farmland_grow.png";
+  farmGrowImg.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+  const farmRipeImg = new Image();
+  farmRipeImg.src = "/assets/decorations/farmland_ripe.png";
+  farmRipeImg.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+  // Sprite rieng cho tung cay, da ep ve ti le 2:1. File: /assets/decorations/<seedId>_<stage>.png
+  //   sprout = 0%-50% (tuy chon, neu thieu dung mam chung) | grow = 50%-99% | ripe = 100%
+  // Them cay moi: chi can them 1 dong vao bang duoi + cac file anh tuong ung.
+  const CROP_STAGE_SPRITES = {
+    wheat:  ["grow", "ripe"],
+    carrot: ["grow", "ripe"],
+    tomato: ["sprout", "grow", "ripe"],
+    strawberry: ["grow", "ripe"],
+  };
+  const cropStageImages = {};
+  for (const [seedId, stages] of Object.entries(CROP_STAGE_SPRITES)) {
+    cropStageImages[seedId] = {};
+    for (const stage of stages) {
+      const im = new Image();
+      im.src = `/assets/decorations/${seedId}_${stage}.png`;
+      im.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+      cropStageImages[seedId][stage] = im;
+    }
+  }
+
   const cropImageCache = {};
   for (const [cKey, cUri] of Object.entries(CROP_PIXEL_SPRITES)) {
     const cImg = new Image();
@@ -1558,7 +1587,9 @@ export function createCanvasRenderer(ctx) {
             if (tid === "d13_farmland_plot") {
               const farmImg = imageCache["d13_farmland_plot"];
               if (isImageReady(farmImg)) {
-                c2d.drawImage(farmImg, ox, oy);
+                const farmBase = imageCache["d12_meadow_wildflowers"];
+                if (isImageReady(farmBase)) c2d.drawImage(farmBase, ox, oy);
+                c2d.drawImage(farmImg, ox - 8, oy - 8, 144, 144);
               } else {
                 c2d.save();
                 c2d.beginPath();
@@ -1586,6 +1617,8 @@ export function createCanvasRenderer(ctx) {
                   const cropCenterY = oy + 90;
 
                   if (isRipe) {
+                    const ripeSpr = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].ripe)) ? cropStageImages[farmData.seedId].ripe : farmRipeImg;
+                    if (isImageReady(ripeSpr)) c2d.drawImage(ripeSpr, ox - 8, oy - 8, 144, 144);
                     const bounceY = Math.sin(animTime * 4.0 + (i * 2 + j * 3)) * 4;
                     const bubbleX = cropCenterX;
                     const bubbleY = oy + 30 + bounceY;
@@ -1638,31 +1671,12 @@ export function createCanvasRenderer(ctx) {
                     c2d.fillText(badgeText, bubbleX, bubbleY + 19);
                     c2d.restore();
 
-                    // Ripe Crop with Hay Day Wind Sway
-                    const swayAngle = Math.sin(animTime * 3.2 + (i * 1.5 + j * 2)) * 0.07;
-                    const ripeImg = cropImageCache[farmData.seedId];
-                    if (isImageReady(ripeImg)) {
-                      c2d.save();
-                      c2d.imageSmoothingEnabled = false;
-                      c2d.translate(cropCenterX, cropCenterY);
-                      c2d.rotate(swayAngle);
-                      c2d.drawImage(ripeImg, -24, -32, 48, 48);
-                      c2d.restore();
-                    } else {
-                      c2d.save();
-                      c2d.font = "24px sans-serif";
-                      c2d.textAlign = "center";
-                      c2d.textBaseline = "middle";
-                      c2d.fillText(cropCfg.icon, cropCenterX, cropCenterY);
-                      c2d.restore();
-                    }
                   } else if (progress < 0.50) {
                     // Trạng thái 2: Planted (Giai đoạn 1: 0% - 50% thời gian) - Hiển thị mầm cây
-                    const sproutImg = cropImageCache['sprout'];
+                    const sproutImg = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].sprout)) ? cropStageImages[farmData.seedId].sprout : farmSproutImg;
                     if (isImageReady(sproutImg)) {
                       c2d.save();
-                      c2d.imageSmoothingEnabled = false;
-                      c2d.drawImage(sproutImg, cropCenterX - 18, cropCenterY - 22, 36, 36);
+                      c2d.drawImage(sproutImg, ox - 8, oy - 8, 144, 144);
                       c2d.restore();
                     } else {
                       c2d.save();
@@ -1673,12 +1687,11 @@ export function createCanvasRenderer(ctx) {
                       c2d.restore();
                     }
                   } else {
-                    const bushImg = cropImageCache['bush'];
+                    const bushImg = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].grow)) ? cropStageImages[farmData.seedId].grow : farmGrowImg;
                     const windSway = Math.sin(animTime * 3.0 + i * 2 + j * 3) * 1.8;
                     if (isImageReady(bushImg)) {
                       c2d.save();
-                      c2d.imageSmoothingEnabled = false;
-                      c2d.drawImage(bushImg, cropCenterX - 22 + windSway, cropCenterY - 28, 44, 44);
+                      c2d.drawImage(bushImg, ox - 8, oy - 8, 144, 144);
                       c2d.restore();
                     } else {
                       c2d.save();

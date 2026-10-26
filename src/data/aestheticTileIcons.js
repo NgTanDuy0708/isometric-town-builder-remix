@@ -35,5 +35,8 @@ export const AESTHETIC_TILE_URIS = {
   b22_cow_pasture: "/assets/aistudio/chu_ng_b__143f9f80.png",
 
   // 11. Chuồng Cừu Lấy Lông
-  b57_sheep_pasture: "/assets/aistudio/chu_ng_c_u_229da336.png"
+  b57_sheep_pasture: "/assets/aistudio/chu_ng_c_u_229da336.png",
+
+  // Farmland plot
+  d13_farmland_plot: "/assets/decorations/farmland_plot.png"
 };
