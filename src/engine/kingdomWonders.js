@@ -169,9 +169,14 @@ export const DEFAULT_WONDER_SITES = {
 export let WONDER_SITES = { ...DEFAULT_WONDER_SITES };
 
 const WONDER_IMAGES = {};
-function getWonderImage(id) {
+export function getWonderImage(id, onRequestRender) {
   if (!WONDER_IMAGES[id]) {
     const img = new Image();
+    img.onload = () => {
+      if (typeof onRequestRender === "function") {
+        onRequestRender();
+      }
+    };
     if (id === "royal_palace") {
       img.src = "/assets/wonders/royal_palace.png";
     } else if (id === "ocean_library") {
@@ -183,6 +188,15 @@ function getWonderImage(id) {
   }
   return WONDER_IMAGES[id];
 }
+
+export function preloadAllWonderImages(onRequestRender) {
+  for (const id of ["royal_palace", "ocean_library", "poseidon_statue"]) {
+    getWonderImage(id, onRequestRender);
+  }
+}
+
+// Eagerly preload wonder images immediately
+preloadAllWonderImages();
 
 export class KingdomWondersManager {
   constructor(ctx) {
@@ -197,6 +211,10 @@ export class KingdomWondersManager {
     this.wonderSites = this.loadSites();
     this.movingWonderId = null;
     this.movingWonderFlipped = false;
+
+    preloadAllWonderImages(() => {
+      if (this.ctx && this.ctx.requestRender) this.ctx.requestRender();
+    });
   }
 
   loadSites() {
@@ -616,12 +634,27 @@ export class KingdomWondersManager {
     }
 
     // 3. Kết xuất sprite theo từng giai đoạn thi công
-    const wonderImg = getWonderImage(site.id);
+    const wonderImg = getWonderImage(site.id, () => {
+      if (this.ctx && this.ctx.requestRender) this.ctx.requestRender();
+    });
     const imgReady = wonderImg && wonderImg.complete && wonderImg.naturalWidth > 0;
     const isFlipped = !!site.flipped;
 
     const renderWonderSprite = (alpha = 1.0) => {
-      if (!imgReady) return;
+      if (!imgReady) {
+        // Fallback nhẹ nhàng trong tích tắc nếu ảnh đang tải từ mạng
+        ctx.save();
+        ctx.fillStyle = site.id === "poseidon_statue" ? "rgba(14, 165, 233, 0.45)" : (site.id === "ocean_library" ? "rgba(20, 184, 166, 0.45)" : "rgba(245, 158, 11, 0.45)");
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - 20, 36, 18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = "32px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(wonder.icon || "🏛️", cx, cy - 22);
+        ctx.restore();
+        return;
+      }
       ctx.save();
       if (alpha < 1.0) ctx.globalAlpha = alpha;
       if (isFlipped) {
@@ -635,58 +668,44 @@ export class KingdomWondersManager {
     };
 
     if (curStage === 0) {
-      // Giai đoạn 0: Bàn thiết kế và cọc cờ quy hoạch nhỏ gọn trên 1 ô
+      // Giai đoạn 0: Ảnh mờ 40% (xem trước bản vẽ/bóng dáng kỳ quan chưa khởi công) + Cọc cờ quy hoạch
+      renderWonderSprite(0.40);
+
       if (isFlipped) {
         ctx.save();
         ctx.translate(cx, 0);
         ctx.scale(-1, 1);
         ctx.translate(-cx, 0);
       }
-      ctx.fillStyle = "#78350f";
-      ctx.fillRect(cx - 14, cy - 6, 28, 12);
-      ctx.fillStyle = "#fef08a";
-      ctx.fillRect(cx - 12, cy - 10, 24, 6);
-      ctx.strokeStyle = "#b45309";
-      ctx.strokeRect(cx - 12, cy - 10, 24, 6);
-
       ctx.fillStyle = "#64748b";
-      ctx.fillRect(cx + 18, cy - 18, 2.5, 20);
+      ctx.fillRect(cx + 28, cy - 14, 2.5, 16);
       ctx.fillStyle = "#f59e0b";
       ctx.beginPath();
-      ctx.moveTo(cx + 20.5, cy - 18);
-      ctx.lineTo(cx + 32, cy - 14);
-      ctx.lineTo(cx + 20.5, cy - 10);
+      ctx.moveTo(cx + 30.5, cy - 14);
+      ctx.lineTo(cx + 42, cy - 10);
+      ctx.lineTo(cx + 30.5, cy - 6);
       ctx.closePath();
       ctx.fill();
       if (isFlipped) ctx.restore();
     } else if (curStage === 1) {
-      // Giai đoạn 1: Nền móng đá và giàn giáo gỗ nhỏ gọn
+      // Giai đoạn 1: Hiện mờ 60% + Giàn giáo nhỏ gọn dưới chân móng
+      renderWonderSprite(0.60);
+
       if (isFlipped) {
         ctx.save();
         ctx.translate(cx, 0);
         ctx.scale(-1, 1);
         ctx.translate(-cx, 0);
       }
-      ctx.fillStyle = "#64748b";
-      ctx.strokeStyle = "#475569";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(cx - 28, cy - 4);
-      ctx.lineTo(cx, cy - 18);
-      ctx.lineTo(cx + 28, cy - 4);
-      ctx.lineTo(cx, cy + 10);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
       ctx.strokeStyle = "#b45309";
       ctx.lineWidth = 2;
-      ctx.strokeRect(cx - 24, cy - 30, 12, 28);
-      ctx.strokeRect(cx + 12, cy - 30, 12, 28);
+      ctx.strokeRect(cx - 32, cy - 18, 12, 16);
+      ctx.strokeRect(cx + 20, cy - 18, 12, 16);
       if (isFlipped) ctx.restore();
     } else if (curStage === 2) {
-      // Giai đoạn 2: Hiện bóng dáng công trình mờ (40% opacity)
-      renderWonderSprite(0.40);
+      // Giai đoạn 2: Hiện mờ 75% + Giàn giáo thi công phần thân
+      renderWonderSprite(0.75);
+
       if (isFlipped) {
         ctx.save();
         ctx.translate(cx, 0);
@@ -699,13 +718,23 @@ export class KingdomWondersManager {
       ctx.strokeRect(cx + 14, cy - 22, 12, 22);
       if (isFlipped) ctx.restore();
     } else if (curStage === 3) {
-      // Giai đoạn 3: Công trình hiện rõ 80% opacity
-      renderWonderSprite(0.80);
+      // Giai đoạn 3: Hiện rõ 90% gần hoàn tất
+      renderWonderSprite(0.90);
+
+      if (isFlipped) {
+        ctx.save();
+        ctx.translate(cx, 0);
+        ctx.scale(-1, 1);
+        ctx.translate(-cx, 0);
+      }
+      ctx.strokeStyle = "#b45309";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx + 18, cy - 38, 10, 16);
+      if (isFlipped) ctx.restore();
     } else if (curStage >= 4) {
-      // Giai đoạn 4: Hoàn thành mỹ mãn 100% Pixel Art sắc nét!
+      // Giai đoạn 4: Hoàn thành mỹ mãn 100% sắc nét + Hạt bụi vàng kim bay lơ lửng quanh đỉnh tháp
       renderWonderSprite(1.0);
 
-      // Hạt bụi vàng kim bay lơ lửng quanh đỉnh tháp (tinh tế, không che thân công trình)
       for (let p = 0; p < 4; p++) {
         const pAngle = animTime * 1.5 + (p * Math.PI * 2) / 4;
         const px = cx + Math.cos(pAngle) * (spriteW * 0.32);

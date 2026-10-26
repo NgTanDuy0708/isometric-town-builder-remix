@@ -2,7 +2,8 @@ import {
   INITIAL_GOLD, INITIAL_GEMS, getGemSpeedupCost, getTileCost, getTileBuildDuration, PRODUCTION_BUILDINGS,
   calculateVillageStats, getTilePopulation, getTileRequiredLevel,
   PLAYER_LEVEL_CONFIG, getLevelXpRequirement, getPlayerLevelTitle,
-  getBuildingYield, getBuildingInputReq, MAX_PLAYER_LEVEL
+  getBuildingYield, getBuildingInputReq, MAX_PLAYER_LEVEL,
+  getMaxPenCount, getNextPenUnlockInfo
 } from "./data/gameEconomy.js";
 import { QUESTS_CONFIG, QUEST_CHAPTERS, isQuestUnlocked, getQuestById } from "./data/questsData.js";
 import { loadGameSave, saveGameSave, exportGameToJSON, importGameFromJSON, getDefaultSaveState, cleanOldSavesForV3 } from "./engine/storage.js";
@@ -1939,15 +1940,24 @@ export function initIsometricStudio() {
       filtered.forEach(tile => {
         const reqLvl = getTileRequiredLevel(tile.id);
         const isLocked = reqLvl > playerLevel;
+        const isPen = tile.id === "b21_chicken_coop" || tile.id === "b22_cow_pasture" || tile.id === "b57_sheep_pasture";
+        const maxPens = isPen ? getMaxPenCount(tile.id, playerLevel) : Infinity;
+        const builtPens = isPen ? countBuiltPens(tile.id) : 0;
+        const isPenLimitReached = isPen && !isLocked && builtPens >= maxPens;
 
         const card = document.createElement("div");
-        card.className = "shop-item-card" + (activeBrush === tile.id ? " selected" : "") + (isLocked ? " locked-item" : "");
+        card.className = "shop-item-card" + (activeBrush === tile.id ? " selected" : "") + (isLocked || isPenLimitReached ? " locked-item" : "");
         const cost = getTileCost(tile.id, tile.category);
         const pop = getTilePopulation(tile.id, tile.category);
         const imgSrc = AESTHETIC_TILE_URIS[tile.id] || ((typeof TILE_DATA_URIS !== 'undefined' && TILE_DATA_URIS[tile.id]) ? TILE_DATA_URIS[tile.id] : ('tiles/' + tile.id + '_128.png'));
 
+        let penBadge = "";
+        if (isPen && !isLocked) {
+          penBadge = `<span style="font-size:0.68rem; padding:1px 5px; border-radius:4px; background:${isPenLimitReached ? '#fee2e2' : '#e0f2fe'}; color:${isPenLimitReached ? '#b91c1c' : '#0369a1'}; font-weight:700;">Chuồng: ${builtPens}/${maxPens}</span>`;
+        }
+
         card.innerHTML = `
-          ${isLocked ? `<div class="locked-badge-overlay">🔒 Cần Cấp ${reqLvl}</div>` : ''}
+          ${isLocked ? `<div class="locked-badge-overlay">🔒 Cần Cấp ${reqLvl}</div>` : (isPenLimitReached ? `<div class="locked-badge-overlay" style="background: rgba(15, 23, 42, 0.75); color: #facc15;">🛖 Đầy chuồng (${builtPens}/${maxPens})</div>` : '')}
           <img class="shop-item-thumb" src="${imgSrc}" alt="${tile.label}" onerror="this.onerror=null; this.src='tiles/d12_meadow_wildflowers_128.png';" />
           <div class="shop-item-name">${tile.label}</div>
           <div class="shop-item-desc">${tile.doc || "Công trình trang trí vương quốc."}</div>
@@ -1955,6 +1965,7 @@ export function initIsometricStudio() {
             <span class="shop-item-cost">${cost === 0 ? "Miễn phí" : `${cost} 🪙`}</span>
             ${pop > 0 ? `<span class="shop-item-pop">+${pop} 👥</span>` : ''}
             ${reqLvl > 1 ? `<span style="font-size:0.68rem; padding:1px 5px; border-radius:4px; background:${isLocked ? '#fee2e2' : '#f0fdf4'}; color:${isLocked ? '#b91c1c' : '#15803d'}; font-weight:700;">Lv.${reqLvl}</span>` : ''}
+            ${penBadge}
           </div>
         `;
 
@@ -1962,6 +1973,16 @@ export function initIsometricStudio() {
           if (isLocked) {
             playErrorSound();
             showToast(`🔒 Bạn cần đạt Cấp ${reqLvl} để mở khóa công trình "${tile.label}"! Hãy trồng trọt và làm nhiệm vụ để lên cấp.`, "error");
+            return;
+          }
+          if (isPenLimitReached) {
+            playErrorSound();
+            const nextInfo = getNextPenUnlockInfo(tile.id, playerLevel);
+            if (nextInfo) {
+              showToast(`⚠️ Bạn đã xây tối đa ${maxPens} chuồng ở Cấp ${playerLevel}! Đạt Cấp ${nextInfo.nextLevel} để mở thêm chuồng tiếp theo.`, "warning");
+            } else {
+              showToast(`⚠️ Bạn đã xây tối đa ${maxPens} chuồng (giới hạn cao nhất của vương quốc)!`, "warning");
+            }
             return;
           }
           setActiveBrush(tile.id);
@@ -2126,6 +2147,9 @@ export function initIsometricStudio() {
         }
         delete productionState[key];
         saveProductionState();
+        if (livestockState && livestockState[key]) {
+          delete livestockState[key];
+        }
         currentGrid[row][col] = "d12_meadow_wildflowers";
         updateVillageStatsUI();
         checkQuestsProgress();
@@ -2585,7 +2609,9 @@ export function initIsometricStudio() {
         productName: "Trứng gà tươi",
         productIcon: "🥚",
         durationSec: 45,
-        animalPrice: 30,
+        maxAnimals: 5,
+        baseAnimalPrice: 20,
+        priceStep: 15,
         goldGain: 25,
         xpGain: 15,
         sound: playChickenCluckSound
@@ -2601,7 +2627,9 @@ export function initIsometricStudio() {
         productName: "Bình sữa tươi",
         productIcon: "🥛",
         durationSec: 75,
-        animalPrice: 50,
+        maxAnimals: 3,
+        baseAnimalPrice: 50,
+        priceStep: 30,
         goldGain: 50,
         xpGain: 25,
         sound: playCowMooSound
@@ -2617,12 +2645,54 @@ export function initIsometricStudio() {
         productName: "Lông cừu mịn",
         productIcon: "🐑",
         durationSec: 60,
-        animalPrice: 60,
+        maxAnimals: 3,
+        baseAnimalPrice: 80,
+        priceStep: 45,
         goldGain: 40,
         xpGain: 20,
         sound: playSheepBaaSound
       }
     };
+
+    function getLivestockAnimalCost(tid, currentCount) {
+      const cfg = LIVESTOCK_CONFIG[tid] || LIVESTOCK_CONFIG.b21_chicken_coop;
+      const base = cfg.baseAnimalPrice || 30;
+      const step = cfg.priceStep || 15;
+      return base + (currentCount || 0) * step;
+    }
+
+    function countBuiltPens(tileId) {
+      let count = 0;
+      for (let r = 0; r < ROWS; r++) {
+        if (!currentGrid[r]) continue;
+        for (let c = 0; c < COLS; c++) {
+          if (currentGrid[r][c] === tileId) count++;
+        }
+      }
+      for (const c of Object.values(constructions)) {
+        if (c && c.targetTileId === tileId) count++;
+      }
+      return count;
+    }
+
+    function checkCanPlaceTile(tileId) {
+      if (tileId === "b21_chicken_coop" || tileId === "b22_cow_pasture" || tileId === "b57_sheep_pasture") {
+        const maxPens = getMaxPenCount(tileId, playerLevel);
+        const builtPens = countBuiltPens(tileId);
+        if (builtPens >= maxPens) {
+          const nextInfo = getNextPenUnlockInfo(tileId, playerLevel);
+          return {
+            allowed: false,
+            isPen: true,
+            maxPens,
+            builtPens,
+            nextInfo
+          };
+        }
+        return { allowed: true, isPen: true, maxPens, builtPens };
+      }
+      return { allowed: true };
+    }
 
     function getLivestockData(row, col) {
       const key = `${row}_${col}`;
@@ -2631,14 +2701,20 @@ export function initIsometricStudio() {
 
       if (!livestockState[key]) {
         livestockState[key] = {
-          animalCount: 2, // 2 con ban đầu
-          state: "hungry", // "hungry" | "producing" | "ready"
+          animalCount: 0, // Chuồng mới xây hoàn toàn trống (0 con)
+          state: "empty", // "empty" | "hungry" | "producing" | "ready"
           feedTime: 0,
           durationMs: (cfg.durationSec || 45) * 1000
         };
       }
       const ls = livestockState[key];
-      if (ls.state === "producing") {
+      if (ls.animalCount === undefined) {
+        ls.animalCount = 0;
+      }
+      if (ls.animalCount === 0) {
+        ls.state = "empty";
+      }
+      if (ls.state === "producing" && ls.animalCount > 0) {
         const dur = ls.durationMs || ((cfg.durationSec || 45) * 1000);
         if (Date.now() - (ls.feedTime || 0) >= dur) {
           ls.state = "ready";
@@ -2660,7 +2736,7 @@ export function initIsometricStudio() {
       livestockTimerInterval = setInterval(() => {
         if (!activeLivestockCell) return;
         const ls = getLivestockData(activeLivestockCell.row, activeLivestockCell.col);
-        if (ls.state === "producing") {
+        if (ls.state === "producing" && ls.animalCount > 0) {
           const elapsed = Date.now() - ls.feedTime;
           if (elapsed >= ls.durationMs) {
             ls.state = "ready";
@@ -2700,6 +2776,7 @@ export function initIsometricStudio() {
       if (!cfg) return;
 
       const ls = getLivestockData(row, col);
+      const maxLimit = cfg.maxAnimals || 3;
 
       const iconEl = document.getElementById("livestock-modal-icon");
       const titleEl = document.getElementById("livestock-modal-title");
@@ -2708,13 +2785,22 @@ export function initIsometricStudio() {
 
       if (iconEl) iconEl.textContent = cfg.animalIcon;
       if (titleEl) titleEl.textContent = cfg.title;
-      if (subEl) subEl.textContent = `Nuôi tối đa 4 con • Cần thức ăn ${cfg.feedName} ${cfg.feedIcon}`;
+      if (subEl) subEl.textContent = `Nuôi tối đa ${maxLimit} con • Cần thức ăn ${cfg.feedName} ${cfg.feedIcon}`;
 
       const feedOwned = playerResources[cfg.feedRes] || 0;
       const feedNeeded = ls.animalCount;
 
       let stateHtml = "";
-      if (ls.state === "hungry") {
+      if (ls.animalCount === 0 || ls.state === "empty") {
+        stateHtml = `
+          <div class="livestock-state-card" style="border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.08); padding: 14px;">
+            <div class="livestock-state-desc" style="line-height: 1.5;">
+              🛖 <strong>Chuồng hiện đang trống (0/${maxLimit} con)</strong>
+              <br><span style="font-size: 0.85rem; color: #94a3b8;">Nhấn nút <strong>"+ Mua 1 ${cfg.animalName}"</strong> ở trên để mua con giống đầu tiên về chuồng và bắt đầu chăn nuôi!</span>
+            </div>
+          </div>
+        `;
+      } else if (ls.state === "hungry") {
         stateHtml = `
           <div class="livestock-state-card">
             <div class="livestock-state-desc">
@@ -2733,7 +2819,7 @@ export function initIsometricStudio() {
         stateHtml = `
           <div class="livestock-state-card">
             <div class="livestock-state-desc">
-              ⏳ Đàn ${cfg.animalName} đang tiêu hóa & tạo sản phẩm...
+              ⏳ Đàn ${cfg.animalName} (${ls.animalCount} con) đang tiêu hóa & tạo sản phẩm...
               <br><strong style="font-size: 1.1rem; color: #facc15;">Còn lại: ${remSec} giây</strong>
             </div>
             <button type="button" class="livestock-action-btn" id="livestock-speedup-btn" style="background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%); color: #fff;">
@@ -2755,18 +2841,19 @@ export function initIsometricStudio() {
         `;
       }
 
-      const buyBtnHtml = ls.animalCount < 4
+      const nextAnimalPrice = getLivestockAnimalCost(tid, ls.animalCount);
+      const buyBtnHtml = ls.animalCount < maxLimit
         ? `<button type="button" class="livestock-btn-buy-animal" id="livestock-buy-animal-btn">
-             + Mua 1 ${cfg.animalName} (${cfg.animalPrice} 🪙)
+             + Mua 1 ${cfg.animalName} (${nextAnimalPrice} 🪙)
            </button>`
-        : `<span style="font-size: 0.78rem; color: #10b981; font-weight: 700;">Đã đầy chuồng (4/4 con)</span>`;
+        : `<span style="font-size: 0.78rem; color: #10b981; font-weight: 700;">Đã đầy chuồng (${maxLimit}/${maxLimit} con)</span>`;
 
       if (bodyEl) {
         bodyEl.innerHTML = `
           <div class="livestock-animals-status">
             <div>
               <div style="font-size: 0.82rem; color: #94a3b8;">Số lượng vật nuôi:</div>
-              <div class="livestock-count-badge">${ls.animalCount} / 4 con ${cfg.animalIcon}</div>
+              <div class="livestock-count-badge">${ls.animalCount} / ${maxLimit} con ${cfg.animalIcon}</div>
             </div>
             ${buyBtnHtml}
           </div>
@@ -2797,23 +2884,30 @@ export function initIsometricStudio() {
       const cfg = LIVESTOCK_CONFIG[tid];
       if (!cfg) return;
       const ls = getLivestockData(row, col);
+      const maxLimit = cfg.maxAnimals || 3;
 
-      if (ls.animalCount >= 4) {
-        showToast("⚠️ Chuồng này đã nuôi tối đa 4 con vật!", "warning");
-        return;
-      }
-
-      if (playerGold < cfg.animalPrice) {
+      if (ls.animalCount >= maxLimit) {
         playErrorSound();
-        showToast(`⚠️ Không đủ vàng! Cần ${cfg.animalPrice} 🪙 để mua thêm ${cfg.animalName}.`, "error");
+        showToast(`⚠️ Chuồng ${cfg.animalName} này đã nuôi tối đa ${maxLimit} con!`, "warning");
         return;
       }
 
-      playerGold -= cfg.animalPrice;
+      const cost = getLivestockAnimalCost(tid, ls.animalCount);
+      if (playerGold < cost) {
+        playErrorSound();
+        showToast(`⚠️ Không đủ vàng! Cần ${cost} 🪙 để mua con ${cfg.animalName} tiếp theo.`, "error");
+        return;
+      }
+
+      playerGold -= cost;
       ls.animalCount++;
+      if (ls.state === "empty") {
+        ls.state = "hungry";
+      }
       updateGoldDisplay();
       cfg.sound();
-      showToast(`🎉 Đã mua thêm 1 ${cfg.animalName}! Chuồng hiện có: ${ls.animalCount}/4 con.`, "success");
+      playCoinSound();
+      showToast(`🎉 Đã mua thêm 1 ${cfg.animalName}! Chuồng hiện có: ${ls.animalCount}/${maxLimit} con (-${cost}🪙).`, "success");
       persistGameState();
       requestRender();
       renderLivestockModalContent();
@@ -2824,6 +2918,14 @@ export function initIsometricStudio() {
       const cfg = LIVESTOCK_CONFIG[tid];
       if (!cfg) return false;
       const ls = getLivestockData(row, col);
+
+      if (ls.animalCount <= 0) {
+        if (!silent) {
+          playErrorSound();
+          showToast(`⚠️ Chuồng chưa có ${cfg.animalName}! Hãy mua vật nuôi trước.`, "warning");
+        }
+        return false;
+      }
 
       if (ls.state !== "hungry") return false;
 
@@ -2858,6 +2960,8 @@ export function initIsometricStudio() {
       const cfg = LIVESTOCK_CONFIG[tid];
       if (!cfg) return false;
       const ls = getLivestockData(row, col);
+
+      if (ls.animalCount <= 0) return false;
 
       if (ls.state === "producing") {
         const dur = ls.durationMs || ((cfg.durationSec || 45) * 1000);
@@ -3474,6 +3578,7 @@ export function initIsometricStudio() {
       openLandExpansionModal,
       openStorageModal,
       openLivestockModal,
+      closeLivestockModal,
       showStorageFullModal,
       getSiloCapacity: () => siloCapacity,
       getBarnCapacity: () => barnCapacity,
@@ -3489,6 +3594,7 @@ export function initIsometricStudio() {
       checkQuestsProgress,
       persistGameState,
       triggerAutoSave,
+      checkCanPlaceTile: (tid) => checkCanPlaceTile(tid),
       showToast
     });
 

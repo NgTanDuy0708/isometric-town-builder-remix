@@ -526,184 +526,198 @@ export function createOrderBoardManager(ctx) {
     return false;
   }
 
+  // Cache cho hình ảnh Bảng Đơn Hàng & Xe Tải Giao Hàng
+  let orderBoardImage = null;
+  function getOrderBoardImage() {
+    if (!orderBoardImage) {
+      orderBoardImage = new Image();
+      orderBoardImage.onload = () => {
+        if (ctx && ctx.requestRender) ctx.requestRender();
+      };
+      orderBoardImage.src = "/assets/buildings/order_board.png";
+    }
+    return orderBoardImage;
+  }
+
+  let deliveryTruckImage = null;
+  function getDeliveryTruckImage() {
+    if (!deliveryTruckImage) {
+      deliveryTruckImage = new Image();
+      deliveryTruckImage.onload = () => {
+        if (ctx && ctx.requestRender) ctx.requestRender();
+      };
+      deliveryTruckImage.src = "/assets/vehicles/delivery_truck.png";
+    }
+    return deliveryTruckImage;
+  }
+
+  function getTruckCell() {
+    let r = truckState.homeRow;
+    let c = truckState.homeCol;
+    let isVisible = true;
+
+    if (truckState.isDelivering) {
+      const elapsed = Date.now() - truckState.startedAt;
+      const p = Math.min(1.0, elapsed / truckState.tripDurationMs);
+
+      if (p < 0.44) {
+        const prog = p / 0.44;
+        r = truckState.homeRow + (40.0 - truckState.homeRow) * prog;
+        c = prog < 0.1 ? truckState.homeCol + (15.0 - truckState.homeCol) * (prog / 0.1) : 15.0;
+      } else if (p < 0.56) {
+        isVisible = false;
+      } else {
+        const prog = (p - 0.56) / 0.44;
+        r = 40.0 - (40.0 - truckState.homeRow) * prog;
+        c = prog > 0.9 ? 15.0 + (truckState.homeCol - 15.0) * ((prog - 0.9) / 0.1) : 15.0;
+      }
+    }
+    return { row: r, col: c, isVisible };
+  }
+
   /**
    * Vẽ Bảng Đơn Hàng và Xe Tải Giao Hàng trên Canvas
    */
-  function renderWorldTruckAndBoard(c2d, originX, originY, halfW, quarterW, animTime) {
+  function renderWorldTruckAndBoard(c2d, originX, originY, halfW, quarterW, animTime, opts = {}) {
     const now = Date.now();
+    const renderBoardOnly = opts && opts.only === "board";
+    const renderTruckOnly = opts && opts.only === "truck";
+    const renderBoth = !renderBoardOnly && !renderTruckOnly;
 
     // =========================================================================
     // 1. VẼ BẢNG ĐƠN HÀNG (ORDER BOARD) tại trước cửa Tòa Thị Chính
     // =========================================================================
-    const boardX = originX + (truckState.boardCol - truckState.boardRow) * halfW + 64;
-    const boardY = originY + (truckState.boardRow + truckState.boardCol) * quarterW + 96;
+    if (renderBoth || renderBoardOnly) {
+      const boardX = originX + (truckState.boardCol - truckState.boardRow) * halfW + 64;
+      const boardY = originY + (truckState.boardRow + truckState.boardCol) * quarterW + 96;
 
-    c2d.save();
-    // Bóng dưới chân bảng
-    c2d.fillStyle = "rgba(0, 0, 0, 0.28)";
-    c2d.beginPath();
-    c2d.ellipse(boardX, boardY + 6, 16, 8, 0, 0, Math.PI * 2);
-    c2d.fill();
-
-    // 2 cột gỗ cắm đất
-    c2d.fillStyle = "#78350f";
-    c2d.fillRect(boardX - 10, boardY - 26, 3, 30);
-    c2d.fillRect(boardX + 7, boardY - 26, 3, 30);
-
-    // Tấm bảng gỗ nâu / bọc bần
-    c2d.fillStyle = "#92400e";
-    c2d.fillRect(boardX - 15, boardY - 28, 30, 20);
-    c2d.fillStyle = "#d97706";
-    c2d.fillRect(boardX - 13, boardY - 26, 26, 16);
-
-    // Mái ngói nhỏ che mưa nắng trên đỉnh bảng
-    c2d.fillStyle = "#b91c1c";
-    c2d.beginPath();
-    c2d.moveTo(boardX - 17, boardY - 28);
-    c2d.lineTo(boardX, boardY - 35);
-    c2d.lineTo(boardX + 17, boardY - 28);
-    c2d.closePath();
-    c2d.fill();
-
-    // Các mảnh giấy ghim nhỏ li ti trên bảng
-    c2d.fillStyle = "#fffdf5";
-    c2d.fillRect(boardX - 11, boardY - 24, 7, 6);
-    c2d.fillRect(boardX - 2, boardY - 24, 6, 7);
-    c2d.fillRect(boardX + 5, boardY - 24, 6, 6);
-    c2d.fillRect(boardX - 8, boardY - 16, 7, 5);
-    c2d.fillRect(boardX + 1, boardY - 16, 8, 5);
-
-    // Ghim đinh đỏ nhỏ
-    c2d.fillStyle = "#dc2626";
-    c2d.beginPath();
-    c2d.arc(boardX - 7.5, boardY - 24, 1, 0, Math.PI * 2);
-    c2d.arc(boardX + 1, boardY - 24, 1, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Huy hiệu thông báo có đơn sẵn sàng giao trên đầu bảng
-    let readyCount = 0;
-    orders.forEach(slot => {
-      if (slot && slot.items && canFulfillOrder(slot)) readyCount++;
-    });
-
-    if (readyCount > 0 && !truckState.isDelivering) {
-      const badgeBounce = Math.sin(animTime * 4.0) * 3;
-      const bx = boardX;
-      const by = boardY - 45 + badgeBounce;
-
-      c2d.fillStyle = "#10b981";
-      c2d.strokeStyle = "#ffffff";
-      c2d.lineWidth = 2;
+      c2d.save();
+      // Bóng dưới chân bảng
+      c2d.fillStyle = "rgba(0, 0, 0, 0.28)";
       c2d.beginPath();
-      c2d.arc(bx, by, 10, 0, Math.PI * 2);
+      c2d.ellipse(boardX, boardY + 6, 16, 8, 0, 0, Math.PI * 2);
       c2d.fill();
-      c2d.stroke();
 
-      c2d.font = "bold 10px sans-serif";
-      c2d.fillStyle = "#ffffff";
-      c2d.textAlign = "center";
-      c2d.textBaseline = "middle";
-      c2d.fillText(String(readyCount), bx, by);
+      const boardImg = getOrderBoardImage();
+      const isBoardReady = boardImg && boardImg.complete && boardImg.naturalWidth > 0;
+
+      if (isBoardReady) {
+        c2d.save();
+        c2d.translate(boardX, boardY);
+        c2d.scale(-1, 1);
+        c2d.drawImage(boardImg, -32, -58, 64, 64);
+        c2d.restore();
+      } else {
+        // 2 cột gỗ cắm đất dự phòng
+        c2d.fillStyle = "#78350f";
+        c2d.fillRect(boardX - 8, boardY - 20, 2, 22);
+        c2d.fillRect(boardX + 5, boardY - 20, 2, 22);
+        c2d.fillStyle = "#92400e";
+        c2d.fillRect(boardX - 12, boardY - 22, 24, 16);
+      }
+
+      // Huy hiệu thông báo có đơn sẵn sàng giao trên đầu bảng
+      let readyCount = 0;
+      orders.forEach(slot => {
+        if (slot && slot.items && canFulfillOrder(slot)) readyCount++;
+      });
+
+      if (readyCount > 0 && !truckState.isDelivering) {
+        const badgeBounce = Math.sin(animTime * 4.0) * 2.5;
+        const bx = boardX - 12;
+        const by = boardY - 56 + badgeBounce;
+
+        c2d.fillStyle = "#10b981";
+        c2d.strokeStyle = "#ffffff";
+        c2d.lineWidth = 1.5;
+        c2d.beginPath();
+        c2d.arc(bx, by, 9, 0, Math.PI * 2);
+        c2d.fill();
+        c2d.stroke();
+
+        c2d.font = "bold 9.5px sans-serif";
+        c2d.fillStyle = "#ffffff";
+        c2d.textAlign = "center";
+        c2d.textBaseline = "middle";
+        c2d.fillText(String(readyCount), bx, by);
+      }
+      c2d.restore();
     }
-    c2d.restore();
 
     // =========================================================================
     // 2. VẼ XE TẢI GIAO HÀNG (DELIVERY TRUCK)
     // =========================================================================
-    let truckR = truckState.homeRow;
-    let truckC = truckState.homeCol;
-    let isVisible = true;
+    if (renderBoth || renderTruckOnly) {
+      let truckR = truckState.homeRow;
+      let truckC = truckState.homeCol;
+      let isVisible = true;
+      let isReturning = false;
 
-    if (truckState.isDelivering) {
-      const elapsed = now - truckState.startedAt;
-      const p = Math.min(1.0, elapsed / truckState.tripDurationMs);
-
-      if (p < 0.44) {
-        // Giai đoạn 1: Xe chạy từ Đài Phun Nước xuống con đường xuyên rừng phía Nam (Row 40.0)
-        const prog = p / 0.44;
-        truckR = truckState.homeRow + (40.0 - truckState.homeRow) * prog;
-        truckC = prog < 0.1 ? truckState.homeCol + (15.0 - truckState.homeCol) * (prog / 0.1) : 15.0;
-      } else if (p < 0.56) {
-        // Giai đoạn 2: Xe ở ngoài thị trấn giao hàng
-        isVisible = false;
-      } else {
-        // Giai đoạn 3: Xe chạy ngược từ con đường xuyên rừng (Row 40.0) về lại Đài Phun Nước
-        const prog = (p - 0.56) / 0.44;
-        truckR = 40.0 - (40.0 - truckState.homeRow) * prog;
-        truckC = prog > 0.9 ? 15.0 + (truckState.homeCol - 15.0) * ((prog - 0.9) / 0.1) : 15.0;
-      }
-    }
-
-    if (isVisible) {
-      const tx = originX + (truckC - truckR) * halfW + 64;
-      const ty = originY + (truckR + truckC) * quarterW + 96;
-
-      c2d.save();
-
-      // Bóng xe tải
-      c2d.fillStyle = "rgba(0, 0, 0, 0.32)";
-      c2d.beginPath();
-      c2d.ellipse(tx, ty + 4, 18, 9, 0, 0, Math.PI * 2);
-      c2d.fill();
-
-      // Khói bốc ra sau đuôi xe khi đang chạy
       if (truckState.isDelivering) {
-        const puff = (animTime * 12.0) % 3;
-        c2d.fillStyle = "rgba(226, 232, 240, 0.75)";
-        c2d.beginPath();
-        c2d.arc(tx - 12 - puff * 4, ty - 6 - puff * 3, 3 + puff * 2, 0, Math.PI * 2);
-        c2d.fill();
+        const elapsed = now - truckState.startedAt;
+        const p = Math.min(1.0, elapsed / truckState.tripDurationMs);
+
+        if (p < 0.44) {
+          // Giai đoạn 1: Xe chạy từ Đài Phun Nước xuống con đường xuyên rừng phía Nam (Row 40.0)
+          const prog = p / 0.44;
+          truckR = truckState.homeRow + (40.0 - truckState.homeRow) * prog;
+          truckC = prog < 0.1 ? truckState.homeCol + (15.0 - truckState.homeCol) * (prog / 0.1) : 15.0;
+          isReturning = false;
+        } else if (p < 0.56) {
+          // Giai đoạn 2: Xe ở ngoài thị trấn giao hàng
+          isVisible = false;
+        } else {
+          // Giai đoạn 3: Xe chạy ngược từ con đường xuyên rừng (Row 40.0) về lại Đài Phun Nước
+          const prog = (p - 0.56) / 0.44;
+          truckR = 40.0 - (40.0 - truckState.homeRow) * prog;
+          truckC = prog > 0.9 ? 15.0 + (truckState.homeCol - 15.0) * ((prog - 0.9) / 0.1) : 15.0;
+          isReturning = true;
+        }
       }
 
-      // Thùng xe bằng gỗ phía sau
-      c2d.fillStyle = "#854d0e";
-      c2d.fillRect(tx - 16, ty - 14, 16, 12);
-      c2d.fillStyle = "#a16207";
-      c2d.fillRect(tx - 15, ty - 13, 14, 10);
+      if (isVisible) {
+        const tx = originX + (truckC - truckR) * halfW + 64;
+        const ty = originY + (truckR + truckC) * quarterW + 96;
 
-      // Thùng hàng / bao tải chở trên xe
-      c2d.fillStyle = "#facc15"; // Thùng vàng
-      c2d.fillRect(tx - 13, ty - 17, 6, 5);
-      c2d.fillStyle = "#e2e8f0"; // Bao tải trắng
-      c2d.beginPath();
-      c2d.arc(tx - 5, ty - 15, 3.5, 0, Math.PI * 2);
-      c2d.fill();
+        c2d.save();
 
-      // Thân cabin xe tải đỏ tươi bóng bẩy
-      c2d.fillStyle = "#dc2626";
-      c2d.fillRect(tx - 1, ty - 18, 16, 14);
+        // Bóng xe tải nhỏ gọn
+        c2d.fillStyle = "rgba(0, 0, 0, 0.28)";
+        c2d.beginPath();
+        c2d.ellipse(tx, ty + 6, 18, 9, 0, 0, Math.PI * 2);
+        c2d.fill();
 
-      // Mui xe màu trắng kem
-      c2d.fillStyle = "#fef2f2";
-      c2d.fillRect(tx + 2, ty - 22, 11, 5);
+        // Khói bốc ra sau đuôi xe khi đang chạy
+        if (truckState.isDelivering) {
+          const puff = (animTime * 12.0) % 3;
+          c2d.fillStyle = "rgba(226, 232, 240, 0.75)";
+          c2d.beginPath();
+          c2d.arc(tx - (isReturning ? -10 : 10) - puff * 3, ty - 4 - puff * 2, 2.5 + puff * 1.5, 0, Math.PI * 2);
+          c2d.fill();
+        }
 
-      // Kính chắn gió cabin xanh lam
-      c2d.fillStyle = "#7dd3fc";
-      c2d.fillRect(tx + 5, ty - 17, 9, 6);
+        const truckImg = getDeliveryTruckImage();
+        const isTruckReady = truckImg && truckImg.complete && truckImg.naturalWidth > 0;
 
-      // Đèn pha trước sáng vàng
-      c2d.fillStyle = "#fef08a";
-      c2d.fillRect(tx + 14, ty - 8, 2, 3);
+        if (isTruckReady) {
+          c2d.save();
+          if (isReturning) {
+            c2d.translate(tx, ty);
+            c2d.scale(-1, 1);
+            c2d.drawImage(truckImg, -28, -46, 56, 56);
+          } else {
+            c2d.translate(tx, ty);
+            c2d.drawImage(truckImg, -28, -46, 56, 56);
+          }
+          c2d.restore();
+        } else {
+          // Dự phòng
+          c2d.fillStyle = "#dc2626";
+          c2d.fillRect(tx - 10, ty - 12, 14, 10);
+        }
 
-      // Cản trước kim loại bạc
-      c2d.fillStyle = "#94a3b8";
-      c2d.fillRect(tx + 13, ty - 4, 3, 4);
-
-      // Bánh xe cao su đen và vành bạc
-      c2d.fillStyle = "#1e293b";
-      // Bánh sau
-      c2d.beginPath();
-      c2d.arc(tx - 9, ty + 2, 4.5, 0, Math.PI * 2);
-      c2d.arc(tx + 8, ty + 2, 4.5, 0, Math.PI * 2);
-      c2d.fill();
-      // Vành bánh xe
-      c2d.fillStyle = "#cbd5e1";
-      c2d.beginPath();
-      c2d.arc(tx - 9, ty + 2, 2, 0, Math.PI * 2);
-      c2d.arc(tx + 8, ty + 2, 2, 0, Math.PI * 2);
-      c2d.fill();
-
-      c2d.restore();
+        c2d.restore();
+      }
     }
   }
 
@@ -718,6 +732,7 @@ export function createOrderBoardManager(ctx) {
     speedupTruck,
     checkWorldClick,
     renderWorldTruckAndBoard,
+    getTruckCell,
     isTruckDelivering: () => truckState.isDelivering,
     reset: () => {
       orders = [];

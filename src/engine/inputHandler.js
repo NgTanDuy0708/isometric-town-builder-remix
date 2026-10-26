@@ -72,7 +72,7 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
         }
       }
 
-      if (ls.state === "ready" || ls.state === "hungry") {
+      if (ls.animalCount > 0 && (ls.state === "ready" || ls.state === "hungry")) {
         const ox = ORIGIN_X + (c - r) * HALF_W;
         const oy = ORIGIN_Y + (r + c) * QUARTER_W;
         const bubbleX = ox + 64;
@@ -306,6 +306,16 @@ export function initInputHandler(container, ctx) {
     if (fruitTreesState && fruitTreesState[oldKey]) {
       fruitTreesState[newKey] = fruitTreesState[oldKey];
       delete fruitTreesState[oldKey];
+    }
+
+    const livestockState = ctx.getLivestockState ? ctx.getLivestockState() : null;
+    if (livestockState && livestockState[oldKey]) {
+      livestockState[newKey] = livestockState[oldKey];
+      delete livestockState[oldKey];
+    }
+
+    if (ctx.closeLivestockModal) {
+      ctx.closeLivestockModal();
     }
 
     currentGrid[targetRow][targetCol] = movingBuilding.tileId;
@@ -582,6 +592,19 @@ export function initInputHandler(container, ctx) {
         if (constructions[key]) {
           ctx.showToast("🏗️ Ô này đang được thi công!", "info");
           return;
+        }
+
+        if (ctx.checkCanPlaceTile) {
+          const penCheck = ctx.checkCanPlaceTile(activeBrush);
+          if (!penCheck.allowed) {
+            playErrorSound();
+            if (penCheck.nextInfo) {
+              ctx.showToast(`⚠️ Bạn đã xây tối đa ${penCheck.maxPens} chuồng ở cấp hiện tại! Lên Cấp ${penCheck.nextInfo.nextLevel} để mở thêm chuồng tiếp theo.`, "warning");
+            } else {
+              ctx.showToast(`⚠️ Bạn đã xây tối đa ${penCheck.maxPens} chuồng (giới hạn tối đa của vương quốc)!`, "warning");
+            }
+            return;
+          }
         }
 
         const curCellTid = currentGrid[cell.row][cell.col];
@@ -990,8 +1013,8 @@ export function initInputHandler(container, ctx) {
         const lsState = ctx.getLivestockState ? ctx.getLivestockState() : null;
         const key = `${pendingSpecialClick.row}_${pendingSpecialClick.col}`;
         const ls = lsState ? lsState[key] : null;
-        let isReady = ls && ls.state === "ready";
-        if (ls && ls.state === "producing") {
+        let isReady = ls && (ls.animalCount || 0) > 0 && ls.state === "ready";
+        if (ls && (ls.animalCount || 0) > 0 && ls.state === "producing") {
           const dur = ls.durationMs || 45000;
           if (Date.now() - (ls.feedTime || 0) >= dur) {
             ls.state = "ready";

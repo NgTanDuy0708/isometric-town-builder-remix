@@ -120,7 +120,7 @@ const STUDIO_MARKUP = `
 
     <!-- Bến Cảng Tàu Buôn (Cargo Ship) -->
     <button type="button" class="deck-circle-btn ship-circle" id="btn-open-harbor-ship" title="🚢 Bến Cảng Hoàng Gia (Chuyến tàu buôn 9 thùng hàng, thưởng Ruby & Vật tư)">
-      <span class="circle-btn-icon">🚢</span>
+      <span class="circle-btn-icon"><img src="/assets/aistudio/TauHoangGia_v1_a5f7fe14.png" alt="Tàu Giao Thương" class="deck-ship-icon-img" /></span>
       <span class="harbor-badge locked" id="cargo-ship-notify-badge">Cấp 6</span>
       <span class="circle-btn-tooltip">Tàu Giao Thương</span>
     </button>
@@ -674,7 +674,9 @@ const STUDIO_MARKUP = `
     <div class="cargo-ship-modal-card">
       <div class="cargo-ship-modal-header">
         <div class="cargo-ship-modal-header-left">
-          <div class="cargo-ship-avatar-large">🚢</div>
+          <div class="cargo-ship-avatar-large">
+            <img src="/assets/aistudio/TauHoangGia_v1_a5f7fe14.png" alt="Thuyền Buôn Hoàng Gia Caravel" class="cargo-ship-avatar-img" />
+          </div>
           <div>
             <div class="ship-header-badge">🌊 HẢI CẢNG ĐẠI LỤC</div>
             <h2 class="cargo-ship-modal-title" id="cargo-ship-modal-title">Thuyền Buôn Hoàng Gia Caravel</h2>

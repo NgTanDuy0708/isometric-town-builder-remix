@@ -68,12 +68,12 @@ export const TILE_REQUIRED_LEVELS = {
   "d12_meadow_wildflowers": 1,
   "d13_farmland_plot": 1,
   "b01_cottage_red": 1,
-  "b21_chicken_coop": 1,
   "r01_dirt_path": 1,
   "d04_oak_tree_park": 1,
   "d05_pine_grove": 1,
 
-  // Cấp 2
+  // Cấp 2 (Mở khóa Chuồng Gà Đẻ Trứng)
+  "b21_chicken_coop": 2,
   "b04_windmill": 2,
   "b02_tudor_inn": 2,
   "d02_village_well": 2,
@@ -83,7 +83,6 @@ export const TILE_REQUIRED_LEVELS = {
   // Cấp 3 (Mở khóa Tòa Thị Chính theo yêu cầu)
   "b14_town_hall": 3,
   "b06_bakery": 3,
-  "b22_cow_pasture": 3,
   "d01_plaza_fountain": 3,
   "b05_watermill": 3,
   "d03_market_stalls": 3,
@@ -100,7 +99,8 @@ export const TILE_REQUIRED_LEVELS = {
   "d09_merchant_cart_camp": 4,
   "d21_apple_tree": 4,
 
-  // Cấp 5
+  // Cấp 5 (Mở khóa Chuồng Bò Sữa)
+  "b22_cow_pasture": 5,
   "b07_apothecary": 5,
   "b09_chapel": 5,
   "b18_greenhouse_orangery": 5,
@@ -109,13 +109,13 @@ export const TILE_REQUIRED_LEVELS = {
 
   // Cấp 6
   "b15_library_scholar": 6,
-  "b57_sheep_pasture": 6,
   "d23_tamarind_tree": 6,
   "r12_road_bridge_stone": 6,
   "c09_timber_footbridge_ns": 6,
   "c10_timber_footbridge_ew": 6,
 
-  // Cấp 7
+  // Cấp 7 (Mở khóa Chuồng Cừu Lấy Lông)
+  "b57_sheep_pasture": 7,
   "b16_alchemist_workshop": 7,
   "b19_lighthouse_dock": 7,
   "d22_coconut_palm": 7,
@@ -257,31 +257,81 @@ export function getTileRequiredLevel(tileId) {
   return 1;
 }
 
+/**
+ * Lấy giới hạn số lượng chuồng tối đa theo cấp độ người chơi:
+ * - Chuồng gà: Lv 2 (max 2, Lv 10 -> 3, Lv 17 -> 4)
+ * - Chuồng bò: Lv 5 (max 2, Lv 12 -> 3, Lv 20 -> 4)
+ * - Chuồng cừu/heo: Lv 7 (max 2, Lv 14 -> 3, Lv 21 -> 4)
+ */
+export function getMaxPenCount(tileId, playerLevel) {
+  if (tileId === "b21_chicken_coop") {
+    if (playerLevel < 2) return 0;
+    if (playerLevel < 10) return 2;
+    if (playerLevel < 17) return 3;
+    return 4;
+  }
+  if (tileId === "b22_cow_pasture") {
+    if (playerLevel < 5) return 0;
+    if (playerLevel < 12) return 2;
+    if (playerLevel < 20) return 3;
+    return 4;
+  }
+  if (tileId === "b57_sheep_pasture") {
+    if (playerLevel < 7) return 0;
+    if (playerLevel < 14) return 2;
+    if (playerLevel < 21) return 3;
+    return 4;
+  }
+  return Infinity;
+}
+
+export function getNextPenUnlockInfo(tileId, playerLevel) {
+  if (tileId === "b21_chicken_coop") {
+    if (playerLevel < 2) return { nextLevel: 2, nextMax: 2 };
+    if (playerLevel < 10) return { nextLevel: 10, nextMax: 3 };
+    if (playerLevel < 17) return { nextLevel: 17, nextMax: 4 };
+    return null;
+  }
+  if (tileId === "b22_cow_pasture") {
+    if (playerLevel < 5) return { nextLevel: 5, nextMax: 2 };
+    if (playerLevel < 12) return { nextLevel: 12, nextMax: 3 };
+    if (playerLevel < 20) return { nextLevel: 20, nextMax: 4 };
+    return null;
+  }
+  if (tileId === "b57_sheep_pasture") {
+    if (playerLevel < 7) return { nextLevel: 7, nextMax: 2 };
+    if (playerLevel < 14) return { nextLevel: 14, nextMax: 3 };
+    if (playerLevel < 21) return { nextLevel: 21, nextMax: 4 };
+    return null;
+  }
+  return null;
+}
+
 export const MAX_PLAYER_LEVEL = 25;
 
 // Player Level Thresholds & Titles (Cấp 1 - 25) - Tái cân bằng độ khó & nhịp độ tiến trình chuẩn game nông trại
 export const PLAYER_LEVEL_CONFIG = [
   { level: 1, xpReq: 0, title: "Tân Lập Làng", rewardGold: 0 },
-  { level: 2, xpReq: 300, title: "Nông Dân Chăm Chỉ", rewardGold: 150, unlockNote: "Cối xay gió 🌾, Quán trọ 🍺, Cà chua 🍅, Dâu tây 🍓" },
-  { level: 3, xpReq: 850, title: "Chủ Trang Trại", rewardGold: 300, unlockNote: "Tòa Thị Chính 🏛️ (Mở khóa Bảng Thành Tựu), Lò bánh mì 🍞, Chuồng bò sữa 🥛, Bắp ngô 🌽, Bắp cải 🥬" },
+  { level: 2, xpReq: 300, title: "Nông Dân Chăm Chỉ", rewardGold: 150, unlockNote: "🐔 Chuồng gà (Tối đa 2 chuồng), Cối xay gió 🌾, Quán trọ 🍺, Cà chua 🍅, Dâu tây 🍓" },
+  { level: 3, xpReq: 850, title: "Chủ Trang Trại", rewardGold: 300, unlockNote: "Tòa Thị Chính 🏛️ (Mở khóa Bảng Thành Tựu), Lò bánh mì 🍞, Bắp ngô 🌽, Bắp cải 🥬" },
   { level: 4, xpReq: 1800, title: "Thương Gia Trù Phú", rewardGold: 450, unlockNote: "Xưởng Bơ Sữa 🧈, Lò rèn ⚒️, Xưởng cưa 🪓, Cửa hàng tạp hóa 🏪, Bí ngô 🎃, Dưa hấu 🍉" },
-  { level: 5, xpReq: 3400, title: "Thị Trưởng Năng Động", rewardGold: 650, unlockNote: "👨‍🌾 Tổng Quản Gia Thu Hoạch Tự Động (Tặng 1 ngày dùng thử miễn phí!), Nhà nguyện đá ⛪, Cổng thành đôi 🏰, Kênh nước thẳng 💧, Nho tím 🍇" },
-  { level: 6, xpReq: 5800, title: "Lãnh Chúa Khai Hoang", rewardGold: 900, unlockNote: "🚢 Bến Cảng Hoàng Gia & Thuyền Buôn Caravel (Đóng 9 thùng hàng, thưởng 3-5 Ruby 💎 & Vật tư mở đất), Thư viện hoàng gia 📚, Tháp canh bảo an 🗼, Cầu đá vượt sông 🌉, Hoa hướng dương 🌻" },
-  { level: 7, xpReq: 9200, title: "Đại Bá Tước", rewardGold: 1200, unlockNote: "Xưởng giả kim 🧪, Ngọn hải đăng 🗼, Cầu cảng đá bến biển ⚓" },
+  { level: 5, xpReq: 3400, title: "Thị Trưởng Năng Động", rewardGold: 650, unlockNote: "🐮 Chuồng bò sữa (Tối đa 2 chuồng), 👨‍🌾 Tổng Quản Gia, Nhà nguyện đá ⛪, Cổng thành đôi 🏰, Kênh nước 💧, Nho tím 🍇" },
+  { level: 6, xpReq: 5800, title: "Lãnh Chúa Khai Hoang", rewardGold: 900, unlockNote: "🚢 Bến Cảng Hoàng Gia & Thuyền Buôn Caravel (Đóng 9 thùng hàng, thưởng 3-5 Ruby 💎), Thư viện hoàng gia 📚, Tháp canh 🗼, Cầu đá 🌉" },
+  { level: 7, xpReq: 9200, title: "Đại Bá Tước", rewardGold: 1200, unlockNote: "🐑 Chuồng cừu (Tối đa 2 chuồng), Xưởng giả kim 🧪, Ngọn hải đăng 🗼, Cầu cảng đá bến biển ⚓" },
   { level: 8, xpReq: 14000, title: "Quốc Vương Đại Lục", rewardGold: 1600, unlockNote: "Dinh thự quý tộc 🏰, Đài phun cẩm thạch ⛲, Khúc quanh kênh đào 🌊" },
   { level: 9, xpReq: 20500, title: "Hoàng Đế Vĩ Đại", rewardGold: 2200, unlockNote: "Tháp pháp sư cổ đại 🔮, Tòa thị sảnh đồng hồ thiên văn 🕰️" },
-  { level: 10, xpReq: 29000, title: "Thống Soái Đất Hứa", rewardGold: 3000, unlockNote: "Chùa gỗ 3 tầng Nhật Bản ⛩️, Suối khoáng nóng Onsen ♨️, Cổng Torii rừng trúc 🎋" },
-  { level: 11, xpReq: 39500, title: "Bá Chủ Thương Trường", rewardGold: 4000, unlockNote: "Biệt thự Địa Trung Hải 🏛️, Đại lộ cột cẩm thạch 🏛️, Đồi cây oliu bậc thang 🫒" },
-  { level: 12, xpReq: 52000, title: "Chúa Đảo Hải Cảng", rewardGold: 5200, unlockNote: "Nhà thuyền đầm lầy 🛶, Bến tàu cầu cảng ngư dân 🐟, Kênh bốc dỡ hàng hóa ⚓" },
+  { level: 10, xpReq: 29000, title: "Thống Soái Đất Hứa", rewardGold: 3000, unlockNote: "🐔 Mở thêm 1 Chuồng gà (Tối đa 3 chuồng), Chùa gỗ 3 tầng ⛩️, Suối Onsen ♨️" },
+  { level: 11, xpReq: 39500, title: "Bá Chủ Thương Trường", rewardGold: 4000, unlockNote: "Biệt thự Địa Trung Hải 🏛️, Đại lộ cột cẩm thạch 🏛️, Đồi cây oliu 🫒" },
+  { level: 12, xpReq: 52000, title: "Chúa Đảo Hải Cảng", rewardGold: 5200, unlockNote: "🐮 Mở thêm 1 Chuồng bò (Tối đa 3 chuồng), Nhà thuyền đầm lầy 🛶, Bến tàu cầu cảng 🐟" },
   { level: 13, xpReq: 67000, title: "Bậc Thầy Luyện Kim", rewardGold: 6500, unlockNote: "Lò rèn nghệ nhân ⚒️, Mỏ hang tinh thể pha lê 💎, Sân điêu khắc làng 🎨" },
-  { level: 14, xpReq: 85000, title: "Kiến Trúc Sư Hoàng Gia", rewardGold: 8000, unlockNote: "Nhà kính thực vật Victoria 🌿, Đại cầu thang lan can đá nguy nga 🏛️" },
-  { level: 15, xpReq: 106000, title: "Đại Tướng Cao Nguyên", rewardGold: 10000, unlockNote: "Pháo đài tháp canh cao nguyên 🏰, Cầu treo dây cáp núi cao 🌉, Bãi bò lông dài 🐂" },
-  { level: 16, xpReq: 130000, title: "Thống Đốc Công Nghiệp", rewardGold: 12500, unlockNote: "Xưởng cưa thủy lực đồ sộ 🪵, Trạm bơm nước dầm gang ⚙️, Hồ chứa gỗ trôi 🌲" },
-  { level: 17, xpReq: 158000, title: "Dược Sư Huyền Bí", rewardGold: 15500, unlockNote: "Tháp dược sư giả kim vòm đồng 🧪, Hang động sông ngầm thạch nhũ 🌌, Đầm than bùn ma trơi 👻" },
-  { level: 18, xpReq: 190000, title: "Đô Đốc Hàng Hải", rewardGold: 19000, unlockNote: "Xưởng đóng tàu biển Caravel ⛵, Cổng biển cửa cảng kiên cố 🌊, Tuyến đê chắn sóng đá ⚓" },
-  { level: 19, xpReq: 226000, title: "Lãnh Chúa Con Đường Tơ Lụa", rewardGold: 23000, unlockNote: "Trạm nghỉ sa mạc mái vòm lam 🐫, Vườn thiên đường Qanat 🌴, Ốc đảo nước ngọt 💧" },
-  { level: 20, xpReq: 267000, title: "Đại Sư Gốm Sứ & Thủy Tinh", rewardGold: 28000, unlockNote: "Lò gốm rồng nhiều bậc 🏺, Xưởng thổi thủy tinh Murano 🔮, Đoàn xe hàng thủ công 🛍️" },
-  { level: 21, xpReq: 313000, title: "Chúa Tể Thảo Nguyên", rewardGold: 34000, unlockNote: "Đại lều du mục nỉ trắng ⛺, Đoàn bò Tây Tạng & Lạc đà Tuareg 🐎, Đồng cỏ vàng Savanna 🌾" },
+  { level: 14, xpReq: 85000, title: "Kiến Trúc Sư Hoàng Gia", rewardGold: 8000, unlockNote: "🐑 Mở thêm 1 Chuồng cừu (Tối đa 3 chuồng), Nhà kính thực vật 🌿, Đại cầu thang đá 🏛️" },
+  { level: 15, xpReq: 106000, title: "Đại Tướng Cao Nguyên", rewardGold: 10000, unlockNote: "Pháo đài tháp canh 🏰, Cầu treo dây cáp 🌉, Bãi bò lông dài 🐂" },
+  { level: 16, xpReq: 130000, title: "Thống Đốc Công Nghiệp", rewardGold: 12500, unlockNote: "Xưởng cưa thủy lực 🪵, Trạm bơm nước dầm gang ⚙️" },
+  { level: 17, xpReq: 158000, title: "Dược Sư Huyền Bí", rewardGold: 15500, unlockNote: "🐔 Mở thêm 1 Chuồng gà (Tối đa 4 chuồng), Tháp dược sư 🧪, Hang động ngầm 🌌" },
+  { level: 18, xpReq: 190000, title: "Đô Đốc Hàng Hải", rewardGold: 19000, unlockNote: "Xưởng đóng tàu Caravel ⛵, Cổng biển cảng 🌊, Tuyến đê chắn sóng ⚓" },
+  { level: 19, xpReq: 226000, title: "Lãnh Chúa Con Đường Tơ Lụa", rewardGold: 23000, unlockNote: "Trạm nghỉ sa mạc 🐫, Vườn thiên đường 🌴, Ốc đảo 💧" },
+  { level: 20, xpReq: 267000, title: "Đại Sư Gốm Sứ & Thủy Tinh", rewardGold: 28000, unlockNote: "🐮 Mở thêm 1 Chuồng bò (Tối đa 4 chuồng), Lò gốm rồng 🏺, Xưởng thủy tinh 🔮" },
+  { level: 21, xpReq: 313000, title: "Chúa Tể Thảo Nguyên", rewardGold: 34000, unlockNote: "🐑 Mở thêm 1 Chuồng cừu (Tối đa 4 chuồng), Đại lều du mục ⛺, Đoàn bò Tây Tạng 🐎" },
   { level: 22, xpReq: 365000, title: "Bậc Thầy Kịch Nghệ & Rượu Vang", rewardGold: 41000, unlockNote: "Hầm rượu vang đồi nho 🍷, Nhà hát đá bậc thang ngoài trời 🎭, Cỗ xe chở rượu & Chim ưng 🦅" },
   { level: 23, xpReq: 423000, title: "Đại Pháp Sư Băng Giá", rewardGold: 49000, unlockNote: "Điện thờ tháp băng pha lê ❄️, Đài quan sát cực quang bắc cực 🌌, Nhà dài Viking 🛡️" },
   { level: 24, xpReq: 488000, title: "Hộ Vệ Sa Mạc Huyền Bí", rewardGold: 58000, unlockNote: "Pháo đài đất nén Kasbah 🏜️, Hẻm núi kho tàng chạm khắc đá 🏛️, Cây baobab cổ thụ 🌳" },

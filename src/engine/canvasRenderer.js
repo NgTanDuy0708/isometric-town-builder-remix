@@ -379,6 +379,19 @@ export function createCanvasRenderer(ctx) {
   coconutPalmStageImages.ripe.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
   imageCache["d22_coconut_palm"] = coconutPalmStageImages.ripe;
 
+  // 2e. Khởi tạo Image Cache cho Con Vật Chăn Nuôi (Gà, Bò, Cừu)
+  const animalSpriteImages = {
+    chicken: new Image(),
+    cow: new Image(),
+    sheep: new Image()
+  };
+  animalSpriteImages.chicken.src = "/assets/aistudio/con_g__a3d3ad36.png";
+  animalSpriteImages.cow.src = "/assets/aistudio/con_b__8eb91304.png";
+  animalSpriteImages.sheep.src = "/assets/aistudio/con_c_u_8042aec2.png";
+  animalSpriteImages.chicken.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+  animalSpriteImages.cow.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+  animalSpriteImages.sheep.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+
   // 3. Quản lý trạng thái hiệu ứng thị giác (Floating particles & texts)
   let floatingTexts = [];
   let flyingParticles = [];
@@ -481,92 +494,63 @@ export function createCanvasRenderer(ctx) {
   }
 
   /**
-   * Vẽ hoạt hình Đàn gà tung tăng mổ thóc trong Chuồng Gà (Hay Day style)
+   * Vẽ hoạt hình Đàn gà trong Chuồng Gà (Sử dụng Sprite Gà Pixel Art mới)
    */
   function renderLivestockChickens(c2d, ox, oy, animTime, pState, ls) {
     c2d.save();
 
+    const count = ls ? (ls.animalCount || 0) : 0;
     if (ls && ls.state === "producing") {
-      const dur = ls.durationMs || 45000;
+      const dur = ls.durationMs || 40000;
       if (Date.now() - (ls.feedTime || 0) >= dur) {
         ls.state = "ready";
       }
     }
 
-    const state = ls ? ls.state : (pState?.ready ? "ready" : "hungry");
+    const state = count === 0 ? "empty" : (ls ? ls.state : "empty");
     const isHungry = state === "hungry";
     const isProducing = state === "producing";
     const isReady = state === "ready";
 
-    // 1. Animated Chickens in Coop Yard
-    // Pecking and wing flap only while producing/eating
-    const peckBob = isProducing ? (Math.abs(Math.sin(animTime * 6.5)) * 3.5) : 0;
-    const wingFlap = isProducing ? (Math.sin(animTime * 9.0) * 2) : 0;
+    // Vị trí 5 con gà đứng rải rác bên trong sân chuồng gà (nằm trọn trong hàng rào gỗ)
+    const chickenSlots = [
+      { x: ox + 38, y: oy + 80, flip: false, w: 19, h: 19 },
+      { x: ox + 72, y: oy + 78, flip: true, w: 19, h: 19 },
+      { x: ox + 54, y: oy + 78, flip: false, w: 19, h: 19 },
+      { x: ox + 64, y: oy + 72, flip: false, w: 18, h: 18 },
+      { x: ox + 48, y: oy + 84, flip: true, w: 19, h: 19 }
+    ];
 
-    // Chicken 1: White Hen near ramp, pecking grain
-    const c1X = ox + 45;
-    const c1Y = oy + 82;
-    c2d.fillStyle = "#f8fafc";
-    c2d.beginPath();
-    c2d.ellipse(c1X, c1Y, 7, 5, 0.2, 0, Math.PI * 2);
-    c2d.fill();
-    c2d.beginPath();
-    c2d.arc(c1X - 5, c1Y - 4 + peckBob, 4, 0, Math.PI * 2);
-    c2d.fill();
-    c2d.fillStyle = "#ef4444";
-    c2d.fillRect(c1X - 6, c1Y - 8 + peckBob, 3, 2);
-    c2d.fillStyle = "#f59e0b";
-    c2d.fillRect(c1X - 8, c1Y - 4 + peckBob, 2, 2);
+    if (count > 0) {
+      const img = animalSpriteImages.chicken;
+      const ready = isImageReady(img);
+      const renderLimit = Math.min(count, 5);
 
-    // Chicken 2: Brown Hen near trough
-    const c2X = ox + 72;
-    const c2Y = oy + 96;
-    c2d.fillStyle = "#b45309";
-    c2d.beginPath();
-    c2d.ellipse(c2X, c2Y, 6.5, 5, -0.2, 0, Math.PI * 2);
-    c2d.fill();
-    c2d.beginPath();
-    c2d.arc(c2X + 5, c2Y - 3, 3.5, 0, Math.PI * 2);
-    c2d.fill();
-    c2d.fillStyle = "#ef4444";
-    c2d.fillRect(c2X + 4, c2Y - 7, 3, 2);
-    c2d.fillStyle = "#f59e0b";
-    c2d.fillRect(c2X + 7, c2Y - 3, 2, 2);
+      for (let i = 0; i < renderLimit; i++) {
+        const slot = chickenSlots[i];
+        const bob = isProducing 
+          ? Math.abs(Math.sin(animTime * 6.5 + i * 1.8)) * 3 
+          : Math.sin(animTime * 2.5 + i * 1.5) * 1.2;
+        
+        c2d.save();
+        if (ready) {
+          if (slot.flip) {
+            c2d.translate(slot.x + slot.w, slot.y - bob);
+            c2d.scale(-1, 1);
+            c2d.drawImage(img, 0, 0, slot.w, slot.h);
+          } else {
+            c2d.drawImage(img, slot.x, slot.y - bob, slot.w, slot.h);
+          }
+        } else {
+          c2d.font = "16px sans-serif";
+          c2d.textAlign = "center";
+          c2d.fillText("🐔", slot.x + 10, slot.y + 12 - bob);
+        }
+        c2d.restore();
+      }
+    }
 
-    // Chicken 3: Inside yard, flapping wings
-    const c3X = ox + 56;
-    const c3Y = oy + 90;
-    c2d.fillStyle = "#fef08a";
-    c2d.beginPath();
-    c2d.ellipse(c3X, c3Y, 6, 4.5, 0, 0, Math.PI * 2);
-    c2d.fill();
-    c2d.beginPath();
-    c2d.arc(c3X + 4, c3Y - 2, 3, 0, Math.PI * 2);
-    c2d.fill();
-    // Little wing
-    c2d.fillStyle = "#fde047";
-    c2d.fillRect(c3X - 2, c3Y - 3 + wingFlap, 4, 3);
-    c2d.fillStyle = "#f59e0b";
-    c2d.fillRect(c3X + 6, c3Y - 2, 2, 2);
-
-    // 2. Grain Trough in Coop
-    c2d.fillStyle = "#78350f";
-    c2d.fillRect(ox + 66, oy + 88, 14, 5);
-    c2d.fillStyle = isProducing ? "#facc15" : "#451a03"; // grain or empty
-    c2d.fillRect(ox + 67, oy + 89, 12, 3);
-
-    // 3. Egg Nest with Golden/White Eggs if ready to harvest
-    if (isReady) {
-      c2d.fillStyle = "#fef3c7";
-      c2d.shadowColor = "#f59e0b";
-      c2d.shadowBlur = 8;
-      c2d.beginPath();
-      c2d.ellipse(ox + 42, oy + 94, 3, 4, 0.3, 0, Math.PI * 2);
-      c2d.ellipse(ox + 47, oy + 96, 3, 4, -0.2, 0, Math.PI * 2);
-      c2d.ellipse(ox + 44, oy + 99, 3, 4, 0.1, 0, Math.PI * 2);
-      c2d.fill();
-      c2d.shadowBlur = 0;
-
+    if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
       const bubbleX = ox + 64;
@@ -596,8 +580,8 @@ export function createCanvasRenderer(ctx) {
 
       c2d.font = "700 9px sans-serif";
       c2d.fillStyle = "#ffffff";
-      c2d.fillText(`+${ls ? ls.animalCount : 2} Trứng`, bubbleX, bubbleY + 19);
-    } else if (isHungry) {
+      c2d.fillText(`+${count} Trứng`, bubbleX, bubbleY + 19);
+    } else if (isHungry && count > 0) {
       // Hungry Bubble
       const bounceY = Math.sin(animTime * 4.0) * 3;
       const bubbleX = ox + 64;
@@ -623,11 +607,11 @@ export function createCanvasRenderer(ctx) {
 
       c2d.font = "700 8px sans-serif";
       c2d.fillStyle = "#ffffff";
-      c2d.fillText("Đói 🌾", bubbleX, bubbleY + 17);
-    } else if (isProducing) {
+      c2d.fillText(`Đói (${count}🌾)`, bubbleX, bubbleY + 17);
+    } else if (isProducing && count > 0) {
       // Countdown bar
       const elapsed = Date.now() - (ls?.feedTime || Date.now());
-      const dur = ls?.durationMs || 45000;
+      const dur = ls?.durationMs || 40000;
       const progress = Math.min(1.0, elapsed / dur);
       const secLeft = Math.max(0, Math.ceil((dur - elapsed) / 1000));
       const barW = 40;
@@ -652,117 +636,61 @@ export function createCanvasRenderer(ctx) {
   }
 
   /**
-   * Vẽ hoạt hình Đàn bò sữa nhai cỏ trong Trang Trại Bò Sữa (Hay Day style)
+   * Vẽ hoạt hình Đàn bò trong Trang Trại Bò Sữa (Sử dụng Sprite Bò Pixel Art mới)
    */
   function renderDairyCows(c2d, ox, oy, animTime, pState, buildingTid, ls) {
     c2d.save();
 
+    const count = ls ? (ls.animalCount || 0) : 0;
     if (ls && ls.state === "producing") {
-      const dur = ls.durationMs || 75000;
+      const dur = ls.durationMs || 60000;
       if (Date.now() - (ls.feedTime || 0) >= dur) {
         ls.state = "ready";
       }
     }
 
-    const state = ls ? ls.state : (pState?.ready ? "ready" : "hungry");
+    const state = count === 0 ? "empty" : (ls ? ls.state : "empty");
     const isHungry = state === "hungry";
     const isProducing = state === "producing";
     const isReady = state === "ready";
 
-    // Chewing and tail wagging only while producing (feeding/happy)
-    const chew1 = isProducing ? (Math.sin(animTime * 7.5) * 1.5) : 0;
-    const tailWag = isProducing ? (Math.sin(animTime * 3.5) * 0.3) : 0;
-    const chew2 = isProducing ? (Math.sin(animTime * 6.0) * 1.2) : 0;
+    // Vị trí 3 con bò đứng gặm cỏ bên trong chuồng bò
+    const cowSlots = [
+      { x: ox + 38, y: oy + 74, flip: false, w: 26, h: 26 },
+      { x: ox + 68, y: oy + 72, flip: true, w: 26, h: 26 },
+      { x: ox + 52, y: oy + 78, flip: false, w: 26, h: 26 }
+    ];
 
-    // Cow 1: Standing Cow
-    const cow1X = ox + 46;
-    const cow1Y = oy + 102;
+    if (count > 0) {
+      const img = animalSpriteImages.cow;
+      const ready = isImageReady(img);
+      const renderLimit = Math.min(count, 3);
 
-    // Legs
-    c2d.fillStyle = "#1e293b";
-    c2d.fillRect(cow1X - 9, cow1Y + 6, 3, 8);
-    c2d.fillRect(cow1X - 3, cow1Y + 7, 3, 7);
-    c2d.fillRect(cow1X + 4, cow1Y + 7, 3, 7);
-    c2d.fillRect(cow1X + 9, cow1Y + 6, 3, 8);
+      for (let i = 0; i < renderLimit; i++) {
+        const slot = cowSlots[i];
+        const bob = isProducing 
+          ? Math.sin(animTime * 4.5 + i * 2) * 1.5 
+          : Math.sin(animTime * 2.0 + i * 1.5) * 0.8;
 
-    // Tail
-    c2d.save();
-    c2d.translate(cow1X - 11, cow1Y - 2);
-    c2d.rotate(tailWag);
-    c2d.strokeStyle = "#f8fafc";
-    c2d.lineWidth = 1.5;
-    c2d.beginPath();
-    c2d.moveTo(0, 0);
-    c2d.lineTo(-4, 8);
-    c2d.stroke();
-    c2d.fillStyle = "#0f172a";
-    c2d.fillRect(-5, 7, 3, 3);
-    c2d.restore();
+        c2d.save();
+        if (ready) {
+          if (slot.flip) {
+            c2d.translate(slot.x + slot.w, slot.y - bob);
+            c2d.scale(-1, 1);
+            c2d.drawImage(img, 0, 0, slot.w, slot.h);
+          } else {
+            c2d.drawImage(img, slot.x, slot.y - bob, slot.w, slot.h);
+          }
+        } else {
+          c2d.font = "20px sans-serif";
+          c2d.textAlign = "center";
+          c2d.fillText("🐮", slot.x + 16, slot.y + 18 - bob);
+        }
+        c2d.restore();
+      }
+    }
 
-    // Body (White oval)
-    c2d.fillStyle = "#f8fafc";
-    c2d.beginPath();
-    c2d.ellipse(cow1X, cow1Y, 13, 9, 0, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Black cow spots
-    c2d.fillStyle = "#0f172a";
-    c2d.beginPath();
-    c2d.arc(cow1X - 4, cow1Y - 2, 5, 0, Math.PI * 2);
-    c2d.arc(cow1X + 4, cow1Y + 2, 4, 0, Math.PI * 2);
-    c2d.arc(cow1X + 2, cow1Y - 4, 3, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Cow Head & Chewing Snout
-    c2d.fillStyle = "#f8fafc";
-    c2d.beginPath();
-    c2d.arc(cow1X + 13, cow1Y - 5, 6, 0, Math.PI * 2);
-    c2d.fill();
-    // Spot on head
-    c2d.fillStyle = "#0f172a";
-    c2d.beginPath();
-    c2d.arc(cow1X + 12, cow1Y - 7, 3, 0, Math.PI * 2);
-    c2d.fill();
-    // Pink Snout with chewing motion
-    c2d.fillStyle = "#f472b6";
-    c2d.beginPath();
-    c2d.ellipse(cow1X + 17, cow1Y - 3 + chew1 * 0.5, 4, 3, 0, 0, Math.PI * 2);
-    c2d.fill();
-    // Nostrils
-    c2d.fillStyle = "#831843";
-    c2d.fillRect(cow1X + 16, cow1Y - 3, 1, 1);
-    c2d.fillRect(cow1X + 18, cow1Y - 3, 1, 1);
-    // Cute little horn
-    c2d.fillStyle = "#e2e8f0";
-    c2d.fillRect(cow1X + 11, cow1Y - 11, 2, 3);
-
-    // Cow 2: Resting Cow on Grass (lying down)
-    const cow2X = ox + 82;
-    const cow2Y = oy + 114;
-
-    // Body resting
-    c2d.fillStyle = "#f8fafc";
-    c2d.beginPath();
-    c2d.ellipse(cow2X, cow2Y, 12, 7, 0.1, 0, Math.PI * 2);
-    c2d.fill();
-    // Spots
-    c2d.fillStyle = "#0f172a";
-    c2d.beginPath();
-    c2d.arc(cow2X - 3, cow2Y - 1, 4, 0, Math.PI * 2);
-    c2d.arc(cow2X + 3, cow2Y + 1, 3.5, 0, Math.PI * 2);
-    c2d.fill();
-    // Head
-    c2d.fillStyle = "#f8fafc";
-    c2d.beginPath();
-    c2d.arc(cow2X + 10, cow2Y - 3, 5, 0, Math.PI * 2);
-    c2d.fill();
-    // Snout
-    c2d.fillStyle = "#f472b6";
-    c2d.beginPath();
-    c2d.ellipse(cow2X + 13, cow2Y - 2 + chew2 * 0.4, 3.5, 2.5, 0, 0, Math.PI * 2);
-    c2d.fill();
-
-    if (isReady) {
+    if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
       const bubbleX = ox + 64;
@@ -792,8 +720,8 @@ export function createCanvasRenderer(ctx) {
 
       c2d.font = "700 9px sans-serif";
       c2d.fillStyle = "#ffffff";
-      c2d.fillText(`+${ls ? ls.animalCount : 2} Sữa`, bubbleX, bubbleY + 19);
-    } else if (isHungry) {
+      c2d.fillText(`+${count} Sữa`, bubbleX, bubbleY + 19);
+    } else if (isHungry && count > 0) {
       // Hungry Bubble
       const bounceY = Math.sin(animTime * 4.0) * 3;
       const bubbleX = ox + 64;
@@ -819,11 +747,11 @@ export function createCanvasRenderer(ctx) {
 
       c2d.font = "700 8px sans-serif";
       c2d.fillStyle = "#ffffff";
-      c2d.fillText("Đói 🌽", bubbleX, bubbleY + 17);
-    } else if (isProducing) {
+      c2d.fillText(`Đói (${count}🌽)`, bubbleX, bubbleY + 17);
+    } else if (isProducing && count > 0) {
       // Countdown bar
       const elapsed = Date.now() - (ls?.feedTime || Date.now());
-      const dur = ls?.durationMs || 75000;
+      const dur = ls?.durationMs || 60000;
       const progress = Math.min(1.0, elapsed / dur);
       const secLeft = Math.max(0, Math.ceil((dur - elapsed) / 1000));
       const barW = 40;
@@ -848,11 +776,12 @@ export function createCanvasRenderer(ctx) {
   }
 
   /**
-   * Vẽ hoạt hình Đàn cừu bông gặm cỏ trong Chuồng Cừu (Hay Day style)
+   * Vẽ hoạt hình Đàn cừu trong Chuồng Cừu (Sử dụng Sprite Cừu Pixel Art mới)
    */
   function renderLivestockSheep(c2d, ox, oy, animTime, pState, ls) {
     c2d.save();
 
+    const count = ls ? (ls.animalCount || 0) : 0;
     if (ls && ls.state === "producing") {
       const dur = ls.durationMs || 60000;
       if (Date.now() - (ls.feedTime || 0) >= dur) {
@@ -860,131 +789,48 @@ export function createCanvasRenderer(ctx) {
       }
     }
 
-    const state = ls ? ls.state : (pState?.ready ? "ready" : "hungry");
+    const state = count === 0 ? "empty" : (ls ? ls.state : "empty");
     const isHungry = state === "hungry";
     const isProducing = state === "producing";
     const isReady = state === "ready";
 
-    // Wooden paddock fence in front
-    c2d.strokeStyle = "#854d0e";
-    c2d.lineWidth = 1.5;
-    c2d.beginPath();
-    c2d.moveTo(ox + 22, oy + 98);
-    c2d.lineTo(ox + 104, oy + 116);
-    c2d.stroke();
+    // Vị trí 3 con cừu bên trong chuồng cừu
+    const sheepSlots = [
+      { x: ox + 38, y: oy + 74, flip: false, w: 25, h: 25 },
+      { x: ox + 68, y: oy + 74, flip: true, w: 25, h: 25 },
+      { x: ox + 52, y: oy + 80, flip: false, w: 25, h: 25 }
+    ];
 
-    const sheepFencePosts = [[ox + 24, oy + 96], [ox + 52, oy + 102], [ox + 78, oy + 108], [ox + 102, oy + 114]];
-    for (const [px, py] of sheepFencePosts) {
-      c2d.fillStyle = "#713f12";
-      c2d.fillRect(px - 1.5, py - 6, 3, 9);
+    if (count > 0) {
+      const img = animalSpriteImages.sheep;
+      const ready = isImageReady(img);
+      const renderLimit = Math.min(count, 3);
+
+      for (let i = 0; i < renderLimit; i++) {
+        const slot = sheepSlots[i];
+        const bob = isProducing 
+          ? Math.sin(animTime * 4.5 + i * 2) * 1.5 
+          : Math.sin(animTime * 2.0 + i * 1.5) * 0.8;
+
+        c2d.save();
+        if (ready) {
+          if (slot.flip) {
+            c2d.translate(slot.x + slot.w, slot.y - bob);
+            c2d.scale(-1, 1);
+            c2d.drawImage(img, 0, 0, slot.w, slot.h);
+          } else {
+            c2d.drawImage(img, slot.x, slot.y - bob, slot.w, slot.h);
+          }
+        } else {
+          c2d.font = "18px sans-serif";
+          c2d.textAlign = "center";
+          c2d.fillText("🐑", slot.x + 14, slot.y + 16 - bob);
+        }
+        c2d.restore();
+      }
     }
 
-    // Wooden feed trough with carrots
-    const troughX = ox + 30;
-    const troughY = oy + 110;
-    c2d.fillStyle = "#78350f";
-    c2d.fillRect(troughX, troughY, 16, 5);
-    if (isProducing) {
-      c2d.fillStyle = "#ea580c"; // Carrots in trough
-      c2d.fillRect(troughX + 3, troughY - 2, 3, 3);
-      c2d.fillRect(troughX + 8, troughY - 3, 3, 3);
-      c2d.fillStyle = "#16a34a"; // Carrot green leaves
-      c2d.fillRect(troughX + 4, troughY - 4, 1, 2);
-      c2d.fillRect(troughX + 9, troughY - 5, 1, 2);
-    }
-
-    // Sheep 1: Standing grazing sheep (White fluffy cloud)
-    const s1X = ox + 48;
-    const s1Y = oy + 103;
-    const chew1 = isProducing ? (Math.sin(animTime * 6.5) * 1.5) : 0;
-
-    // Little black legs
-    c2d.fillStyle = "#1e293b";
-    c2d.fillRect(s1X - 7, s1Y + 5, 2.5, 6);
-    c2d.fillRect(s1X - 2, s1Y + 5, 2.5, 6);
-    c2d.fillRect(s1X + 3, s1Y + 5, 2.5, 6);
-    c2d.fillRect(s1X + 7, s1Y + 5, 2.5, 6);
-
-    // Fluffy cloud body (cluster of overlapping soft white puffs)
-    c2d.fillStyle = "#f8fafc";
-    c2d.beginPath();
-    c2d.arc(s1X - 4, s1Y, 6, 0, Math.PI * 2);
-    c2d.arc(s1X + 4, s1Y, 6, 0, Math.PI * 2);
-    c2d.arc(s1X, s1Y - 3, 6, 0, Math.PI * 2);
-    c2d.arc(s1X, s1Y + 2, 6, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Dark grey face & ears with chew bob
-    c2d.fillStyle = "#334155";
-    c2d.beginPath();
-    c2d.ellipse(s1X - 10, s1Y - 1 + chew1 * 0.4, 4.5, 3.5, 0.2, 0, Math.PI * 2);
-    c2d.fill();
-    // Tiny twitching ears
-    c2d.fillStyle = "#475569";
-    c2d.fillRect(s1X - 12, s1Y - 4, 3, 1.5);
-    // Wool topknot on head
-    c2d.fillStyle = "#ffffff";
-    c2d.beginPath();
-    c2d.arc(s1X - 8, s1Y - 4, 2.5, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Sheep 2: Cute bouncing sheep in the middle
-    const s2Bounce = Math.sin(animTime * 4.5) * 1.8;
-    const s2X = ox + 76;
-    const s2Y = oy + 98 + s2Bounce;
-
-    // Legs
-    c2d.fillStyle = "#1e293b";
-    c2d.fillRect(s2X - 6, s2Y + 5, 2.5, 5);
-    c2d.fillRect(s2X + 4, s2Y + 5, 2.5, 5);
-
-    // Fluffy cloud body
-    c2d.fillStyle = "#ffffff";
-    c2d.beginPath();
-    c2d.arc(s2X - 4, s2Y, 6, 0, Math.PI * 2);
-    c2d.arc(s2X + 4, s2Y, 6, 0, Math.PI * 2);
-    c2d.arc(s2X, s2Y - 3, 6, 0, Math.PI * 2);
-    c2d.arc(s2X, s2Y + 2, 6, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Cute little tail
-    c2d.fillStyle = "#e2e8f0";
-    c2d.beginPath();
-    c2d.arc(s2X + 10, s2Y, 2, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Sheep 2 Head
-    c2d.fillStyle = "#334155";
-    c2d.beginPath();
-    c2d.ellipse(s2X - 9, s2Y - 1, 4, 3, -0.2, 0, Math.PI * 2);
-    c2d.fill();
-    c2d.fillStyle = "#ffffff";
-    c2d.beginPath();
-    c2d.arc(s2X - 7, s2Y - 3, 2.5, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Sheep 3: Resting sheep on golden straw (bottom right)
-    const s3X = ox + 94;
-    const s3Y = oy + 112;
-    // Straw bedding
-    c2d.fillStyle = "#fef08a";
-    c2d.beginPath();
-    c2d.ellipse(s3X, s3Y + 3, 11, 4, 0, 0, Math.PI * 2);
-    c2d.fill();
-    // Sleeping wool cloud
-    c2d.fillStyle = "#f1f5f9";
-    c2d.beginPath();
-    c2d.arc(s3X - 3, s3Y, 5, 0, Math.PI * 2);
-    c2d.arc(s3X + 3, s3Y, 5, 0, Math.PI * 2);
-    c2d.arc(s3X, s3Y - 2, 5, 0, Math.PI * 2);
-    c2d.fill();
-    // Sleeping head tucked in
-    c2d.fillStyle = "#334155";
-    c2d.beginPath();
-    c2d.arc(s3X - 6, s3Y + 1, 3, 0, Math.PI * 2);
-    c2d.fill();
-
-    if (isReady) {
+    if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
       const bubbleX = ox + 64;
@@ -1014,8 +860,8 @@ export function createCanvasRenderer(ctx) {
 
       c2d.font = "700 9px sans-serif";
       c2d.fillStyle = "#ffffff";
-      c2d.fillText(`+${ls ? ls.animalCount : 2} Lông`, bubbleX, bubbleY + 19);
-    } else if (isHungry) {
+      c2d.fillText(`+${count} Lông`, bubbleX, bubbleY + 19);
+    } else if (isHungry && count > 0) {
       // Hungry Bubble
       const bounceY = Math.sin(animTime * 4.0) * 3;
       const bubbleX = ox + 64;
@@ -1041,8 +887,8 @@ export function createCanvasRenderer(ctx) {
 
       c2d.font = "700 8px sans-serif";
       c2d.fillStyle = "#ffffff";
-      c2d.fillText("Đói 🥕", bubbleX, bubbleY + 17);
-    } else if (isProducing) {
+      c2d.fillText(`Đói (${count}🥕)`, bubbleX, bubbleY + 17);
+    } else if (isProducing && count > 0) {
       // Countdown bar
       const elapsed = Date.now() - (ls?.feedTime || Date.now());
       const dur = ls?.durationMs || 60000;
@@ -1279,12 +1125,29 @@ export function createCanvasRenderer(ctx) {
     c2d.restore();
   }
 
-  const AESTHETIC_TILE_IDS = [
-    "r03_royal_marble_pavement",
-    "d24_rustic_wooden_fence",
-    "d25_tulip_flowerbed",
-    "d27_royal_banner_flag"
-  ];
+  // Các vật phẩm thẩm mỹ hoàng gia đã được thay thế bằng hình ảnh Pixel Art chính thức từ /assets/aistudio/
+  const AESTHETIC_TILE_IDS = [];
+
+  // Bù trừ vị trí vẽ (dx, dy) và kích thước cho các asset ảnh nghệ thuật & thẩm mỹ
+  // Đảm bảo chân đế đặt chuẩn xác trên mặt phẳng ô đất kim cương:
+  // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
+  // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
+  const TILE_RENDER_ADJUSTMENTS = {
+    // Cột cờ hiệu hoàng triều: đặt vào tâm của ô đất (dy = -16 căn chân đế đá vào đúng tâm ô)
+    d27_royal_banner_flag: { dx: 0, dy: -16, dw: 128, dh: 128 },
+    // Luống hoa tulip nở rộ: hạ sát mặt đất phẳng (dy = +22)
+    d25_tulip_flowerbed: { dx: 0, dy: 22, dw: 128, dh: 128 },
+    // Hàng rào gỗ nông trang: hai cọc gỗ cắm chắc chắn xuống mặt đất (dy = +18)
+    d24_rustic_wooden_fence: { dx: 0, dy: 18, dw: 128, dh: 128 },
+    // Lối đi cẩm thạch hoàng gia: hạ xuống khớp khít với ô đất kim cương (dy = +22)
+    r03_royal_marble_pavement: { dx: 0, dy: 22, dw: 128, dh: 128 },
+    // Chuồng Gà Đẻ Trứng: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
+    b21_chicken_coop: { dx: 0, dy: 22, dw: 128, dh: 128 },
+    // Chuồng Bò Sữa: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
+    b22_cow_pasture: { dx: 0, dy: 22, dw: 128, dh: 128 },
+    // Chuồng Cừu Lấy Lông: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
+    b57_sheep_pasture: { dx: 0, dy: 22, dw: 128, dh: 128 }
+  };
 
   /**
    * Kết xuất thủ công chi tiết 5 vật phẩm thẩm mỹ hoàng gia
@@ -1629,14 +1492,19 @@ export function createCanvasRenderer(ctx) {
 
               const cImg = imageCache[c.targetTileId];
               if (isImageReady(cImg)) {
+                const cAdj = TILE_RENDER_ADJUSTMENTS[c.targetTileId] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+                const cDx = cAdj.dx || 0;
+                const cDy = cAdj.dy || 0;
+                const cDw = cAdj.dw || 128;
+                const cDh = cAdj.dh || 128;
                 c2d.save();
                 c2d.globalAlpha = 0.35 + progress * 0.45;
                 if (c.flipped) {
-                  c2d.translate(ox + 128, oy);
+                  c2d.translate(ox + 128 - cDx, oy + cDy);
                   c2d.scale(-1, 1);
-                  c2d.drawImage(cImg, 0, 0);
+                  c2d.drawImage(cImg, 0, 0, cDw, cDh);
                 } else {
-                  c2d.drawImage(cImg, ox, oy);
+                  c2d.drawImage(cImg, ox + cDx, oy + cDy, cDw, cDh);
                 }
                 c2d.restore();
               }
@@ -1901,14 +1769,22 @@ export function createCanvasRenderer(ctx) {
               if (!isImageReady(img)) {
                 img = baseMeadow;
               }
+              const isCellBeingMoved = movingBuilding && movingBuilding.fromRow === i && movingBuilding.fromCol === j;
+
               if (isImageReady(img)) {
+                const tileAdj = TILE_RENDER_ADJUSTMENTS[tid] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+                const tDx = tileAdj.dx || 0;
+                const tDy = (tileAdj.dy || 0) + drawOffsetY;
+                const tDw = tileAdj.dw || 128;
+                const tDh = tileAdj.dh || 128;
                 c2d.save();
+                if (isCellBeingMoved) c2d.globalAlpha = 0.35;
                 if (flippedGrid[key]) {
-                  c2d.translate(ox + 128, oy + drawOffsetY);
+                  c2d.translate(ox + 128 - tDx, oy + tDy);
                   c2d.scale(-1, 1);
-                  c2d.drawImage(img, 0, 0, 128, 128);
+                  c2d.drawImage(img, 0, 0, tDw, tDh);
                 } else {
-                  c2d.drawImage(img, ox, oy + drawOffsetY, 128, 128);
+                  c2d.drawImage(img, ox + tDx, oy + tDy, tDw, tDh);
                 }
                 c2d.restore();
               } else {
@@ -1930,10 +1806,14 @@ export function createCanvasRenderer(ctx) {
 
               // 5 Vật phẩm thẩm mỹ & trang trí hoàng gia
               if (AESTHETIC_TILE_IDS.includes(tid)) {
+                c2d.save();
+                if (isCellBeingMoved) c2d.globalAlpha = 0.35;
                 renderAestheticTileDetails(c2d, ox, oy, animTime, tid);
+                c2d.restore();
               }
 
               const ls = (livestockState && livestockState[key]) ? livestockState[key] : null;
+              if (isCellBeingMoved) c2d.save(), c2d.globalAlpha = 0.35;
               if (tid === "b21_chicken_coop") {
                 renderLivestockChickens(c2d, ox, oy, animTime, productionState[key], ls);
               } else if (tid === "b22_cow_pasture") {
@@ -1945,6 +1825,7 @@ export function createCanvasRenderer(ctx) {
               } else if (tid === "b59_dairy_factory") {
                 renderDairyFactoryDetails(c2d, ox, oy, animTime);
               }
+              if (isCellBeingMoved) c2d.restore();
 
               // Cây ăn quả độc lập trên cỏ (Táo 🍎, Dừa 🥥, Me 🍈)
               if (FRUIT_TREES_CONFIG[tid]) {
@@ -2343,6 +2224,19 @@ export function createCanvasRenderer(ctx) {
                 c2d.restore();
               }
             }
+
+            // Render Order Board & Delivery Truck with proper depth sorting at their cell position
+            if (orderBoardManager && typeof orderBoardManager.renderWorldTruckAndBoard === "function") {
+              if (i === 15 && j === 15) {
+                orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "board" });
+              }
+              if (typeof orderBoardManager.getTruckCell === "function") {
+                const tc = orderBoardManager.getTruckCell();
+                if (tc && tc.isVisible && Math.floor(tc.row) === i && Math.floor(tc.col) === j) {
+                  orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" });
+                }
+              }
+            }
           }
         }
       }
@@ -2355,11 +2249,6 @@ export function createCanvasRenderer(ctx) {
       // Render Pets (Chó 🐶, Mèo 🐱, Thỏ 🐰, Ngựa 🐴 đi dạo trên đảo)
       if (petManager) {
         petManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, camera.zoom);
-      }
-
-      // Render Order Board & Delivery Truck (Sân Tòa Thị Chính & Đường Đá Lớn)
-      if (orderBoardManager && typeof orderBoardManager.renderWorldTruckAndBoard === "function") {
-        orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime);
       }
 
       // Render Town Visitors (Khách Bộ Hành Ghé Thăm Tòa Thị Chính)
@@ -2429,6 +2318,7 @@ export function createCanvasRenderer(ctx) {
           let wImg = imageCache[`wonder_${wid}`];
           if (!wImg) {
             wImg = new Image();
+            wImg.onload = () => { if (ctx && ctx.requestRender) ctx.requestRender(); };
             wImg.src = `/assets/wonders/${wid}.png`;
             imageCache[`wonder_${wid}`] = wImg;
           }
@@ -2514,14 +2404,19 @@ export function createCanvasRenderer(ctx) {
 
           const brushImg = imageCache[activeBrush];
           if (isImageReady(brushImg)) {
+            const bAdj = TILE_RENDER_ADJUSTMENTS[activeBrush] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+            const bDx = bAdj.dx || 0;
+            const bDy = bAdj.dy || 0;
+            const bDw = bAdj.dw || 128;
+            const bDh = bAdj.dh || 128;
             c2d.save();
             c2d.globalAlpha = isValidPlacement ? 0.68 : 0.38;
             if (brushFlipped) {
-              c2d.translate(hOx + 128, hOy);
+              c2d.translate(hOx + 128 - bDx, hOy + bDy);
               c2d.scale(-1, 1);
-              c2d.drawImage(brushImg, 0, 0, 128, 128);
+              c2d.drawImage(brushImg, 0, 0, bDw, bDh);
             } else {
-              c2d.drawImage(brushImg, hOx, hOy, 128, 128);
+              c2d.drawImage(brushImg, hOx + bDx, hOy + bDy, bDw, bDh);
             }
             c2d.restore();
           }
@@ -2551,14 +2446,19 @@ export function createCanvasRenderer(ctx) {
 
           const bImg = imageCache[movingBuilding.tileId];
           if (isImageReady(bImg)) {
+            const mAdj = TILE_RENDER_ADJUSTMENTS[movingBuilding.tileId] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+            const mDx = mAdj.dx || 0;
+            const mDy = mAdj.dy || 0;
+            const mDw = mAdj.dw || 128;
+            const mDh = mAdj.dh || 128;
             c2d.save();
             c2d.globalAlpha = isValidPlacement ? 0.70 : 0.40;
             if (movingBuilding.flipped) {
-              c2d.translate(hOx + 128, hOy);
+              c2d.translate(hOx + 128 - mDx, hOy + mDy);
               c2d.scale(-1, 1);
-              c2d.drawImage(bImg, 0, 0, 128, 128);
+              c2d.drawImage(bImg, 0, 0, mDw, mDh);
             } else {
-              c2d.drawImage(bImg, hOx, hOy, 128, 128);
+              c2d.drawImage(bImg, hOx + mDx, hOy + mDy, mDw, mDh);
             }
             c2d.restore();
           }
@@ -2567,6 +2467,21 @@ export function createCanvasRenderer(ctx) {
             c2d.save();
             c2d.globalAlpha = isValidPlacement ? 0.75 : 0.40;
             renderAestheticTileDetails(c2d, hOx, hOy, animTime, movingBuilding.tileId);
+            c2d.restore();
+          }
+
+          const lsOldKey = `${movingBuilding.fromRow}_${movingBuilding.fromCol}`;
+          const ls = (livestockState && livestockState[lsOldKey]) ? livestockState[lsOldKey] : null;
+          if (ls && ls.animalCount > 0 && isValidPlacement) {
+            c2d.save();
+            c2d.globalAlpha = 0.75;
+            if (movingBuilding.tileId === "b21_chicken_coop") {
+              renderLivestockChickens(c2d, hOx, hOy, animTime, null, ls);
+            } else if (movingBuilding.tileId === "b22_cow_pasture") {
+              renderDairyCows(c2d, hOx, hOy, animTime, null, movingBuilding.tileId, ls);
+            } else if (movingBuilding.tileId === "b57_sheep_pasture") {
+              renderLivestockSheep(c2d, hOx, hOy, animTime, null, ls);
+            }
             c2d.restore();
           }
 

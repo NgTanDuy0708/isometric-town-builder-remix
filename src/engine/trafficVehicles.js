@@ -25,12 +25,12 @@ export class VehicleManager {
     this.vehicles = [];
     this.boats = [];
 
-    // Tạo 2 thuyền đánh cá ven biển (Hải phận Row 5 đến 27, Col 2.2 và 3.6)
+    // Tạo 2 thuyền đánh cá ven biển ở ngoài khơi nước sâu (Col -2.2 và Col -3.8)
     this.boats.push({
       id: "boat_1",
       type: "fishing_boat",
       name: "Thuyền Cá Hải Vân",
-      c: 2.2,
+      c: -2.2,
       r: 8.0,
       minR: 4.5,
       maxR: 26.5,
@@ -45,7 +45,7 @@ export class VehicleManager {
       id: "boat_2",
       type: "fishing_boat",
       name: "Thuyền Cá Sóng Biếc",
-      c: 3.6,
+      c: -3.8,
       r: 21.0,
       minR: 5.5,
       maxR: 27.5,
@@ -217,6 +217,15 @@ export class VehicleManager {
     const now = performance.now();
 
     // 1. Vẽ Thuyền Đánh Cá trên biển
+    // 1. Vẽ Thuyền Đánh Cá ngoài biển
+    let boatImg = this._fishingBoatImg;
+    if (!boatImg) {
+      boatImg = new Image();
+      boatImg.src = "/assets/vehicles/fishing_boat.png";
+      this._fishingBoatImg = boatImg;
+    }
+    const isBoatReady = boatImg && boatImg.complete && boatImg.naturalWidth > 0;
+
     for (const b of this.boats) {
       const worldX = originX + (b.c - b.r) * halfW + 64;
       const worldY = originY + (b.r + b.c) * quarterW + 90;
@@ -225,43 +234,32 @@ export class VehicleManager {
       ctx.save();
       ctx.translate(worldX, worldY + bob);
 
-      // Bóng thuyền trên mặt nước
-      ctx.fillStyle = "rgba(14, 116, 144, 0.4)";
+      // Bóng/Sóng thuyền trên mặt nước
+      ctx.fillStyle = "rgba(14, 116, 144, 0.35)";
       ctx.beginPath();
-      ctx.ellipse(0, 7, 18, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 12, 28, 11, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Thân thuyền gỗ
-      ctx.fillStyle = "#78350f"; // Gỗ sồi nâu đậm
-      ctx.beginPath();
-      ctx.moveTo(-16, 2);
-      ctx.lineTo(16, 2);
-      ctx.lineTo(12, 8);
-      ctx.lineTo(-12, 8);
-      ctx.closePath();
-      ctx.fill();
-
-      // Viền thuyền
-      ctx.fillStyle = "#a16207";
-      ctx.fillRect(-14, 0, 28, 2.5);
-
-      // Cột buồm & cánh buồm trắng ngà
-      ctx.fillStyle = "#451a03";
-      ctx.fillRect(-1, -16, 2, 16);
-
-      ctx.fillStyle = "#fefce8"; // Vải buồm
-      ctx.beginPath();
-      ctx.moveTo(1, -15);
-      ctx.lineTo(12, -7);
-      ctx.lineTo(1, -3);
-      ctx.closePath();
-      ctx.fill();
-
-      // Ngư dân tí hon trên thuyền
-      ctx.fillStyle = "#f59e0b"; // Nón rơm
-      ctx.beginPath();
-      ctx.arc(-4, -4, 3, 0, Math.PI * 2);
-      ctx.fill();
+      if (isBoatReady) {
+        ctx.save();
+        if (b.direction < 0) {
+          ctx.scale(-1, 1);
+          ctx.drawImage(boatImg, -34, -56, 68, 68);
+        } else {
+          ctx.drawImage(boatImg, -34, -56, 68, 68);
+        }
+        ctx.restore();
+      } else {
+        // Thân thuyền gỗ dự phòng
+        ctx.fillStyle = "#78350f";
+        ctx.beginPath();
+        ctx.moveTo(-16, 2);
+        ctx.lineTo(16, 2);
+        ctx.lineTo(12, 8);
+        ctx.lineTo(-12, 8);
+        ctx.closePath();
+        ctx.fill();
+      }
 
       // Lưới cá quăng xuống nước (nếu đang thả lưới)
       if (b.isCastingNet) {
@@ -269,13 +267,13 @@ export class VehicleManager {
         ctx.lineWidth = 1.2;
         ctx.setLineDash([2, 2]);
         ctx.beginPath();
-        ctx.ellipse(14, 10, 8, 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(18, 14, 9, 4.5, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
 
         // Biểu tượng cá nhảy lấp lánh
-        ctx.font = "9px sans-serif";
-        ctx.fillText("🐟", 11, 8);
+        ctx.font = "10px sans-serif";
+        ctx.fillText("🐟", 15, 12);
       }
 
       ctx.restore();

@@ -16,11 +16,33 @@ import {
   SHIP_COOLDOWN_MS,
   SHIP_CALL_EARLY_GEMS,
   OCEAN_BAY_TILES,
-  generateCargoShip
+  generateCargoShip,
+  SHIP_WATER_ROW,
+  SHIP_WATER_COL
 } from "../data/harborShipConfig.js";
 
 import { RESOURCES_CONFIG } from "../data/resourcesConfig.js";
 import { CROP_PIXEL_SPRITES } from "../data/cropSprites.js";
+
+export const ROYAL_SHIP_IMAGE_SRC = "/assets/aistudio/TauHoangGia_v1_a5f7fe14.png";
+let royalShipImg = null;
+function getRoyalShipImage() {
+  if (!royalShipImg) {
+    royalShipImg = new Image();
+    royalShipImg.src = ROYAL_SHIP_IMAGE_SRC;
+  }
+  return royalShipImg;
+}
+
+export const STONE_PIER_IMAGE_SRC = "/assets/aistudio/cang_67fa4e39.png";
+let stonePierImg = null;
+function getStonePierImage() {
+  if (!stonePierImg) {
+    stonePierImg = new Image();
+    stonePierImg.src = STONE_PIER_IMAGE_SRC;
+  }
+  return stonePierImg;
+}
 
 import {
   playCoinSound,
@@ -161,10 +183,10 @@ export class HarborShipManager {
     playCoinSound();
 
     if (this.ctx.spawnFlyingProduce) {
-      this.ctx.spawnFlyingProduce(SHIP_DOCK_COL, SHIP_DOCK_ROW, crate.resIcon || "📦");
+      this.ctx.spawnFlyingProduce(SHIP_WATER_COL, SHIP_WATER_ROW, crate.resIcon || "📦");
     }
     if (this.ctx.spawnFlyingCoin) {
-      this.ctx.spawnFlyingCoin(SHIP_DOCK_COL, SHIP_DOCK_ROW, 4);
+      this.ctx.spawnFlyingCoin(SHIP_WATER_COL, SHIP_WATER_ROW, 4);
     }
 
     if (this.ctx.updateResourcesUI) this.ctx.updateResourcesUI();
@@ -401,9 +423,11 @@ export class HarborShipManager {
       const previewGoods = this.ship.nextPreviewGoods || ["wheat", "milk", "bread"];
       bodyEl.innerHTML = `
         <div class="ship-cooldown-view">
-          <div class="ship-cooldown-stamp">⚓</div>
-          <h3 class="ship-cooldown-title">Tàu Buôn Đang Vận Chuyển Hàng Ra Khơi</h3>
-          <p class="ship-cooldown-desc">Thương thuyền Caravel đang trên đường giao hàng đến các hải cảng lân cận. Hãy tranh thủ tích lũy nông sản để sẵn sàng cho chuyến tàu kế tiếp!</p>
+          <div class="ship-cooldown-stamp">
+            <img src="${ROYAL_SHIP_IMAGE_SRC}" alt="Tàu Hoàng Gia" class="ship-cooldown-img" />
+          </div>
+          <h3 class="ship-cooldown-title">Tàu Buôn Hoàng Gia Đang Vận Chuyển Hàng Ra Khơi</h3>
+          <p class="ship-cooldown-desc">Thương thuyền Hoàng Gia đang trên đường vượt sóng giao hàng đến các hải cảng lân cận. Hãy tranh thủ tích lũy nông sản để sẵn sàng cho chuyến tàu kế tiếp!</p>
 
           <div class="ship-preview-card">
             <div class="preview-title">🔍 Dự báo hàng hóa tàu tới sẽ thu mua:</div>
@@ -541,9 +565,9 @@ export class HarborShipManager {
   ensureOceanBayGrid() {
     if (!this.ctx || !this.ctx.getCurrentGrid) return;
     const grid = this.ctx.getCurrentGrid();
-    if (!grid || !grid[SHIP_DOCK_ROW]) return;
+    if (!grid || !grid[14]) return;
     // Đảm bảo dải đại dương trải dài toàn bộ 32 hàng dọc theo sườn Tây
-    if (grid[SHIP_DOCK_ROW][SHIP_DOCK_COL] !== 'm04_stone_harbor_pier' || grid[0][0] !== 'm30_sea_var2_coral_reef' || grid[31][0] !== 'm30_sea_var2_coral_reef') {
+    if (grid[14][4] !== 'm04_stone_harbor_pier' || grid[0][0] !== 'm30_sea_var2_coral_reef' || grid[31][0] !== 'm30_sea_var2_coral_reef') {
       for (const item of OCEAN_BAY_TILES) {
         if (grid[item.r] && grid[item.r][item.c] !== undefined) {
           const curTid = grid[item.r][item.c];
@@ -562,13 +586,21 @@ export class HarborShipManager {
    */
   checkWorldClick(worldX, worldY, cell, originX, originY, halfW, quarterW) {
     if (!cell) return false;
-    // Bến tàu và Thuyền buồm tọa lạc tại Row 14, Col 4 (vịnh biển phía Tây)
-    const isDockCell = (cell.row >= SHIP_DOCK_ROW - 1 && cell.row <= SHIP_DOCK_ROW + 1) &&
-                       (cell.col >= SHIP_DOCK_COL - 2 && cell.col <= SHIP_DOCK_COL + 1);
-
-    if (isDockCell) {
-      this.openModal();
-      return true;
+    // Khi tàu cập bến: chỉ ô [15, 3] mở bảng giao thương
+    if (this.ship && this.ship.status === "docked") {
+      if (cell.row === SHIP_WATER_ROW && cell.col === SHIP_WATER_COL) {
+        this.openModal();
+        return true;
+      }
+      return false;
+    }
+    // Khi tàu đi vắng: nhấn vào ô [14, 3] (bến đếm ngược) hoặc [15, 3] để mở bảng gọi tàu sớm
+    if (this.ship && this.ship.status === "away") {
+      if ((cell.row === SHIP_DOCK_ROW && cell.col === SHIP_DOCK_COL) ||
+          (cell.row === SHIP_WATER_ROW && cell.col === SHIP_WATER_COL)) {
+        this.openModal();
+        return true;
+      }
     }
     return false;
   }
@@ -577,50 +609,57 @@ export class HarborShipManager {
    * Vẽ Bến Tàu & Thuyền Buồm Caravel trên Canvas Isometric 2:1
    */
   renderWorldShipAndDock(c2d, originX, originY, halfW, quarterW, animTime) {
+    // Tọa độ bến cảng đá tại ô [14, 3] (đứng ra ngoài mặt nước, không lấn vào đường)
     const dockRow = SHIP_DOCK_ROW;
     const dockCol = SHIP_DOCK_COL;
     const dockX = originX + (dockCol - dockRow) * halfW + 64;
     const dockY = originY + (dockRow + dockCol) * quarterW + 96;
 
+    // Tọa độ ô nước [15, 3] nơi Tàu Hoàng Gia neo đậu
+    const shipWaterRow = SHIP_WATER_ROW;
+    const shipWaterCol = SHIP_WATER_COL;
+    const shipWaterX = originX + (shipWaterCol - shipWaterRow) * halfW + 64;
+    const shipWaterY = originY + (shipWaterRow + shipWaterCol) * quarterW + 96;
+
     c2d.save();
 
-    // 1. Cầu tàu gỗ cắm cọc (Wooden Pier & Quay)
-    // Bóng dưới chân cầu tàu
-    c2d.fillStyle = "rgba(0, 0, 0, 0.3)";
-    c2d.beginPath();
-    c2d.ellipse(dockX - 8, dockY + 6, 28, 14, 0, 0, Math.PI * 2);
-    c2d.fill();
+    // 1. Cầu Cảng Đá Hoàng Gia (Grand Stone Harbor Pier) tại ô [14, 3]
+    const pierImg = getStonePierImage();
+    const pierDrawW = 264;
+    const pierDrawH = 264;
+    // Căn đế các vòm đá cầu cảng ngập vào mặt nước ô [14, 3]
+    const drawPierX = dockX - (pierDrawW * 0.469);
+    const drawPierY = (dockY + 8) - (pierDrawH * 0.791);
 
-    // Ván sàn gỗ cầu tàu
-    c2d.fillStyle = "#78350f"; // Gỗ sẫm
-    c2d.fillRect(dockX - 32, dockY - 14, 48, 12);
-    c2d.fillStyle = "#92400e"; // Ván mặt trên
-    c2d.fillRect(dockX - 30, dockY - 18, 44, 8);
-    c2d.fillStyle = "#b45309"; // Viền vàng gỗ
-    c2d.fillRect(dockX - 30, dockY - 20, 44, 2);
+    if (pierImg && pierImg.complete && pierImg.naturalWidth > 0) {
+      // Bóng cầu cảng đá trên mặt nước
+      c2d.fillStyle = "rgba(15, 23, 42, 0.35)";
+      c2d.beginPath();
+      c2d.ellipse(dockX, dockY + 10, 92, 24, 0.46, 0, Math.PI * 2);
+      c2d.fill();
 
-    // Sóng biển dập dềnh chân cầu cảng đá
-    c2d.strokeStyle = "rgba(255, 255, 255, 0.55)";
-    c2d.lineWidth = 1.5;
-    c2d.beginPath();
-    c2d.arc(dockX - 8, dockY + 8, 24 + Math.sin((animTime || 0) * 3) * 3, 0.2, Math.PI * 0.9);
-    c2d.stroke();
+      // Sóng dập dềnh chân các vòm đá cầu cảng
+      c2d.strokeStyle = "rgba(255, 255, 255, 0.55)";
+      c2d.lineWidth = 1.4;
+      c2d.beginPath();
+      c2d.arc(dockX, dockY + 10, 36 + Math.sin((animTime || 0) * 3) * 2, 0.15, Math.PI * 0.85);
+      c2d.stroke();
 
-    // Cọc neo thuyền gỗ quấn dây thừng
-    c2d.fillStyle = "#451a03";
-    c2d.fillRect(dockX - 28, dockY - 28, 6, 12);
-    c2d.fillRect(dockX + 6, dockY - 28, 6, 12);
-    c2d.fillStyle = "#d97706";
-    c2d.fillRect(dockX - 28, dockY - 22, 6, 2);
-    c2d.fillRect(dockX + 6, dockY - 22, 6, 2);
-
-    // Đèn lồng treo đầu cầu tàu
-    c2d.fillStyle = "#1e293b";
-    c2d.fillRect(dockX - 32, dockY - 36, 2, 18);
-    c2d.fillStyle = "#f59e0b";
-    c2d.beginPath();
-    c2d.arc(dockX - 31, dockY - 34, 4, 0, Math.PI * 2);
-    c2d.fill();
+      // Vẽ hình ảnh Cầu Cảng Đá chất lượng cao
+      c2d.drawImage(pierImg, drawPierX, drawPierY, pierDrawW, pierDrawH);
+    } else {
+      // Dự phòng khi ảnh đang tải: Vẽ cầu tàu canvas
+      c2d.fillStyle = "rgba(0, 0, 0, 0.3)";
+      c2d.beginPath();
+      c2d.ellipse(dockX, dockY + 6, 28, 14, 0, 0, Math.PI * 2);
+      c2d.fill();
+      c2d.fillStyle = "#78350f";
+      c2d.fillRect(dockX - 32, dockY - 14, 48, 12);
+      c2d.fillStyle = "#92400e";
+      c2d.fillRect(dockX - 30, dockY - 18, 44, 8);
+      c2d.fillStyle = "#b45309";
+      c2d.fillRect(dockX - 30, dockY - 20, 44, 2);
+    }
 
     // 2. Nếu chưa mở khóa (Level < 6) -> Vẽ tấm biển cắm cọc khóa
     if (!this.isUnlocked()) {
@@ -649,10 +688,75 @@ export class HarborShipManager {
       return;
     }
 
-    // 4. Khi Tàu Buôn Đang Cập Bến (status === "docked") -> Vẽ Thuyền Buồm Caravel lộng lẫy
-    const waveOffset = Math.sin((animTime || 0) * 2.5) * 3; // Nhấp nhô theo sóng nước
-    const shipX = dockX - 42;
-    const shipY = dockY - 10 + waveOffset;
+    // 4. Khi Tàu Buôn Đang Cập Bến (status === "docked") -> Đậu trên mặt nước ô [15, 3]
+    const waveOffset = Math.sin((animTime || 0) * 2.2) * 2.5; // Nhấp nhô nhẹ nhàng theo sóng biển
+    const shipImg = getRoyalShipImage();
+    const shipDrawW = 184;
+    const shipDrawH = 184;
+
+    // Căn chính xác đáy lườn tàu nằm ngay mặt nước ô [15, 3]
+    const waterlineX = shipWaterX;
+    const waterlineY = shipWaterY + waveOffset - 2;
+    const drawX = waterlineX - (shipDrawW * 0.595);
+    const drawY = waterlineY - (shipDrawH * 0.827);
+
+    if (shipImg && shipImg.complete && shipImg.naturalWidth > 0) {
+      // Bóng thuyền trên mặt nước ô [15, 3]
+      c2d.fillStyle = "rgba(15, 23, 42, 0.32)";
+      c2d.beginPath();
+      c2d.ellipse(shipWaterX, shipWaterY + waveOffset + 2, 46, 16, -0.25, 0, Math.PI * 2);
+      c2d.fill();
+
+      // Sóng nước biển dập dềnh bọt trắng quanh mép thuyền
+      c2d.strokeStyle = "rgba(255, 255, 255, 0.65)";
+      c2d.lineWidth = 1.4;
+      c2d.beginPath();
+      c2d.arc(shipWaterX, shipWaterY + waveOffset + 4, 38, 0.1, Math.PI * 0.9);
+      c2d.stroke();
+
+      // Vẽ hình ảnh Tàu Hoàng Gia chính diện, đặt đáy tàu ngập vừa vặn trong nước
+      c2d.drawImage(shipImg, drawX, drawY, shipDrawW, shipDrawH);
+
+      // Dây thừng buộc mạn tàu vào cọc cọc đồng cầu cảng đá
+      const bollardX = drawPierX + pierDrawW * 0.53;
+      const bollardY = drawPierY + pierDrawH * 0.55;
+      const shipBowX = drawX + shipDrawW * 0.84;
+      const shipBowY = drawY + shipDrawH * 0.68;
+
+      c2d.strokeStyle = "#e2e8f0";
+      c2d.lineWidth = 1.4;
+      c2d.beginPath();
+      c2d.moveTo(shipBowX, shipBowY);
+      c2d.quadraticCurveTo((shipBowX + bollardX) / 2 - 4, (shipBowY + bollardY) / 2 + 10 + waveOffset * 0.5, bollardX, bollardY);
+      c2d.stroke();
+
+      // Bong bóng thông báo nổi trên cột buồm chính
+      const packedCount = this.getPackedCratesCount();
+      const bubbleX = drawX + shipDrawW * 0.435;
+      const bubbleY = drawY + shipDrawH * 0.143 - 8;
+
+      c2d.fillStyle = packedCount === 9 ? "#10b981" : "#ffffff";
+      c2d.strokeStyle = packedCount === 9 ? "#047857" : "#f59e0b";
+      c2d.lineWidth = 1.5;
+
+      const bubbleText = packedCount === 9 ? "⚓ XUẤT BẾN!" : `${packedCount}/9 📦`;
+      c2d.beginPath();
+      c2d.roundRect(bubbleX - 28, bubbleY - 11, 56, 17, 8);
+      c2d.fill();
+      c2d.stroke();
+
+      c2d.fillStyle = packedCount === 9 ? "#ffffff" : "#0f172a";
+      c2d.font = "bold 9px sans-serif";
+      c2d.textAlign = "center";
+      c2d.fillText(bubbleText, bubbleX, bubbleY + 1);
+
+      c2d.restore();
+      return;
+    }
+
+    // Dự phòng khi ảnh đang tải: Vẽ thân tàu canvas tại ô [15, 3]
+    const shipX = shipWaterX;
+    const shipY = shipWaterY + waveOffset;
 
     // Bóng thuyền trên mặt nước
     c2d.fillStyle = "rgba(15, 23, 42, 0.4)";

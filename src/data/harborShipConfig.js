@@ -13,7 +13,9 @@ import { getUnlockedResourcesForLevel } from "./orderBoardConfig.js";
 
 export const HARBOR_UNLOCK_LEVEL = 6;
 export const SHIP_DOCK_ROW = 14;
-export const SHIP_DOCK_COL = 4; // Cầu cảng đá bến biển (Row 14, Col 4) & Thuyền buồm Caravel neo đậu giữa vịnh biển xanh
+export const SHIP_DOCK_COL = 3; // Cầu cảng đá bến biển (Row 14, Col 3)
+export const SHIP_WATER_ROW = 15; // Ô nước [15, 3] nơi Tàu Hoàng Gia đậu cố định
+export const SHIP_WATER_COL = 3;
 
 // Dải Biển & Vịnh Cảng Đại Dương (Royal Ocean Bay & Coast)
 export const OCEAN_BAY_TILES = [
