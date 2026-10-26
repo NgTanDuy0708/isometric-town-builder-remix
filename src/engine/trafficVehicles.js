@@ -218,14 +218,6 @@ export class VehicleManager {
 
     // 1. Vẽ Thuyền Đánh Cá trên biển
     // 1. Vẽ Thuyền Đánh Cá ngoài biển
-    let boatImg = this._fishingBoatImg;
-    if (!boatImg) {
-      boatImg = new Image();
-      boatImg.src = "/assets/vehicles/fishing_boat.png";
-      this._fishingBoatImg = boatImg;
-    }
-    const isBoatReady = boatImg && boatImg.complete && boatImg.naturalWidth > 0;
-
     for (const b of this.boats) {
       const worldX = originX + (b.c - b.r) * halfW + 64;
       const worldY = originY + (b.r + b.c) * quarterW + 90;
@@ -240,15 +232,19 @@ export class VehicleManager {
       ctx.ellipse(0, 12, 28, 11, 0, 0, Math.PI * 2);
       ctx.fill();
 
+      const isReturn = b.direction < 0;
+      let boatImg = isReturn ? this._fishingBoatReturnImg : this._fishingBoatImg;
+      if (!boatImg) {
+        boatImg = new Image();
+        boatImg.src = isReturn ? "/assets/vehicles/fishing_boat_return.png" : "/assets/vehicles/fishing_boat.png";
+        if (isReturn) this._fishingBoatReturnImg = boatImg;
+        else this._fishingBoatImg = boatImg;
+      }
+      const isBoatReady = boatImg && boatImg.complete && boatImg.naturalWidth > 0;
+
       if (isBoatReady) {
-        ctx.save();
-        if (b.direction < 0) {
-          ctx.scale(-1, 1);
-          ctx.drawImage(boatImg, -34, -56, 68, 68);
-        } else {
-          ctx.drawImage(boatImg, -34, -56, 68, 68);
-        }
-        ctx.restore();
+        // Vẽ đúng ảnh theo hướng đi mà không cần lật Canvas
+        ctx.drawImage(boatImg, -34, -56, 68, 68);
       } else {
         // Thân thuyền gỗ dự phòng
         ctx.fillStyle = "#78350f";
@@ -271,7 +267,6 @@ export class VehicleManager {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Biểu tượng cá nhảy lấp lánh
         ctx.font = "10px sans-serif";
         ctx.fillText("🐟", 15, 12);
       }

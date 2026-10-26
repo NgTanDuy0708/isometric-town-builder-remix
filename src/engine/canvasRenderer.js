@@ -2232,8 +2232,12 @@ export function createCanvasRenderer(ctx) {
               }
               if (typeof orderBoardManager.getTruckCell === "function") {
                 const tc = orderBoardManager.getTruckCell();
-                if (tc && tc.isVisible && Math.floor(tc.row) === i && Math.floor(tc.col) === j) {
-                  orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" });
+                if (tc && tc.isVisible) {
+                  // Sort by leading cell offset (front of truck) so road tiles underneath/ahead are rendered BEFORE the truck
+                  const leadRow = (tc.row > 15.5) ? (tc.row + 0.8) : tc.row;
+                  if (Math.floor(leadRow) === i && Math.floor(tc.col) === j) {
+                    orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" });
+                  }
                 }
               }
             }

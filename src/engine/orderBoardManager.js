@@ -540,7 +540,19 @@ export function createOrderBoardManager(ctx) {
   }
 
   let deliveryTruckImage = null;
-  function getDeliveryTruckImage() {
+  let deliveryTruckReturnImage = null;
+
+  function getDeliveryTruckImage(isReturn = false) {
+    if (isReturn) {
+      if (!deliveryTruckReturnImage) {
+        deliveryTruckReturnImage = new Image();
+        deliveryTruckReturnImage.onload = () => {
+          if (ctx && ctx.requestRender) ctx.requestRender();
+        };
+        deliveryTruckReturnImage.src = "/assets/vehicles/delivery_truck_return.png";
+      }
+      return deliveryTruckReturnImage;
+    }
     if (!deliveryTruckImage) {
       deliveryTruckImage = new Image();
       deliveryTruckImage.onload = () => {
@@ -696,19 +708,13 @@ export function createOrderBoardManager(ctx) {
           c2d.fill();
         }
 
-        const truckImg = getDeliveryTruckImage();
+        const truckImg = getDeliveryTruckImage(isReturning);
         const isTruckReady = truckImg && truckImg.complete && truckImg.naturalWidth > 0;
 
         if (isTruckReady) {
           c2d.save();
-          if (isReturning) {
-            c2d.translate(tx, ty);
-            c2d.scale(-1, 1);
-            c2d.drawImage(truckImg, -28, -46, 56, 56);
-          } else {
-            c2d.translate(tx, ty);
-            c2d.drawImage(truckImg, -28, -46, 56, 56);
-          }
+          c2d.translate(tx, ty);
+          c2d.drawImage(truckImg, -28, -46, 56, 56);
           c2d.restore();
         } else {
           // Dự phòng
