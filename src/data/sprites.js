@@ -28,3 +28,7 @@ TILE_DATA_URIS["b01_cottage_red"] = "/assets/buildings/cottage_lv1.png";
 TILE_DATA_URIS["m30_sea_var2_coral_reef"] = "/assets/decorations/ocean_water_128.png";
 TILE_DATA_URIS["m01_sandy_beach_s"] = "/assets/decorations/beach_sand_128.png";
 
+
+// O cat mo rong bai bien (dat canh o bo chuyen tiep)
+TILE_DATA_URIS["s13_sand_ground"] = "/assets/decorations/sand_ground_128.png";
+

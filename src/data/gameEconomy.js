@@ -690,3 +690,6 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
   };
 }
 
+
+TILE_PRICE_OVERRIDES["s13_sand_ground"] = 1;
+

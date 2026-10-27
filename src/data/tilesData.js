@@ -403,6 +403,12 @@ export const TILES_DATA = [
     "doc": "Đường bờ biển cát vàng mịn màng hướng Tây đón hoàng hôn."
   },
   {
+    "id": "s13_sand_ground",
+    "label": "Bãi Cát Mịn",
+    "category": "terrain",
+    "doc": "Ô cát vàng mịn dùng để mở rộng bãi biển vào phía đất liền, nối liền với ô bờ biển chuyển tiếp."
+  },
+  {
     "id": "m04_stone_harbor_pier",
     "label": "Cầu Cảng Đá Bến Biển",
     "category": "biome",
