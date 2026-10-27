@@ -218,9 +218,9 @@ export const TILES_DATA = [
   },
   {
     "id": "d01_plaza_fountain",
-    "label": "Đài Phun Nước Quảng Trường",
+    "label": "Khuôn Viên Cổ Thụ",
     "category": "decoration",
-    "doc": "Đài phun nước đá cẩm thạch tráng lệ giữa quảng trường trung tâm."
+    "doc": "Khuôn viên 3×3 với cây liễu vàng cổ thụ, giếng đá, ghế gỗ và vườn hoa rực rỡ giữa quảng trường."
   },
   {
     "id": "d02_village_well",
