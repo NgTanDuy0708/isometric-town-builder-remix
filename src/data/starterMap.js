@@ -94,11 +94,16 @@ export function applyTownCenterLayout(grid) {
   for (let r = 18; r <= 31; r++) {
     if (grid[r]?.[15] !== undefined) grid[r][15] = "r03_royal_marble_pavement";
   }
+  // Dãy [x,4]: thay các ô bờ biển chuyển tiếp bằng cát mịn (giữ nguyên bến cảng/cầu/kênh).
+  for (let r = 0; r < grid.length; r++) {
+    if (grid[r]?.[4] === "m01_sandy_beach_s") {
+      grid[r][4] = "s13_sand_ground";
+    }
+  }
+
   return grid;
 }
-
 /**
- * Kiểm tra xem một ô gạch có phải là công trình/đường mặc định của vương quốc không.
  * Các vị trí mặc định không thể bị nhấc di chuyển hoặc phá dỡ:
  * - Tòa thị chính 2x3 ô (Rows 12..13, Cols 14..16)
  * - Quảng trường 3x3 ô (Rows 15..17, Cols 14..16; neo ở 16, 15)
