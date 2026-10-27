@@ -1640,7 +1640,11 @@ export function createCanvasRenderer(ctx) {
       if (isImageReady(meadowBase)) {
         for (let i = 0; i < ROWS; i++) {
           for (let j = 0; j < COLS; j++) {
-            c2d.drawImage(meadowBase, ORIGIN_X + (j - i) * HALF_W, ORIGIN_Y + (i + j) * QUARTER_W);
+            const bx = ORIGIN_X + (j - i) * HALF_W;
+            const by = ORIGIN_Y + (i + j) * QUARTER_W;
+            // Phủ dư 1px mỗi cạnh để các tam giác mép tile chồng lên nhau,
+            // không lộ đường viền/đáy giữa các ô cỏ.
+            c2d.drawImage(meadowBase, bx - 1, by - 1, 130, 130);
           }
         }
       }
