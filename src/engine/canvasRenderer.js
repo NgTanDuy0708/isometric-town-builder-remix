@@ -23,7 +23,7 @@ import {
   getChunkId, getChunkBounds, isCellUnlocked, isChunkAdjacentToUnlocked, getNextChunkPrice, getNextChunkCost
 } from "../data/landConfig.js";
 import {
-  PRODUCTION_BUILDINGS, getBuildingYield, getBuildingInputReq
+  PRODUCTION_BUILDINGS, getBuildingYield
 } from "../data/gameEconomy.js";
 import { UPGRADES_CONFIG } from "../data/upgradesConfig.js";
 import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
@@ -1457,7 +1457,6 @@ export function createCanvasRenderer(ctx) {
     const flippedGrid = ctx.getFlippedGrid();
     const upgradesInProgress = ctx.getUpgradesInProgress();
     const gameMode = ctx.getGameMode();
-    const playerResources = ctx.getPlayerResources();
     const villagerManager = ctx.getVillagerManager();
     const fruitTreesState = ctx.getFruitTreesState ? ctx.getFruitTreesState() : null;
     const petManager = ctx.getPetManager ? ctx.getPetManager() : null;
@@ -1992,94 +1991,14 @@ export function createCanvasRenderer(ctx) {
               const isLivestock = tid === "b21_chicken_coop" || tid === "b22_cow_pasture" || tid === "b57_sheep_pasture";
               if (PRODUCTION_BUILDINGS[tid] && !isLivestock) {
                 const prod = PRODUCTION_BUILDINGS[tid];
-                let p = productionState[key];
-                if (!p) {
-                  p = { lastHarvest: Date.now(), ready: false };
-                  productionState[key] = p;
-                }
+                const p = productionState[key];
 
                 const bLvl = buildingLevels[key] || 1;
                 const speedMult = bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0);
                 const pIntervalMs = Math.round((prod.intervalSec * 1000) / speedMult);
-                const pElapsed = Date.now() - p.lastHarvest;
+                const pElapsed = p ? Date.now() - p.lastHarvest : 0;
 
-                if (pElapsed >= pIntervalMs && !p.ready && !p.paused) {
-                  if (tid === "b06_bakery") {
-                    const reqWheat = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.wheat || 0) >= reqWheat) {
-                      playerResources.wheat -= reqWheat;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_wheat";
-                    }
-                  } else if (tid === "b21_chicken_coop") {
-                    const reqWheat = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.wheat || 0) >= reqWheat) {
-                      playerResources.wheat -= reqWheat;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_wheat";
-                    }
-                  } else if (tid === "b13_barn_silo" || tid === "b22_cow_pasture") {
-                    const reqCorn = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.corn || 0) >= reqCorn) {
-                      playerResources.corn -= reqCorn;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_corn";
-                    }
-                  } else if (tid === "b57_sheep_pasture") {
-                    const reqCarrot = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.carrot || 0) >= reqCarrot) {
-                      playerResources.carrot -= reqCarrot;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_carrot";
-                    }
-                  } else if (tid === "b58_textile_mill") {
-                    const reqWool = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.wool || 0) >= reqWool) {
-                      playerResources.wool -= reqWool;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_wool";
-                    }
-                  } else if (tid === "b59_dairy_factory") {
-                    const reqMilk = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.milk || 0) >= reqMilk) {
-                      playerResources.milk -= reqMilk;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_milk";
-                    }
-                  } else if (tid === "b47_winery_press_barn_sw" || tid === "b48_winery_press_barn_se") {
-                    const reqGrapes = getBuildingInputReq(tid, bLvl);
-                    if ((playerResources.grapes || 0) >= reqGrapes) {
-                      playerResources.grapes -= reqGrapes;
-                      p.ready = true;
-                      ctx.updateResourcesUI();
-                    } else {
-                      p.paused = true;
-                      p.pauseReason = "missing_grapes";
-                    }
-                  } else {
-                    p.ready = true;
-                  }
-                }
-
-                if (p.paused && (p.pauseReason === "missing_wheat" || p.pauseReason === "missing_corn" || p.pauseReason === "missing_carrot" || p.pauseReason === "missing_wool" || p.pauseReason === "missing_milk" || p.pauseReason === "missing_grapes")) {
+                if (p && p.paused && (p.pauseReason === "missing_wheat" || p.pauseReason === "missing_corn" || p.pauseReason === "missing_carrot" || p.pauseReason === "missing_wool" || p.pauseReason === "missing_milk" || p.pauseReason === "missing_grapes")) {
                   const bounceY = Math.sin(animTime * 4.0 + (i * 2 + j * 3)) * 3.5;
                   const bubbleX = ox + 64;
                   const bubbleY = oy + 6 + bounceY;
@@ -2128,7 +2047,7 @@ export function createCanvasRenderer(ctx) {
                   c2d.fillStyle = "#ffffff";
                   c2d.fillText(reasonText, bubbleX, bubbleY + 17);
                   c2d.restore();
-                } else if (p.ready) {
+                } else if (p && p.ready) {
                   const bounceY = Math.sin(animTime * 3.5 + (i * 2 + j * 3)) * 4;
                   const bubbleX = ox + 64;
                   const bubbleY = oy + 6 + bounceY;
