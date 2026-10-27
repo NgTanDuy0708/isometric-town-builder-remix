@@ -15,3 +15,7 @@ TILE_DATA_URIS["d21_apple_tree"] = "/assets/trees/apple_tree_ripe.png";
 TILE_DATA_URIS["d22_coconut_palm"] = "/assets/trees/coconut_palm_ripe.png";
 TILE_DATA_URIS["d23_tamarind_tree"] = "/assets/trees/tamarind_tree_ripe.png";
 
+
+// Ground replacement: ảnh đất nền người chơi gửi dùng cho toàn bộ mặt đất cỏ
+TILE_DATA_URIS["d12_meadow_wildflowers"] = "/assets/decorations/meadow_land_128.png";
+
