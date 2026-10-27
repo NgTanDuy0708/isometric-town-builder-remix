@@ -1173,8 +1173,8 @@ export function createCanvasRenderer(ctx) {
   // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
   // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
   const TILE_RENDER_ADJUSTMENTS = {
-    // Tòa thị chính 2x3 ô: đã dời sang phải 16px theo phản hồi (lệch trái).
-    b14_town_hall: { dx: -86, dy: -243, dw: 300, dh: 403 },
+    // Tòa thị chính 2x3 ô: chốt theo nudge thực tế (dx 47, dy -18 so với bản trước).
+    b14_town_hall: { dx: -39, dy: -261, dw: 300, dh: 403 },
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
     d01_plaza_fountain: { dx: -134, dy: -70, dw: 392, dh: 305 },
     // Kho Tổng Hợp 2x2: silhouette rộng đúng 256px (2 ô), chân đế chạm đáy hình thoi 2x2.
