@@ -3762,6 +3762,25 @@ export function initIsometricStudio() {
         centerCamera();
       });
     }
+    // Dev-only: căn chỉnh tòa thị chính trực tiếp bằng phím mũi tên.
+    // Mở http://localhost:3000/?nudge=1, Shift + mũi tên để nhảy 5px.
+    if (new URLSearchParams(window.location.search).has("nudge")) {
+      window.__thNudge = window.__thNudge || { dx: 0, dy: 0 };
+      window.addEventListener("keydown", (e) => {
+        const n = window.__thNudge;
+        const step = e.shiftKey ? 5 : 1;
+        if (e.key === "ArrowLeft") n.dx -= step;
+        else if (e.key === "ArrowRight") n.dx += step;
+        else if (e.key === "ArrowUp") n.dy -= step;
+        else if (e.key === "ArrowDown") n.dy += step;
+        else return;
+        e.preventDefault();
+        console.log("[townhall-nudge]", JSON.stringify(n));
+        showToast(`TH nudge: dx=${n.dx}, dy=${n.dy}`, "info");
+        requestRender();
+      }, { signal });
+    }
+
     if (isAnimated) startAnimationLoop();
 
     // Auto-start onboarding tutorial for new players (or resume if not completed)

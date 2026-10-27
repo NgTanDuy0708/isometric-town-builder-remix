@@ -1173,9 +1173,8 @@ export function createCanvasRenderer(ctx) {
   // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
   // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
   const TILE_RENDER_ADJUSTMENTS = {
-    // Tòa thị chính 2x3 ô: căn đúng chân cầu thang (điểm thấp nhất của art)
-    // vào đỉnh dưới của hình thoi footprint 2x3.
-    b14_town_hall: { dx: -102, dy: -243, dw: 300, dh: 403 },
+    // Tòa thị chính 2x3 ô: đã dời sang phải 16px theo phản hồi (lệch trái).
+    b14_town_hall: { dx: -86, dy: -243, dw: 300, dh: 403 },
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
     d01_plaza_fountain: { dx: -134, dy: -70, dw: 392, dh: 305 },
     // Kho Tổng Hợp 2x2: silhouette rộng đúng 256px (2 ô), chân đế chạm đáy hình thoi 2x2.
@@ -2001,22 +2000,29 @@ export function createCanvasRenderer(ctx) {
                 const tDy = (tileAdj.dy || 0) + drawOffsetY;
                 const tDw = tileAdj.dw || 128;
                 const tDh = tileAdj.dh || 128;
+                // Dev-only: cho phép căn chỉnh tòa thị chính bằng phím mũi tên (URL ?nudge=1)
+                let advDx = tDx;
+                let advDy = tDy;
+                if (tid === "b14_town_hall" && typeof window !== "undefined" && window.__thNudge) {
+                  advDx += window.__thNudge.dx || 0;
+                  advDy += window.__thNudge.dy || 0;
+                }
 
                 if (isTownCenterImageReady) {
                   const isAnchor = (tid === "b14_town_hall" && i === 14 && j === 15) ||
                                    (tid === "d01_plaza_fountain" && i === 16 && j === 15);
                   if (isAnchor) {
-                    townCenterSprites.push({ tid, img, x: ox + tDx, y: oy + tDy, w: tDw, h: tDh });
+                    townCenterSprites.push({ tid, img, x: ox + advDx, y: oy + advDy, w: tDw, h: tDh });
                   }
                 } else if (!isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
                   c2d.save();
                   if (isCellBeingMoved) c2d.globalAlpha = 0.35;
                   if (flippedGrid[key]) {
-                    c2d.translate(ox + 128 - tDx, oy + tDy);
+                    c2d.translate(ox + 128 - advDx, oy + advDy);
                     c2d.scale(-1, 1);
                     c2d.drawImage(img, 0, 0, tDw, tDh);
                   } else {
-                    c2d.drawImage(img, ox + tDx, oy + tDy, tDw, tDh);
+                    c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
                   }
                   c2d.restore();
                 }
