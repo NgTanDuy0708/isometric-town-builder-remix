@@ -23,3 +23,13 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local experiment / backup junk
+scratch/
+__pycache__/
+*.pyc
+*.bak
+*.bak_*
+
+# AI Studio temp artifacts cache
+.aistudio/
