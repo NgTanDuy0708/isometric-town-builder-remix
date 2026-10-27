@@ -38,3 +38,10 @@ for (const __seaId of ["m29_sea_var1_kelp_forest","m30_sea_var2_coral_reef","m31
   TILE_DATA_URIS[__seaId] = "/assets/decorations/ocean_water_128.png";
 }
 
+
+// Xoa vat trang tri bien/dao cu: dat ve nuoc hoac cat
+const __decoSeaIds = ["m05_lighthouse_island","m06_tropical_palm_island","m07_sea_stacks_reef"];
+for (const __id of __decoSeaIds) TILE_DATA_URIS[__id] = "/assets/decorations/ocean_water_128.png";
+const __decoBeachIds = ["m23_beach_var1_driftwood","m24_beach_var2_rowboat_nets","m25_beach_var3_tidepool","m26_beach_var4_parasol_castle","m27_beach_var5_dune_boardwalk","m28_beach_var6_treasure_chest"];
+for (const __id of __decoBeachIds) TILE_DATA_URIS[__id] = "/assets/decorations/sand_ground_128.png";
+
