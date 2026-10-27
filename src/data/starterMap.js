@@ -96,8 +96,8 @@ export function applyTownCenterLayout(grid) {
   }
   // Dãy [x,4]: thay các ô bờ biển chuyển tiếp bằng cát mịn (giữ nguyên bến cảng/cầu/kênh).
   for (let r = 0; r < grid.length; r++) {
-    if (grid[r]?.[4] === "m01_sandy_beach_s") {
-      grid[r][4] = "s13_sand_ground";
+    for (let c = 0; c < grid[r].length; c++) {
+      if (grid[r][c] === "m01_sandy_beach_s") grid[r][c] = "s13_sand_ground";
     }
   }
 
