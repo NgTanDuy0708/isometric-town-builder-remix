@@ -23,3 +23,8 @@ TILE_DATA_URIS["d12_meadow_wildflowers"] = "/assets/decorations/meadow_land_128.
 // Nhà Tranh: ảnh nền cấp 1 (các cấp 2/3 renderer tự đổi theo level)
 TILE_DATA_URIS["b01_cottage_red"] = "/assets/buildings/cottage_lv1.png";
 
+
+// Nuoc bien & bo bien pixel moi (tu tileset 1 anh)
+TILE_DATA_URIS["m30_sea_var2_coral_reef"] = "/assets/decorations/ocean_water_128.png";
+TILE_DATA_URIS["m01_sandy_beach_s"] = "/assets/decorations/beach_sand_128.png";
+
