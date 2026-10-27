@@ -97,6 +97,7 @@ export function applyTownCenterLayout(grid) {
   // Dãy [x,4]: toàn bộ cột 4 (mọi hàng) dùng ô cát mịn.
   for (let r = 0; r < grid.length; r++) {
     if (grid[r] && grid[r].length > 4) grid[r][4] = "s13_sand_ground";
+          grid[r][3] = "m01_sandy_beach_s";
   }
 
   return grid;
