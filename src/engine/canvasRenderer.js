@@ -1189,7 +1189,7 @@ export function createCanvasRenderer(ctx) {
     // Hàng rào gỗ nông trang: hai cọc gỗ cắm chắc chắn xuống mặt đất (dy = +18)
     d24_rustic_wooden_fence: { dx: 0, dy: 18, dw: 128, dh: 128 },
     // Lối đi cẩm thạch hoàng gia: hạ xuống khớp khít với ô đất kim cương (dy = +22)
-    r03_royal_marble_pavement: { dx: 0, dy: 24, dw: 128, dh: 128 },
+    r03_royal_marble_pavement: { dx: 0, dy: 0, dw: 128, dh: 128 },
     // Chuồng Gà Đẻ Trứng: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
     b21_chicken_coop: { dx: 0, dy: 22, dw: 128, dh: 128 },
     // Chuồng Bò Sữa: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
@@ -1205,50 +1205,7 @@ export function createCanvasRenderer(ctx) {
     c2d.save();
 
     if (tid === "r03_royal_marble_pavement") {
-      // 1. Gạch Lát Cẩm Thạch Hoàng Gia
-      c2d.fillStyle = "#f8fafc";
-      c2d.strokeStyle = "#f59e0b";
-      c2d.lineWidth = 2.5;
-      c2d.beginPath();
-      c2d.moveTo(ox + 64, oy + 66);
-      c2d.lineTo(ox + 124, oy + 96);
-      c2d.lineTo(ox + 64, oy + 126);
-      c2d.lineTo(ox + 4, oy + 96);
-      c2d.closePath();
-      c2d.fill();
-      c2d.stroke();
-
-      // Chỉ viền đá chéo
-      c2d.strokeStyle = "#cbd5e1";
-      c2d.lineWidth = 1.5;
-      c2d.beginPath();
-      c2d.moveTo(ox + 64, oy + 76);
-      c2d.lineTo(ox + 108, oy + 96);
-      c2d.lineTo(ox + 64, oy + 116);
-      c2d.lineTo(ox + 20, oy + 96);
-      c2d.closePath();
-      c2d.stroke();
-      c2d.moveTo(ox + 64, oy + 76); c2d.lineTo(ox + 64, oy + 116);
-      c2d.moveTo(ox + 20, oy + 96); c2d.lineTo(ox + 108, oy + 96);
-      c2d.stroke();
-
-      // Hoa văn ngôi sao hoàng gia vàng kim ở tâm
-      c2d.fillStyle = "#fef08a";
-      c2d.strokeStyle = "#d97706";
-      c2d.lineWidth = 1.5;
-      c2d.beginPath();
-      c2d.moveTo(ox + 64, oy + 88);
-      c2d.lineTo(ox + 74, oy + 96);
-      c2d.lineTo(ox + 64, oy + 104);
-      c2d.lineTo(ox + 54, oy + 96);
-      c2d.closePath();
-      c2d.fill();
-      c2d.stroke();
-      c2d.fillStyle = "#f59e0b";
-      c2d.beginPath();
-      c2d.arc(ox + 64, oy + 96, 3.5, 0, Math.PI * 2);
-      c2d.fill();
-
+      // Đường lát đá xám dùng texture stone_pavement_128.png (không vẽ đá cẩm thạch trắng nữa)
     } else if (tid === "d24_rustic_wooden_fence") {
       // 2. Hàng Rào Gỗ Mộc
       const posts = [

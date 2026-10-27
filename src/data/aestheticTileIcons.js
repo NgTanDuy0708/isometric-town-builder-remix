@@ -12,8 +12,8 @@ export const AESTHETIC_TILE_URIS = {
   // Kho Tổng Hợp: sprite duy nhất phủ footprint 2x2.
   b60_combined_warehouse: "/assets/buildings/combined_warehouse.png",
 
-  // 1. Lối đi cẩm thạch hoàng gia có lan can
-  r03_royal_marble_pavement: "/assets/aistudio/l_i__i_c_m_th_ch_c__lan_can_f9166eb6.png",
+  // 1. Lối đi lát đá xám (thay đá cẩm thạch trắng cũ)
+  r03_royal_marble_pavement: "/assets/decorations/stone_pavement_128.png",
 
   // 2. Hàng rào gỗ nông trang
   d24_rustic_wooden_fence: "/assets/aistudio/h_ng_r_o_g__th_ng_124399b0.png",
