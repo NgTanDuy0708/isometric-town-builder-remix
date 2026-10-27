@@ -19,3 +19,7 @@ TILE_DATA_URIS["d23_tamarind_tree"] = "/assets/trees/tamarind_tree_ripe.png";
 // Ground replacement: ảnh đất nền người chơi gửi dùng cho toàn bộ mặt đất cỏ
 TILE_DATA_URIS["d12_meadow_wildflowers"] = "/assets/decorations/meadow_land_128.png";
 
+
+// Nhà Tranh: ảnh nền cấp 1 (các cấp 2/3 renderer tự đổi theo level)
+TILE_DATA_URIS["b01_cottage_red"] = "/assets/buildings/cottage_lv1.png";
+

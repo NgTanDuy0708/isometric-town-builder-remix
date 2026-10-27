@@ -317,6 +317,15 @@ export const renderSurroundingForestTile = renderSurroundingTile;
 export function createCanvasRenderer(ctx) {
   // 1. Khởi tạo Image Cache cho Tiles
   const imageCache = {};
+
+  // Nhà Tranh có 3 cấp độ hình ảnh riêng (1: lều nhỏ, 2: nhà vừa, 3: nhà lớn).
+  const cottageLevelImages = {};
+  for (let lv = 1; lv <= 3; lv++) {
+    const im = new Image();
+    im.src = `/assets/buildings/cottage_lv${lv}.png`;
+    im.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+    cottageLevelImages[lv] = im;
+  }
   TILES_DATA.forEach(t => {
     const img = new Image();
     const uri = AESTHETIC_TILE_URIS[t.id] || ((typeof TILE_DATA_URIS !== 'undefined' && TILE_DATA_URIS[t.id]) 
@@ -1887,6 +1896,12 @@ export function createCanvasRenderer(ctx) {
               }
             } else {
               let img = imageCache[tid];
+              // Nhà Tranh: đổi sprite theo cấp độ đang lưu (1/2/3).
+              if (tid === "b01_cottage_red") {
+                const lv = buildingLevels[`${i}_${j}`] || 1;
+                const lvImg = cottageLevelImages[lv];
+                if (lvImg && isImageReady(lvImg)) img = lvImg;
+              }
               let drawOffsetY = 0;
 
               // Xử lý Cây Táo Đỏ, Cây Me & Cây Dừa 3 Giai Đoạn

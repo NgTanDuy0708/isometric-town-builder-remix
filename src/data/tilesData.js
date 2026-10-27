@@ -4,7 +4,7 @@ export const TILES_DATA = [
     "id": "b01_cottage_red",
     "label": "Nhà Tranh Ấm Cúng",
     "category": "building",
-    "doc": "Nhà tranh gỗ ấm cúng với mái ngói đất nung, thùng hứng nước mưa và đống củi sưởi (Tăng +4 dân số)."
+    "doc": "Nhà tranh gỗ ấm cúng với mái tranh vàng, thùng hứng nước mưa và đống củi sưởi (Tăng +4 dân số)."
   },
   {
     "id": "b02_tudor_inn",
