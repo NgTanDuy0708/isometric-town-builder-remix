@@ -1177,8 +1177,9 @@ export function createCanvasRenderer(ctx) {
     b14_town_hall: { dx: -60, dy: -176, dw: 360, dh: 360 },
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
     d01_plaza_fountain: { dx: -134, dy: -70, dw: 392, dh: 305 },
-    // Kho Tổng Hợp 2x2: neo tại ô dưới-phải, phần chân chạm đúng footprint 256×128px.
-    b60_combined_warehouse: { dx: -123, dy: -198, dw: 360, dh: 360 },
+    // Kho Tổng Hợp 2x2: silhouette rộng đúng 256px (2 ô), chân đế chạm đáy hình thoi 2x2.
+    // Ảnh gốc 1024px có bbox x 79..983, y 34..929 nên scale 290px cho bề ngang ~256px.
+    b60_combined_warehouse: { dx: -86, dy: -135, dw: 290, dh: 290 },
     // Cột cờ hiệu hoàng triều: đặt vào tâm của ô đất (dy = -16 căn chân đế đá vào đúng tâm ô)
     d27_royal_banner_flag: { dx: 0, dy: -16, dw: 128, dh: 128 },
     // Luống hoa tulip nở rộ: hạ sát mặt đất phẳng (dy = +22)
@@ -1417,6 +1418,180 @@ export function createCanvasRenderer(ctx) {
   /**
    * Hàm kết xuất chính: RENDER CANVAS
    */
+  /**
+   * Vẽ bong bóng thu hoạch của công trình. Được gọi ở lớp overlay SAU khi đã vẽ
+   * xong tòa thị chính/quảng trường để bong bóng không bị các sprite lớn che.
+   */
+  function drawProductionBubble(c2d, item, animTime) {
+    const { ox, oy, tid, prod, p, bLvl, i, j } = item;
+    const speedMult = bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0);
+    const pIntervalMs = Math.round((prod.intervalSec * 1000) / speedMult);
+    const pElapsed = Date.now() - (p.lastHarvest || 0);
+
+    if (p.paused && (p.pauseReason === "missing_wheat" || p.pauseReason === "missing_corn" || p.pauseReason === "missing_carrot" || p.pauseReason === "missing_wool" || p.pauseReason === "missing_milk" || p.pauseReason === "missing_grapes")) {
+      const bounceY = Math.sin(animTime * 4.0 + (i * 2 + j * 3)) * 3.5;
+      const bubbleX = ox + 64;
+      const bubbleY = oy + 6 + bounceY;
+
+      c2d.save();
+      c2d.fillStyle = "#fffbeb";
+      c2d.strokeStyle = "#f59e0b";
+      c2d.lineWidth = 2.5;
+      c2d.beginPath();
+      c2d.arc(bubbleX, bubbleY, 15, 0, Math.PI * 2);
+      c2d.fill();
+      c2d.stroke();
+
+      let iconText = "⚠️🌾";
+      let reasonText = "Thiếu lúa mì";
+      if (p.pauseReason === "missing_corn") {
+        iconText = "⚠️🌽";
+        reasonText = "Cần bắp ngô";
+      } else if (p.pauseReason === "missing_carrot") {
+        iconText = "⚠️🥕";
+        reasonText = "Cần cà rốt";
+      } else if (p.pauseReason === "missing_wool") {
+        iconText = "⚠️🐑";
+        reasonText = "Cần lông cừu";
+      } else if (p.pauseReason === "missing_milk") {
+        iconText = "⚠️🥛";
+        reasonText = "Cần sữa tươi";
+      } else if (p.pauseReason === "missing_grapes") {
+        iconText = "⚠️🍇";
+        reasonText = "Cần nho tím";
+      }
+
+      c2d.font = "14px sans-serif";
+      c2d.textAlign = "center";
+      c2d.textBaseline = "middle";
+      c2d.fillText(iconText, bubbleX, bubbleY);
+
+      c2d.fillStyle = "#d97706";
+      c2d.beginPath();
+      c2d.roundRect(bubbleX - 30, bubbleY + 11, 60, 12, 4);
+      c2d.fill();
+
+      c2d.font = "700 8px sans-serif";
+      c2d.fillStyle = "#ffffff";
+      c2d.fillText(reasonText, bubbleX, bubbleY + 17);
+      c2d.restore();
+      return;
+    }
+
+    if (p.ready) {
+      const bounceY = Math.sin(animTime * 3.5 + (i * 2 + j * 3)) * 4;
+      const bubbleX = ox + 64;
+      const bubbleY = oy + 6 + bounceY;
+
+      c2d.save();
+      c2d.fillStyle = "#ffffff";
+      c2d.strokeStyle = "#10b981";
+      c2d.lineWidth = 2.5;
+      c2d.beginPath();
+      c2d.arc(bubbleX, bubbleY, 16, 0, Math.PI * 2);
+      c2d.fill();
+      c2d.stroke();
+
+      c2d.font = "16px sans-serif";
+      c2d.textAlign = "center";
+      c2d.textBaseline = "middle";
+      c2d.fillText(prod.icon || "🪙", bubbleX, bubbleY);
+
+      const uCfg = UPGRADES_CONFIG[tid];
+      const upgradeCfg = uCfg ? uCfg[bLvl] : null;
+      const curGoldGain = (upgradeCfg && typeof upgradeCfg.revenueGold === "number")
+        ? upgradeCfg.revenueGold
+        : (prod.rewardGold || 10) + (bLvl > 1 && upgradeCfg && upgradeCfg.goldBonus ? upgradeCfg.goldBonus : 0);
+      let badgeText = `+${curGoldGain}🪙`;
+      const yieldQty = getBuildingYield(tid, bLvl);
+      if (tid === "b04_windmill") {
+        badgeText = `+${yieldQty}🌾 +${curGoldGain}🪙`;
+      } else if (tid === "b06_bakery") {
+        badgeText = `+${yieldQty}🍞 +${curGoldGain}🪙`;
+      } else if (tid === "b03_blacksmith_forge") {
+        badgeText = `+${yieldQty}⚒️ +${curGoldGain}🪙`;
+      } else if (tid === "b58_textile_mill") {
+        badgeText = `+${yieldQty}🧵 +${curGoldGain}🪙`;
+      } else if (tid === "b59_dairy_factory") {
+        badgeText = `+${yieldQty}🧈 +${curGoldGain}🪙`;
+      } else if (tid === "b47_winery_press_barn_sw" || tid === "b48_winery_press_barn_se") {
+        badgeText = `+${yieldQty}🍷 +${curGoldGain}🪙`;
+      } else if (tid === "d21_apple_tree") {
+        badgeText = `+${yieldQty}🍎 +${curGoldGain}🪙`;
+      } else if (tid === "d22_coconut_palm") {
+        badgeText = `+${yieldQty}🥥 +${curGoldGain}🪙`;
+      } else if (tid === "d23_tamarind_tree") {
+        badgeText = `+${yieldQty}🍈 +${curGoldGain}🪙`;
+      }
+
+      c2d.fillStyle = "#15803d";
+      c2d.beginPath();
+      c2d.roundRect(bubbleX - 28, bubbleY + 12, 56, 13, 4);
+      c2d.fill();
+
+      c2d.font = "700 8.5px monospace";
+      c2d.fillStyle = "#ffffff";
+      c2d.fillText(badgeText, bubbleX, bubbleY + 18.5);
+      c2d.restore();
+      return;
+    }
+
+    const pProg = Math.min(1.0, pElapsed / pIntervalMs);
+    const miniW = 34;
+    const miniH = 3;
+    const miniX = ox + 64 - miniW / 2;
+    const miniY = oy + 26;
+
+    c2d.save();
+    c2d.fillStyle = "rgba(0, 0, 0, 0.45)";
+    c2d.fillRect(miniX - 1, miniY - 1, miniW + 2, miniH + 2);
+    c2d.fillStyle = "#e2b474";
+    c2d.fillRect(miniX, miniY, miniW * pProg, miniH);
+    c2d.restore();
+  }
+
+  /**
+   * Bong bóng Thành Tựu trên nóc Tòa Thị Chính (chỉ vẽ 1 lần, ở lớp overlay).
+   */
+  function drawAchievementBubble(c2d, item, animTime) {
+    const { ox, oy } = item;
+    const bounceY = Math.sin(animTime * 4.0) * 5;
+    const bx = ox + 99;
+    const by = oy - 205 + bounceY;
+
+    c2d.save();
+    c2d.font = "14px sans-serif";
+    c2d.textAlign = "center";
+    c2d.textBaseline = "middle";
+    c2d.fillText("✨", bx - 22, by - 12);
+    c2d.fillText("✨", bx + 22, by - 10);
+
+    c2d.fillStyle = "#ffffff";
+    c2d.shadowColor = "#f59e0b";
+    c2d.shadowBlur = 14;
+    c2d.beginPath();
+    c2d.arc(bx, by, 18, 0, Math.PI * 2);
+    c2d.fill();
+
+    c2d.lineWidth = 2.5;
+    c2d.strokeStyle = "#f59e0b";
+    c2d.stroke();
+    c2d.shadowBlur = 0;
+
+    c2d.font = "20px sans-serif";
+    c2d.fillText("🏆", bx, by + 1);
+
+    c2d.fillStyle = "#d97706";
+    c2d.beginPath();
+    c2d.roundRect(bx - 32, by + 14, 64, 15, 4);
+    c2d.fill();
+    c2d.font = "800 9px sans-serif";
+    c2d.fillStyle = "#ffffff";
+    c2d.fillText("THÀNH TỰU ⭐", bx, by + 21.5);
+    c2d.restore();
+  }
+
+
   function renderCanvas() {
     // 0. Đảm bảo tham chiếu DOM hợp lệ
     ctx.ensureCanvasRef();
@@ -1498,6 +1673,7 @@ export function createCanvasRenderer(ctx) {
       const maxDepth = maxI + maxJ;
 
       const townCenterSprites = [];
+      const bubbleOverlays = [];
 
       for (let depth = minDepth; depth <= maxDepth; depth++) {
         const startI = Math.max(minI, depth - maxJ);
@@ -1887,237 +2063,32 @@ export function createCanvasRenderer(ctx) {
                 renderFruitTreeDetails(c2d, ox, oy, animTime, tid, productionState[key] || (fruitTreesState ? fruitTreesState[key] : null), i, j);
               }
 
-              // Bong bóng danh vọng Thành Tựu trên nóc Tòa Thị Chính
+              // Bong bóng Thành Tựu: chỉ 1 chiếc, vẽ ở lớp overlay sau công trình lớn.
               if (tid === "b14_town_hall" && i === 14 && j === 15) {
                 const hasClaimable = ctx.hasClaimableAchievements ? ctx.hasClaimableAchievements() : false;
                 if (hasClaimable) {
-                  c2d.save();
-                  const bounceY = Math.sin(animTime * 4.0) * 5;
-                  const bx = ox + 99;
-                  const by = oy - 205 + bounceY;
-
-                  // Sparkles
-                  c2d.font = "14px sans-serif";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillText("✨", bx - 22, by - 12);
-                  c2d.fillText("✨", bx + 22, by - 10);
-
-                  // Bubble outer shadow & border
-                  c2d.fillStyle = "#ffffff";
-                  c2d.shadowColor = "#f59e0b";
-                  c2d.shadowBlur = 14;
-                  c2d.beginPath();
-                  c2d.arc(bx, by, 18, 0, Math.PI * 2);
-                  c2d.fill();
-
-                  c2d.lineWidth = 2.5;
-                  c2d.strokeStyle = "#f59e0b";
-                  c2d.stroke();
-                  c2d.shadowBlur = 0;
-
-                  // Trophy Icon
-                  c2d.font = "20px sans-serif";
-                  c2d.fillText("🏆", bx, by + 1);
-
-                  // Ribbon Tag
-                  c2d.fillStyle = "#d97706";
-                  c2d.beginPath();
-                  c2d.roundRect(bx - 32, by + 14, 64, 15, 4);
-                  c2d.fill();
-                  c2d.font = "800 9px sans-serif";
-                  c2d.fillStyle = "#ffffff";
-                  c2d.fillText("THÀNH TỰU ⭐", bx, by + 21.5);
-                  c2d.restore();
+                  bubbleOverlays.push({ kind: "achievement", depth: i + j, ox, oy });
                 }
               }
 
-              // Bong bóng danh vọng Thành Tựu trên nóc Tòa Thị Chính
-              if (tid === "b14_town_hall") {
-                const hasClaimable = ctx.hasClaimableAchievements ? ctx.hasClaimableAchievements() : false;
-                if (hasClaimable) {
-                  c2d.save();
-                  const bounceY = Math.sin(animTime * 4.0) * 5;
-                  const bx = ox + 64;
-                  const by = oy + 2 + bounceY;
-
-                  // Sparkles
-                  c2d.font = "14px sans-serif";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillText("✨", bx - 22, by - 12);
-                  c2d.fillText("✨", bx + 22, by - 10);
-
-                  // Bubble outer shadow & border
-                  c2d.fillStyle = "#ffffff";
-                  c2d.shadowColor = "#f59e0b";
-                  c2d.shadowBlur = 14;
-                  c2d.beginPath();
-                  c2d.arc(bx, by, 18, 0, Math.PI * 2);
-                  c2d.fill();
-
-                  c2d.lineWidth = 2.5;
-                  c2d.strokeStyle = "#f59e0b";
-                  c2d.stroke();
-                  c2d.shadowBlur = 0;
-
-                  // Trophy Icon
-                  c2d.font = "20px sans-serif";
-                  c2d.fillText("🏆", bx, by + 1);
-
-                  // Ribbon Tag
-                  c2d.fillStyle = "#d97706";
-                  c2d.beginPath();
-                  c2d.roundRect(bx - 32, by + 14, 64, 15, 4);
-                  c2d.fill();
-                  c2d.font = "800 9px sans-serif";
-                  c2d.fillStyle = "#ffffff";
-                  c2d.fillText("THÀNH TỰU ⭐", bx, by + 21.5);
-
-                  c2d.restore();
-                }
-              }
-
-              // Night lights for streetlamps and buildings
-              if (dayNightWeather) {
-                if (tid === "d07_streetlamps_signpost") {
-                  dayNightWeather.renderLightGlow(c2d, ox + 64, oy + 82, 75, 0.95);
-                } else if (tid.startsWith("b") || tid === "d01_plaza_fountain") {
-                  dayNightWeather.renderLightGlow(c2d, ox + 64, oy + 95, 48, 0.65);
-                }
-              }
-
-              // Production Building Status & Harvest Bubbles (Bỏ qua chuồng trại chăn nuôi đã render riêng)
+              // Production Building Status & Harvest Bubbles (state do productionManager quản lý)
               const isLivestock = tid === "b21_chicken_coop" || tid === "b22_cow_pasture" || tid === "b57_sheep_pasture";
               if (PRODUCTION_BUILDINGS[tid] && !isLivestock) {
                 const prod = PRODUCTION_BUILDINGS[tid];
                 const p = productionState[key];
-
-                const bLvl = buildingLevels[key] || 1;
-                const speedMult = bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0);
-                const pIntervalMs = Math.round((prod.intervalSec * 1000) / speedMult);
-                const pElapsed = p ? Date.now() - p.lastHarvest : 0;
-
-                if (p && p.paused && (p.pauseReason === "missing_wheat" || p.pauseReason === "missing_corn" || p.pauseReason === "missing_carrot" || p.pauseReason === "missing_wool" || p.pauseReason === "missing_milk" || p.pauseReason === "missing_grapes")) {
-                  const bounceY = Math.sin(animTime * 4.0 + (i * 2 + j * 3)) * 3.5;
-                  const bubbleX = ox + 64;
-                  const bubbleY = oy + 6 + bounceY;
-
-                  c2d.save();
-                  c2d.fillStyle = "#fffbeb";
-                  c2d.strokeStyle = "#f59e0b";
-                  c2d.lineWidth = 2.5;
-                  c2d.beginPath();
-                  c2d.arc(bubbleX, bubbleY, 15, 0, Math.PI * 2);
-                  c2d.fill();
-                  c2d.stroke();
-
-                  let iconText = "⚠️🌾";
-                  let reasonText = "Thiếu lúa mì";
-                  if (p.pauseReason === "missing_corn") {
-                    iconText = "⚠️🌽";
-                    reasonText = "Cần bắp ngô";
-                  } else if (p.pauseReason === "missing_carrot") {
-                    iconText = "⚠️🥕";
-                    reasonText = "Cần cà rốt";
-                  } else if (p.pauseReason === "missing_wool") {
-                    iconText = "⚠️🐑";
-                    reasonText = "Cần lông cừu";
-                  } else if (p.pauseReason === "missing_milk") {
-                    iconText = "⚠️🥛";
-                    reasonText = "Cần sữa tươi";
-                  } else if (p.pauseReason === "missing_grapes") {
-                    iconText = "⚠️🍇";
-                    reasonText = "Cần nho tím";
-                  } else if (tid === "b21_chicken_coop") {
-                    reasonText = "Cần lúa mì";
-                  }
-
-                  c2d.font = "14px sans-serif";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillText(iconText, bubbleX, bubbleY);
-
-                  c2d.fillStyle = "#d97706";
-                  c2d.beginPath();
-                  c2d.roundRect(bubbleX - 30, bubbleY + 11, 60, 12, 4);
-                  c2d.fill();
-
-                  c2d.font = "700 8px sans-serif";
-                  c2d.fillStyle = "#ffffff";
-                  c2d.fillText(reasonText, bubbleX, bubbleY + 17);
-                  c2d.restore();
-                } else if (p && p.ready) {
-                  const bounceY = Math.sin(animTime * 3.5 + (i * 2 + j * 3)) * 4;
-                  const bubbleX = ox + 64;
-                  const bubbleY = oy + 6 + bounceY;
-
-                  c2d.save();
-                  c2d.fillStyle = "#ffffff";
-                  c2d.strokeStyle = "#10b981";
-                  c2d.lineWidth = 2.5;
-                  c2d.beginPath();
-                  c2d.arc(bubbleX, bubbleY, 16, 0, Math.PI * 2);
-                  c2d.fill();
-                  c2d.stroke();
-
-                  c2d.font = "16px sans-serif";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillText(prod.icon || "🪙", bubbleX, bubbleY);
-
-                  const uCfg = UPGRADES_CONFIG[tid];
-                  const curGoldGain = (prod.rewardGold || 10) + (bLvl > 1 && uCfg && uCfg[bLvl] && uCfg[bLvl].goldBonus ? uCfg[bLvl].goldBonus : 0);
-                  let badgeText = `+${curGoldGain}🪙`;
-                  const yieldQty = getBuildingYield(tid, bLvl);
-                  if (tid === "b04_windmill") {
-                    badgeText = `+${yieldQty}🌾 +${curGoldGain}🪙`;
-                  } else if (tid === "b06_bakery") {
-                    badgeText = `+${yieldQty}🍞 +${curGoldGain}🪙`;
-                  } else if (tid === "b03_blacksmith_forge") {
-                    badgeText = `+${yieldQty}⚒️ +${curGoldGain}🪙`;
-                  } else if (tid === "b21_chicken_coop") {
-                    badgeText = `+${yieldQty}🥚 +${curGoldGain}🪙`;
-                  } else if (tid === "b13_barn_silo" || tid === "b22_cow_pasture") {
-                    badgeText = `+${yieldQty}🥛 +${curGoldGain}🪙`;
-                  } else if (tid === "b57_sheep_pasture") {
-                    badgeText = `+${yieldQty}🐑 +${curGoldGain}🪙`;
-                  } else if (tid === "b58_textile_mill") {
-                    badgeText = `+${yieldQty}🧵 +${curGoldGain}🪙`;
-                  } else if (tid === "b59_dairy_factory") {
-                    badgeText = `+${yieldQty}🧈 +${curGoldGain}🪙`;
-                  } else if (tid === "b47_winery_press_barn_sw" || tid === "b48_winery_press_barn_se") {
-                    badgeText = `+${yieldQty}🍷 +${curGoldGain}🪙`;
-                  } else if (tid === "d21_apple_tree") {
-                    badgeText = `+${yieldQty}🍎 +${curGoldGain}🪙`;
-                  } else if (tid === "d22_coconut_palm") {
-                    badgeText = `+${yieldQty}🥥 +${curGoldGain}🪙`;
-                  } else if (tid === "d23_tamarind_tree") {
-                    badgeText = `+${yieldQty}🍈 +${curGoldGain}🪙`;
-                  }
-
-                  c2d.fillStyle = "#15803d";
-                  c2d.beginPath();
-                  c2d.roundRect(bubbleX - 28, bubbleY + 12, 56, 13, 4);
-                  c2d.fill();
-
-                  c2d.font = "700 8.5px monospace";
-                  c2d.fillStyle = "#ffffff";
-                  c2d.fillText(badgeText, bubbleX, bubbleY + 18.5);
-                  c2d.restore();
-                } else {
-                  const pProg = Math.min(1.0, pElapsed / pIntervalMs);
-                  const miniW = 34;
-                  const miniH = 3;
-                  const miniX = ox + 64 - miniW / 2;
-                  const miniY = oy + 26;
-
-                  c2d.save();
-                  c2d.fillStyle = "rgba(0, 0, 0, 0.45)";
-                  c2d.fillRect(miniX - 1, miniY - 1, miniW + 2, miniH + 2);
-                  c2d.fillStyle = "#e2b474";
-                  c2d.fillRect(miniX, miniY, miniW * pProg, miniH);
-                  c2d.restore();
+                if (p) {
+                  bubbleOverlays.push({
+                    kind: "production",
+                    depth: i + j,
+                    ox,
+                    oy,
+                    tid,
+                    prod,
+                    p,
+                    bLvl: buildingLevels[key] || 1,
+                    i,
+                    j
+                  });
                 }
               }
 
@@ -2269,6 +2240,13 @@ export function createCanvasRenderer(ctx) {
       townCenterSprites.sort((a, b) => (a.tid === "b14_town_hall" ? -1 : 1) - (b.tid === "b14_town_hall" ? -1 : 1));
       for (const sprite of townCenterSprites) {
         c2d.drawImage(sprite.img, sprite.x, sprite.y, sprite.w, sprite.h);
+      }
+
+      // Vẽ toàn bộ bong bóng ở lớp trên cùng (sau Tòa Thị Chính/Quảng Trường).
+      bubbleOverlays.sort((a, b) => a.depth - b.depth);
+      for (const item of bubbleOverlays) {
+        if (item.kind === "production") drawProductionBubble(c2d, item, animTime);
+        else if (item.kind === "achievement") drawAchievementBubble(c2d, item, animTime);
       }
 
       // Render Villagers
