@@ -1677,6 +1677,17 @@ export function createCanvasRenderer(ctx) {
 
       const bubbleOverlays = [];
 
+      // Vẽ toàn bộ thảm cỏ nền trước khi vẽ công trình: nền đất luôn nằm dưới chân công trình,
+      // tránh ô cỏ phía trước (depth lớn hơn) phủ lên chân nhà kho/công trình.
+      const meadowBase = imageCache["d12_meadow_wildflowers"];
+      if (isImageReady(meadowBase)) {
+        for (let i = 0; i < ROWS; i++) {
+          for (let j = 0; j < COLS; j++) {
+            c2d.drawImage(meadowBase, ORIGIN_X + (j - i) * HALF_W, ORIGIN_Y + (i + j) * QUARTER_W);
+          }
+        }
+      }
+
       for (let depth = minDepth; depth <= maxDepth; depth++) {
         const startI = Math.max(minI, depth - maxJ);
         const endI = Math.min(maxI, depth - minJ);
@@ -1980,12 +1991,8 @@ export function createCanvasRenderer(ctx) {
                 currentGrid[i]?.[j - 1] === "b60_combined_warehouse" &&
                 currentGrid[i - 1]?.[j - 1] === "b60_combined_warehouse";
 
+              // Nền cỏ đã được vẽ một lần ở pre-pass phía trên.
               const baseMeadow = imageCache["d12_meadow_wildflowers"];
-              // Luôn vẽ thảm cỏ xanh mướt bên dưới tất cả các ô (kể cả 6 ô Tòa Thị Chính & 9 ô Quảng Trường)
-              // đảm bảo tuyệt đối không có lỗ hổng nền đất, không lộ void đen
-              if (isImageReady(baseMeadow) && tid !== "d12_meadow_wildflowers") {
-                c2d.drawImage(baseMeadow, ox, oy);
-              }
               const isTownCenterSprite = tid === "b14_town_hall" || tid === "d01_plaza_fountain";
               const isTownCenterImageReady = isTownCenterSprite && isImageReady(img);
               if (!isImageReady(img)) {
@@ -2024,7 +2031,7 @@ export function createCanvasRenderer(ctx) {
                     c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
                     c2d.restore();
                   }
-                } else if (!isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
+                } else if (tid !== "d12_meadow_wildflowers" && !isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
                   c2d.save();
                   if (isCellBeingMoved) c2d.globalAlpha = 0.35;
                   if (flippedGrid[key]) {
