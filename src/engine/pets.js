@@ -302,13 +302,14 @@ export class PetManager {
   /**
    * Render hoạt họa đàn thú cưng trên Canvas 2D
    */
-  render(ctx, originX, originY, halfW, quarterW, animTime) {
+  render(ctx, originX, originY, halfW, quarterW, animTime, depthFilter = null) {
     if (this.pets.length === 0) return;
 
     // Sắp xếp theo chiều sâu isometric (r + c)
     const sorted = [...this.pets].sort((a, b) => (a.r + a.c) - (b.r + b.c));
 
     for (const pet of sorted) {
+      if (depthFilter !== null && pet.r + pet.c !== depthFilter) continue;
       const sx = originX + (pet.c - pet.r) * halfW + 64;
       const sy = originY + (pet.r + pet.c) * quarterW + 96;
 
@@ -349,6 +350,13 @@ export class PetManager {
       ctx.restore();
     }
 
+    if (depthFilter === null) {
+      this.renderOverlays(ctx, originX, originY, halfW, quarterW);
+    }
+  }
+
+  /** Trái tim + bong bóng thoại, luôn vẽ sau cùng. */
+  renderOverlays(ctx, originX, originY, halfW, quarterW) {
     // 4. Render các trái tim bay ❤️
     for (const h of this.hearts) {
       ctx.save();

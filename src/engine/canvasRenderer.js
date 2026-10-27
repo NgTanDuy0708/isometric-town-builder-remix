@@ -2235,6 +2235,10 @@ export function createCanvasRenderer(ctx) {
             }
           }
         }
+        // Thú cưng được vẽ đúng độ sâu: đứng sau nhà thì bị nhà che.
+        if (petManager) {
+          petManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, depth);
+        }
       }
 
       // Bong bóng được vẽ sau toàn bộ tile/công trình.
@@ -2251,9 +2255,9 @@ export function createCanvasRenderer(ctx) {
         villagerManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, camera.zoom);
       }
 
-      // Render Pets (Chó 🐶, Mèo 🐱, Thỏ 🐰, Ngựa 🐴 đi dạo trên đảo)
+      // Trái tim / bong bóng thoại thú cưng luôn nằm trên cùng
       if (petManager) {
-        petManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, camera.zoom);
+        petManager.renderOverlays(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W);
       }
 
       // Render Town Visitors (Khách Bộ Hành Ghé Thăm Tòa Thị Chính)
