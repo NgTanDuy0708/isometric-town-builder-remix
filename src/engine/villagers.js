@@ -56,6 +56,27 @@ const ROLE_COLORS = {
 
 const EXTRA_CITIZEN_COLORS = ["#7c3aed", "#db2777", "#0d9488", "#4f46e5", "#c026d3"];
 
+// Bộ sprite dân làng (đã crop sát viền + chuẩn hoá cao 200px).
+export const VILLAGER_SPRITES = {
+  farmer_young: "/assets/villagers/farmer_young.png",
+  farmer_old: "/assets/villagers/farmer_old.png",
+  farmer_girl: "/assets/villagers/farmer_girl.png",
+  woman: "/assets/villagers/woman.png",
+  blacksmith: "/assets/villagers/blacksmith.png",
+  merchant: "/assets/villagers/merchant.png"
+};
+
+const ROLE_SPRITE_POOL = {
+  farmer: ["farmer_young", "farmer_old", "farmer_girl", "woman"],
+  baker: ["woman", "merchant"],
+  blacksmith: ["blacksmith"],
+  herbalist: ["woman", "farmer_girl"],
+  innkeeper: ["merchant", "farmer_old"],
+  citizen: ["farmer_young", "farmer_girl", "woman", "merchant", "farmer_old"]
+};
+
+const VILLAGER_SPRITE_HEIGHT = 40; // chiều cao nhân vật trong world px
+
 export class VillagerManager {
   constructor() {
     this.villagers = [];
@@ -63,6 +84,14 @@ export class VillagerManager {
     this.speechBubble = null; // { text, villagerId, expiresAt }
     this.nextId = 1;
     this.lastGridVersion = 0;
+
+    // Preload sprite dân làng (canvas sẽ tự vẽ lại khi ảnh decode xong).
+    this.spriteImages = {};
+    for (const [key, src] of Object.entries(VILLAGER_SPRITES)) {
+      const img = new Image();
+      img.src = src;
+      this.spriteImages[key] = img;
+    }
   }
 
   /**
@@ -102,6 +131,8 @@ export class VillagerManager {
 
     const dialogues = VILLAGER_DIALOGUES_BY_ROLE[role] || VILLAGER_DIALOGUES_BY_ROLE.citizen;
     const dialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+    const spritePool = ROLE_SPRITE_POOL[role] || ROLE_SPRITE_POOL.citizen;
+    const spriteKey = spritePool[Math.floor(Math.random() * spritePool.length)];
 
     return {
       id: `v_${this.nextId++}`,
@@ -110,6 +141,7 @@ export class VillagerManager {
       tunicColor,
       hatColor: baseStyle.hat,
       accessory: baseStyle.accessory,
+      spriteKey,
       r: startCell.r,
       c: startCell.c,
       targetR: startCell.r,
@@ -378,64 +410,40 @@ export class VillagerManager {
       const clickBounce = v.bounce > 0 ? Math.sin(v.bounce * Math.PI) * 10 : 0;
       const charY = screenY - walkBob - clickBounce;
 
-      // Leg stride animation
-      const legStride = (v.state === "walking") ? Math.sin(v.walkPhase) * 2.8 : 0;
-      ctx.fillStyle = "#27272a"; // dark trousers
-      // Left leg
-      ctx.fillRect(screenX - 2.5 + legStride, charY - 3, 2, 4);
-      // Right leg
-      ctx.fillRect(screenX + 0.8 - legStride, charY - 3, 2, 4);
+      // Sprite dân làng (thay cho hình vẽ procedural trước đây)
+      const spriteImg = this.spriteImages ? this.spriteImages[v.spriteKey] : null;
+      const spriteReady = spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0;
 
-      // Tunic / Shirt
-      ctx.fillStyle = v.tunicColor;
-      ctx.beginPath();
-      ctx.roundRect(screenX - 3.8, charY - 10, 7.6, 7.5, 2);
-      ctx.fill();
-
-      // Collar/vest trim
-      ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-      ctx.fillRect(screenX - 1, charY - 10, 2, 4);
-
-      // Head
-      ctx.fillStyle = "#fcd34d"; // skin
-      ctx.beginPath();
-      ctx.arc(screenX, charY - 12.5, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hair / Hat
-      ctx.fillStyle = v.hatColor || "#78350f";
-      if (v.role === "farmer") {
-        // Straw hat brim
-        ctx.beginPath();
-        ctx.ellipse(screenX, charY - 14, 5.5, 2.2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#a16207";
-        ctx.fillRect(screenX - 2.5, charY - 16.5, 5, 3);
-      } else if (v.role === "baker") {
-        // White baker chef toque
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(screenX, charY - 15, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+      if (spriteReady) {
+        const spriteH = VILLAGER_SPRITE_HEIGHT;
+        const spriteW = spriteH * (spriteImg.naturalWidth / spriteImg.naturalHeight);
+        const faceLeft = v.facing === "NW" || v.facing === "SW";
+        ctx.save();
+        ctx.translate(screenX, charY);
+        if (faceLeft) ctx.scale(-1, 1);
+        ctx.drawImage(spriteImg, -spriteW / 2, -spriteH, spriteW, spriteH);
+        ctx.restore();
       } else {
-        // Cute hair cap
+        // Fallback khi ảnh chưa decode xong: silhouette tối giản để dân không bị vô hình.
+        ctx.fillStyle = "#27272a";
+        ctx.fillRect(screenX - 3, charY - 16, 6, 16);
+        ctx.fillStyle = v.tunicColor || "#15803d";
         ctx.beginPath();
-        ctx.arc(screenX, charY - 13.5, 3.6, Math.PI, 0);
+        ctx.roundRect(screenX - 5, charY - 28, 10, 14, 3);
         ctx.fill();
-      }
-
-      // Little held accessory on hand
-      if (v.accessory) {
-        ctx.font = "8px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const sideOffset = (v.facing === "SE" || v.facing === "NE") ? 6 : -6;
-        ctx.fillText(v.accessory, screenX + sideOffset, charY - 7);
+        ctx.fillStyle = "#fcd34d";
+        ctx.beginPath();
+        ctx.arc(screenX, charY - 31, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = v.hatColor || "#78350f";
+        ctx.beginPath();
+        ctx.ellipse(screenX, charY - 33, 6.5, 2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       // Biểu tượng hoạt động vị trí (cụng ly 🍻, ngắm đài phun nước ⛲, ngồi ghế đá 🪑, giếng làng 💧)
       if (v.activityIcon && (!this.speechBubble || this.speechBubble.villagerId !== v.id)) {
-        const floatY = charY - 24 + Math.sin(performance.now() * 0.005 + v.id) * 2.5;
+        const floatY = charY - 52 + Math.sin(performance.now() * 0.005 + v.id) * 2.5;
         // Bong bóng tròn nổi bật
         ctx.save();
         ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
@@ -478,7 +486,7 @@ export class VillagerManager {
         const bubbleW = 140;
         const bubbleH = 26;
         const bX = screenX;
-        const bY = charY - 26;
+        const bY = charY - 52;
 
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#f59e0b";
@@ -527,12 +535,12 @@ export class VillagerManager {
    * Handle canvas click to interact with villagers
    */
   handleClick(screenX, screenY, originX, originY, halfW, quarterW) {
-    const hitRadius = 14;
+    const hitRadius = 20;
 
     for (let i = this.villagers.length - 1; i >= 0; i--) {
       const v = this.villagers[i];
       const vx = originX + (v.c - v.r) * halfW + 64;
-      const vy = originY + (v.r + v.c) * quarterW + 90;
+      const vy = originY + (v.r + v.c) * quarterW + 74;
 
       const dist = Math.hypot(screenX - vx, screenY - vy);
       if (dist <= hitRadius) {
