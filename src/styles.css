@@ -8281,3 +8281,43 @@ body:has(#object-action-overlay:not(.hidden)) .game-toast,
 body:has(#farm-tool-active-hud:not(.hidden)) .game-toast {
   bottom: calc(160px + env(safe-area-inset-bottom, 0px));
 }
+
+/* ==========================================================================
+   PERFORMANCE: giảm chi phí composite trên desktop
+   --------------------------------------------------------------------------
+   backdrop-filter phải blur lại toàn bộ vùng phía sau MỖI frame vì canvas
+   bên dưới luôn chuyển động. Trên desktop (cửa sổ lớn, scaling 125-200%)
+   đây là một trong những chi phí nặng nhất. Các nền dưới đây đều đã có
+   màu đục 75-94% nên bỏ blur gần như không thay đổi cảm giác thị giác.
+   ========================================================================== */
+.hud-card,
+.camera-zoom-pill,
+.camera-coord-tag,
+.tutorial-card-container,
+.tutorial-mini-bar,
+.floating-brush-hud,
+.farm-tool-active-hud,
+.town-event-banner-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Mọi lớp nền modal đều là rgba tối ~75%, bỏ blur để không phải blur canvas động */
+[class*="backdrop"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Các animation trang trí vô hạn trên HUD: giữ hiệu ứng tĩnh, bỏ nhịp chạy
+   để compositor không phải cập nhật layer mỗi frame. */
+.hayday-coin-glow,
+.hayday-gem-glow {
+  animation: none !important;
+  opacity: 0.65;
+  transform: scale(1);
+}
+
+.wheel-badge,
+.hud-event-card {
+  animation: none !important;
+}
