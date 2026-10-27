@@ -9,8 +9,8 @@ export const AESTHETIC_TILE_URIS = {
   // Sprite toàn cảnh tòa thị chính, căn giữa tại ô neo với footprint 2x3.
   b14_town_hall: "/assets/buildings/town_hall_royal.png",
 
-  // Kho Tổng Hợp: sprite duy nhất phủ footprint 2x2.
-  b60_combined_warehouse: "/assets/buildings/combined_warehouse.png",
+  // Kho Tổng Hợp: sprite pixel-art đồng bộ với tòa thị chính/khuôn viên.
+  b60_combined_warehouse: "/assets/buildings/combined_warehouse_pixel.png",
 
   // 1. Lối đi lát đá xám (thay đá cẩm thạch trắng cũ)
   r03_royal_marble_pavement: "/assets/decorations/stone_pavement_128.png",
