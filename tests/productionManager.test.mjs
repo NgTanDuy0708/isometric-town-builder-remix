@@ -114,3 +114,25 @@ test('cây ăn quả và chuồng trại được chuyển đúng manager', () =
   assert.equal(mgr.harvest(7, 7), true);
   assert.equal(mgr.harvest(8, 8), true);
 });
+
+test('update() mặc định dùng Date.now, khớp với lastHarvest', () => {
+  const { ctx, resources, state } = makeCtx();
+  const mgr = createProductionManager(ctx);
+  mgr.init(state);
+  mgr.scanGrid();
+  state['5_5'] = { lastHarvest: Date.now() - 61000, ready: false };
+
+  mgr.update(); // không truyền tham số -> phải dùng Date.now()
+  assert.equal(state['5_5'].paused, true);
+  assert.equal(state['5_5'].pauseReason, 'missing_wheat');
+
+  resources.wheat = 5;
+  mgr.feedPausedWorkshops();
+  assert.equal(state['5_5'].paused, false);
+  assert.equal(resources.wheat, 4);
+
+  state['5_5'].lastHarvest = Date.now() - 61000;
+  mgr.update();
+  assert.equal(state['5_5'].ready, true);
+  assert.equal(resources.wheat, 3);
+});

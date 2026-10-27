@@ -3597,8 +3597,10 @@ export function initIsometricStudio() {
         updateLivestockTick();
 
         // Tick sản xuất mỗi frame: chín theo thời gian + tiêu hao nguyên liệu.
-        // (Trước đây việc này nằm trong canvasRenderer nên renderer phải mutate game state.)
-        if (productionManager) productionManager.update(now);
+        // Lưu ý: KHÔNG truyền `now` của requestAnimationFrame vào đây —
+        // lastHarvest được lưu bằng Date.now() (epoch ms), trộn 2 hệ thời gian sẽ làm
+        // elapsed luôn âm và xưởng không bao giờ chín/paused.
+        if (productionManager) productionManager.update();
 
         // Mỗi giây quét lại các xưởng đang "thiếu nguyên liệu": nếu kho đã có sữa/lông/...
         // (ví dụ vừa vắt sữa, vừa nhận thưởng) thì cho xưởng chạy lại ngay.
