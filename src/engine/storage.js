@@ -284,8 +284,8 @@ export function loadGameSave(fallbackGrid) {
         }
         // Dãy [x,4]: đổi bờ biển chuyển tiếp cũ sang cát mịn.
         for (let r = 0; r < grid.length; r++) {
-          for (let c = 0; c < grid[r].length; c++) {
-            if (grid[r][c] === "m01_sandy_beach_s") grid[r][c] = "s13_sand_ground";
+          if (grid[r] && grid[r][4] === "m01_sandy_beach_s") {
+            grid[r][4] = "s13_sand_ground";
           }
         }
         if (!hasTownHall(grid)) {
