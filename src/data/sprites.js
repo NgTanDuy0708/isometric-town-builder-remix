@@ -32,3 +32,9 @@ TILE_DATA_URIS["m01_sandy_beach_s"] = "/assets/decorations/beach_sand_128.png";
 // O cat mo rong bai bien (dat canh o bo chuyen tiep)
 TILE_DATA_URIS["s13_sand_ground"] = "/assets/decorations/sand_ground_128.png";
 
+
+// Dong bo toan bo o bien sang mot anh nuoc moi
+for (const __seaId of ["m29_sea_var1_kelp_forest","m30_sea_var2_coral_reef","m31_sea_var3_bell_buoy","m32_sea_var4_shipwreck_reef","m33_sea_var5_flying_fish","m34_sea_var6_bioluminescence"]) {
+  TILE_DATA_URIS[__seaId] = "/assets/decorations/ocean_water_128.png";
+}
+
