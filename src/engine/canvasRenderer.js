@@ -1675,7 +1675,6 @@ export function createCanvasRenderer(ctx) {
       const minDepth = minI + minJ;
       const maxDepth = maxI + maxJ;
 
-      const townCenterSprites = [];
       const bubbleOverlays = [];
 
       for (let depth = minDepth; depth <= maxDepth; depth++) {
@@ -2019,7 +2018,11 @@ export function createCanvasRenderer(ctx) {
                   const isAnchor = (tid === "b14_town_hall" && i === 13 && j === 15) ||
                                    (tid === "d01_plaza_fountain" && i === 16 && j === 15);
                   if (isAnchor) {
-                    townCenterSprites.push({ tid, img, x: ox + advDx, y: oy + advDy, w: tDw, h: tDh });
+                    // Vẽ ngay tại đúng độ sâu của ô neo để công trình đứng trước (row/col lớn hơn)
+                    // có thể che tòa thị chính/quảng trường, thay vì luôn dán lên trên cùng.
+                    c2d.save();
+                    c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
+                    c2d.restore();
                   }
                 } else if (!isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
                   c2d.save();
@@ -2251,11 +2254,7 @@ export function createCanvasRenderer(ctx) {
         }
       }
 
-      // Vẽ các sprite trung tâm lớn (Tòa Thị Chính ở sau, Quảng Trường ở trước theo thứ tự chiều sâu isometric)
-      townCenterSprites.sort((a, b) => (a.tid === "b14_town_hall" ? -1 : 1) - (b.tid === "b14_town_hall" ? -1 : 1));
-      for (const sprite of townCenterSprites) {
-        c2d.drawImage(sprite.img, sprite.x, sprite.y, sprite.w, sprite.h);
-      }
+      // Bong bóng được vẽ sau toàn bộ tile/công trình.
 
       // Vẽ toàn bộ bong bóng ở lớp trên cùng (sau Tòa Thị Chính/Quảng Trường).
       bubbleOverlays.sort((a, b) => a.depth - b.depth);
