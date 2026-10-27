@@ -1992,7 +1992,12 @@ export function createCanvasRenderer(ctx) {
               if (!isImageReady(img)) {
                 img = baseMeadow;
               }
-              const isCellBeingMoved = (movingBuilding && movingBuilding.fromRow === i && movingBuilding.fromCol === j) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
+              const isCellBeingMoved = (movingBuilding && (
+                (movingBuilding.fromRow === i && movingBuilding.fromCol === j) ||
+                (movingBuilding.footprint === 2 &&
+                  i >= movingBuilding.fromRow - 1 && i <= movingBuilding.fromRow &&
+                  j >= movingBuilding.fromCol - 1 && j <= movingBuilding.fromCol)
+              )) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
 
               if (isImageReady(img)) {
                 const tileAdj = (isTownCenterSprite && !isTownCenterImageReady)
@@ -2445,7 +2450,23 @@ export function createCanvasRenderer(ctx) {
           const isUnlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
           const hasConstruction = !!constructions[hKey];
           const isEmptyGrass = hTid === "d12_meadow_wildflowers" || hTid === "g01_grass_flat";
-          const isValidPlacement = isUnlocked && !hasConstruction && isEmptyGrass;
+          let isValidPlacement = isUnlocked && !hasConstruction && isEmptyGrass;
+          if (movingBuilding.footprint === 2) {
+            isValidPlacement = true;
+            for (let dr = -1; dr <= 0; dr++) {
+              for (let dc = -1; dc <= 0; dc++) {
+                const r = hoverCell.row + dr, c = hoverCell.col + dc;
+                const cellTid = currentGrid[r] ? currentGrid[r][c] : null;
+                const isOldBlockCell = r >= movingBuilding.fromRow - 1 && r <= movingBuilding.fromRow &&
+                  c >= movingBuilding.fromCol - 1 && c <= movingBuilding.fromCol;
+                if (!isCellUnlocked(r, c, landUnlockedChunks, gameMode) ||
+                    constructions[`${r}_${c}`] ||
+                    (cellTid !== "d12_meadow_wildflowers" && cellTid !== "g01_grass_flat" && !isOldBlockCell)) {
+                  isValidPlacement = false;
+                }
+              }
+            }
+          }
 
           const bImg = imageCache[movingBuilding.tileId];
           if (isImageReady(bImg)) {

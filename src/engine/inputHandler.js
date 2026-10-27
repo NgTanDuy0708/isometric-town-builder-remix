@@ -231,11 +231,8 @@ export function initInputHandler(container, ctx) {
 
 
 
-    // Kho Tổng Hợp là công trình 2×2 cố định, nên không cho phép kéo vỡ footprint.
-    if (tid === "b60_combined_warehouse") {
-      if (objActionMoveBtn) objActionMoveBtn.style.display = "none";
-      if (objActionDemolishBtn) objActionDemolishBtn.style.display = "none";
-    } else if (isIndestructibleTile(tid)) {
+    // Kho Tổng Hợp 2×2: vẫn cho di chuyển nguyên khối, nhưng không cho phá dỡ.
+    if (isIndestructibleTile(tid)) {
       if (objActionMoveBtn) objActionMoveBtn.style.display = "flex";
       if (objActionDemolishBtn) objActionDemolishBtn.style.display = "none";
     } else {
@@ -257,12 +254,26 @@ export function initInputHandler(container, ctx) {
       if (!activeActionTarget) return;
       const { row, col, tid, level, flipped } = activeActionTarget;
       hideObjectActionOverlay();
+      // Kho Tổng Hợp 2×2: neo di chuyển là ô dưới-phải của khối.
+      let fromRow = row, fromCol = col;
+      let footprint = 1;
+      if (tid === "b60_combined_warehouse") {
+        const g = ctx.getCurrentGrid();
+        let minR = row, minC = col;
+        if (g[row - 1]?.[col] === "b60_combined_warehouse") minR = row - 1;
+        if (g[row]?.[col - 1] === "b60_combined_warehouse") minC = col - 1;
+        if (g[row - 1]?.[col - 1] === "b60_combined_warehouse") { minR = row - 1; minC = col - 1; }
+        fromRow = minR + 1;
+        fromCol = minC + 1;
+        footprint = 2;
+      }
       ctx.setMovingBuilding({
-        fromRow: row,
-        fromCol: col,
+        fromRow,
+        fromCol,
         tileId: tid,
         level: level,
-        flipped: flipped
+        flipped: flipped,
+        footprint
       });
       playBuildSound();
       const t = ctx.getTileMap()[tid];
@@ -656,7 +667,21 @@ export function initInputHandler(container, ctx) {
 
       activeActionTarget.tid = g[row][col];
 
-      activeActionTarget.flipped = !!ctx.getFlippedGrid()[`${row}_${col}`];
+      // Với Kho Tổng Hợp 2×2, trạng thái lật nằm ở ô neo dưới-phải.
+      let fRow = row, fCol = col;
+      if (activeActionTarget.tid === "b60_combined_warehouse") {
+        for (let rr = row - 1; rr <= row; rr++) {
+          for (let cc = col - 1; cc <= col; cc++) {
+            if (g[rr]?.[cc] === "b60_combined_warehouse" &&
+                g[rr + 1]?.[cc] === "b60_combined_warehouse" &&
+                g[rr]?.[cc + 1] === "b60_combined_warehouse" &&
+                g[rr + 1]?.[cc + 1] === "b60_combined_warehouse") {
+              fRow = rr + 1; fCol = cc + 1;
+            }
+          }
+        }
+      }
+      activeActionTarget.flipped = !!ctx.getFlippedGrid()[`${fRow}_${fCol}`];
 
       refreshObjectActionTitle();
 
@@ -678,10 +703,64 @@ export function initInputHandler(container, ctx) {
     const tileMap = ctx.getTileMap();
     const landUnlockedChunks = ctx.getLandUnlockedChunks();
     const gameMode = ctx.getGameMode();
+    const constructions = ctx.getConstructions ? ctx.getConstructions() : {};
 
     if (targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol) {
       ctx.setMovingBuilding(null);
       ctx.showToast("Đã giữ nguyên vị trí vật phẩm.", "info");
+      ctx.requestRender();
+      return true;
+    }
+
+    // Di chuyển nguyên khối 2×2 (Kho Tổng Hợp): targetRow/Col là ô neo dưới-phải.
+    if (movingBuilding.footprint === 2) {
+      const tr = targetRow, tc = targetCol;
+      if (tr < 1 || tc < 1 || tr >= 32 || tc >= 32) {
+        ctx.showToast("⚠️ Không đủ chỗ cho Kho Tổng Hợp 2×2 ở vị trí này!", "warning");
+        return false;
+      }
+      const newCells = [[tr - 1, tc - 1], [tr - 1, tc], [tr, tc - 1], [tr, tc]];
+      const oldCells = [[movingBuilding.fromRow - 1, movingBuilding.fromCol - 1], [movingBuilding.fromRow - 1, movingBuilding.fromCol], [movingBuilding.fromRow, movingBuilding.fromCol - 1], [movingBuilding.fromRow, movingBuilding.fromCol]];
+      const inOld = (r, c) => oldCells.some(([a, b]) => a === r && b === c);
+
+      for (const [r, c] of newCells) {
+        if (!isCellUnlocked(r, c, landUnlockedChunks, gameMode)) {
+          ctx.showToast("🔒 Không thể đặt vào lãnh thổ chưa mở khóa!", "warning");
+          return false;
+        }
+        if (constructions[`${r}_${c}`]) {
+          ctx.showToast("🏗️ Ô này đang thi công!", "info");
+          return false;
+        }
+        if (isProtectedTile(r, c, currentGrid[r]?.[c])) {
+          ctx.showToast("🏛️ Không thể đặt lên footprint cố định của khu trung tâm.", "warning");
+          return false;
+        }
+        const t = currentGrid[r]?.[c];
+        if (t !== "d12_meadow_wildflowers" && !(inOld(r, c) && t === movingBuilding.tileId)) {
+          ctx.showToast("⚠️ Cần 4 ô cỏ trống liền nhau cho Kho Tổng Hợp 2×2!", "warning");
+          return false;
+        }
+      }
+
+      for (const [r, c] of oldCells) {
+        if (!newCells.some(([a, b]) => a === r && b === c)) {
+          currentGrid[r][c] = "d12_meadow_wildflowers";
+          delete flippedGrid[`${r}_${c}`];
+          delete buildingLevels[`${r}_${c}`];
+        }
+      }
+      for (const [r, c] of newCells) {
+        currentGrid[r][c] = movingBuilding.tileId;
+        delete flippedGrid[`${r}_${c}`];
+      }
+      if (movingBuilding.flipped) flippedGrid[`${tr}_${tc}`] = true;
+
+      playBuildSound();
+      ctx.setMovingBuilding(null);
+      ctx.showToast("🚚 Đã di chuyển Kho Tổng Hợp 2×2 sang vị trí mới!", "success");
+      ctx.updateVillageStatsUI();
+      ctx.persistGameState();
       ctx.requestRender();
       return true;
     }

@@ -1243,6 +1243,31 @@ export function initIsometricStudio() {
       const curTid = currentGrid[row][col];
       if (!curTid || curTid === "d12_meadow_wildflowers") return;
 
+      // Kho Tổng Hợp 2×2: lật hướng cả khối (ảnh chỉ vẽ ở ô neo dưới-phải).
+      if (curTid === "b60_combined_warehouse") {
+        let minR = row, minC = col;
+        for (let rr = row - 1; rr <= row; rr++) {
+          for (let cc = col - 1; cc <= col; cc++) {
+            if (currentGrid[rr]?.[cc] === "b60_combined_warehouse" &&
+                currentGrid[rr + 1]?.[cc] === "b60_combined_warehouse" &&
+                currentGrid[rr]?.[cc + 1] === "b60_combined_warehouse" &&
+                currentGrid[rr + 1]?.[cc + 1] === "b60_combined_warehouse") {
+              minR = rr;
+              minC = cc;
+            }
+          }
+        }
+        const anchorKey = `${minR + 1}_${minC + 1}`;
+        if (flippedGrid[anchorKey]) delete flippedGrid[anchorKey];
+        else flippedGrid[anchorKey] = true;
+        playRotateSound();
+        saveFlippedGrid();
+        persistGameState();
+        showToast("🔄 Đã lật hướng Kho Tổng Hợp!", "info");
+        requestRender();
+        return;
+      }
+
       const curFlipped = !!flippedGrid[key];
       const res = getRotatedTileIdAndFlip(curTid, curFlipped);
 
