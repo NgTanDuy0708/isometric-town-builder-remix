@@ -1603,7 +1603,7 @@ export function createCanvasRenderer(ctx) {
     // Đảm bảo canvas có kích thước hợp lệ
     if (canvas.width <= 0 || canvas.height <= 0) {
       const { width: vw, height: vh } = ctx.getViewportSize();
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = ctx.getRenderDpr ? ctx.getRenderDpr() : (window.devicePixelRatio || 1);
       canvas.width = Math.round(vw * dpr);
       canvas.height = Math.round(vh * dpr);
       canvas.style.width = vw + 'px';
@@ -1617,7 +1617,7 @@ export function createCanvasRenderer(ctx) {
     c2d.globalAlpha = 1.0;
     c2d.clearRect(0, 0, canvas.width, canvas.height);
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = ctx.getRenderDpr ? ctx.getRenderDpr() : (window.devicePixelRatio || 1);
     const viewW = canvas.width / dpr;
     const viewH = canvas.height / dpr;
 

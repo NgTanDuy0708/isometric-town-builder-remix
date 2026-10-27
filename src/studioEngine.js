@@ -744,11 +744,24 @@ export function initIsometricStudio() {
     }
 
     let hasInitiallyCentered = false;
+
+    // Giới hạn số pixel thực sự phải tô mỗi frame. Trên desktop 2K/4K hoặc màn hình
+    // scaling 150-200%, canvas = CSS × devicePixelRatio có thể lên 6-16 triệu pixel
+    // → tụt FPS dù GPU khỏe. Cap theo ngân sách pixel, vẫn giữ nét ở mức chấp nhận được.
+    const MAX_RENDER_PIXELS = 2800000;
+    let renderPixelRatio = 1;
+    function computeRenderPixelRatio() {
+      const { width, height } = getViewportSize();
+      const rawDpr = window.devicePixelRatio || 1;
+      const budgetDpr = Math.sqrt(MAX_RENDER_PIXELS / Math.max(1, width * height));
+      return Math.max(0.75, Math.min(rawDpr, 2, budgetDpr));
+    }
+
     function resizeCanvas() {
       const { width: viewW, height: viewH } = getViewportSize();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.round(viewW * dpr);
-      canvas.height = Math.round(viewH * dpr);
+      renderPixelRatio = computeRenderPixelRatio();
+      canvas.width = Math.round(viewW * renderPixelRatio);
+      canvas.height = Math.round(viewH * renderPixelRatio);
       canvas.style.width = viewW + 'px';
       canvas.style.height = viewH + 'px';
 
@@ -3509,6 +3522,7 @@ export function initIsometricStudio() {
       getContext2D: () => ctx,
       ensureCanvasRef,
       getViewportSize,
+      getRenderDpr: () => renderPixelRatio,
       getCamera: () => camera,
       getCurrentGrid: () => currentGrid,
       getConstructions: () => constructions,
@@ -3571,10 +3585,33 @@ export function initIsometricStudio() {
 
     let lastAmbientSoundTime = 0;
     let lastWorkshopFeedCheck = 0;
+    let lastRenderAt = 0;
+
+    // Cache thống kê làng: trước đây calculateVillageStats quét 32×32 mỗi frame
+    // chỉ để truyền population cho dân làng.
+    let cachedVillageStats = null;
+    let cachedVillageStatsAt = 0;
+    function getCachedVillageStats() {
+      const ts = Date.now();
+      if (!cachedVillageStats || ts - cachedVillageStatsAt > 500) {
+        cachedVillageStats = calculateVillageStats(currentGrid, constructions, tileMap, buildingLevels);
+        cachedVillageStatsAt = ts;
+      }
+      return cachedVillageStats;
+    }
+
     let _renderErrorCount = 0;
     function startAnimationLoop() {
       let lastTime = performance.now();
       function loop(now) {
+        // Giới hạn ~72 FPS: màn hình 120/144Hz không cần render 144 lần/giây.
+        if (now - lastRenderAt < 13) {
+          animLoopId = requestAnimationFrame(loop);
+          globalAnimLoopId = animLoopId;
+          return;
+        }
+        lastRenderAt = now;
+
         const dt = (now - lastTime) / 1000;
         lastTime = now;
         animTime += dt;
@@ -3615,7 +3652,7 @@ export function initIsometricStudio() {
           currentGrid,
           tileMap,
           (r, c) => isCellUnlocked(r, c, landUnlockedChunks, gameMode),
-          calculateVillageStats(currentGrid, constructions, tileMap, buildingLevels)
+          getCachedVillageStats()
         );
 
         petManager.update(
@@ -3667,8 +3704,7 @@ export function initIsometricStudio() {
 
         if (seasonalThemeManager) {
           try {
-            const dpr = window.devicePixelRatio || 1;
-            seasonalThemeManager.update(dt, canvas.width / dpr, canvas.height / dpr);
+            seasonalThemeManager.update(dt, canvas.width / renderPixelRatio, canvas.height / renderPixelRatio);
           } catch (stErr) {
             console.error('[SeasonalTheme] update error:', stErr);
           }
@@ -3683,7 +3719,7 @@ export function initIsometricStudio() {
           }
           // Even on error, draw a diagnostic screen so user sees SOMETHING
           try {
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = renderPixelRatio;
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(0, 0, canvas.width, canvas.height);

@@ -60,6 +60,7 @@ const FEED_LABELS = {
 
 export function createProductionManager(ctx) {
   let state = {};
+  let lastScanAt = 0;
 
   const getNow = () => Date.now();
   const cellKey = (row, col) => `${row}_${col}`;
@@ -142,8 +143,11 @@ export function createProductionManager(ctx) {
    * Tick mỗi frame: chín theo thời gian, tiêu nguyên liệu, đặt paused nếu thiếu.
    */
   function update(when = getNow()) {
-    // Đảm bảo mọi công trình sản xuất mới đặt đều có entry trước khi tick.
-    scanGrid(when);
+    // Quét bản đồ tối đa 2 lần/giây thay vì mỗi frame (32×32 = 1024 ô/lần).
+    if (lastScanAt === 0 || when - lastScanAt > 500) {
+      scanGrid(when);
+      lastScanAt = when;
+    }
     const grid = ctx.getCurrentGrid();
     const buildingLevels = ctx.getBuildingLevels() || {};
     const resources = ctx.getPlayerResources() || {};
