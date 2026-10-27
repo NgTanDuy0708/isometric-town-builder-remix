@@ -282,11 +282,9 @@ export function loadGameSave(fallbackGrid) {
             delete farmland[k];
           }
         }
-        // Dãy [x,4]: đổi bờ biển chuyển tiếp cũ sang cát mịn.
+        // Dãy [x,4]: toàn bộ cột 4 (mọi hàng) dùng ô cát mịn.
         for (let r = 0; r < grid.length; r++) {
-          if (grid[r] && grid[r][4] === "m01_sandy_beach_s") {
-            grid[r][4] = "s13_sand_ground";
-          }
+          if (grid[r] && grid[r].length > 4) grid[r][4] = "s13_sand_ground";
         }
         if (!hasTownHall(grid)) {
           grid = createStarterTownMap32();

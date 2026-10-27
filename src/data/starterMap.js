@@ -94,11 +94,9 @@ export function applyTownCenterLayout(grid) {
   for (let r = 18; r <= 31; r++) {
     if (grid[r]?.[15] !== undefined) grid[r][15] = "r03_royal_marble_pavement";
   }
-  // Dãy [x,4]: thay các ô bờ biển chuyển tiếp bằng cát mịn (giữ nguyên bến cảng/cầu/kênh).
+  // Dãy [x,4]: toàn bộ cột 4 (mọi hàng) dùng ô cát mịn.
   for (let r = 0; r < grid.length; r++) {
-    if (grid[r]?.[4] === "m01_sandy_beach_s") {
-      grid[r][4] = "s13_sand_ground";
-    }
+    if (grid[r] && grid[r].length > 4) grid[r][4] = "s13_sand_ground";
   }
 
   return grid;
