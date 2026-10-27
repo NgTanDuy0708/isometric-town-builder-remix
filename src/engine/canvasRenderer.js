@@ -1176,8 +1176,9 @@ export function createCanvasRenderer(ctx) {
     // Tòa thị chính 2x3 ô: chốt theo nudge thực tế (dx 47, dy -18 so với bản trước).
     b14_town_hall: { dx: -39, dy: -261, dw: 300, dh: 403 },
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
-    // Khuôn viên 3x3: nền cỏ ép đúng hình thoi 2:1 (384×192) + cây/giếng/ghế.
-    d01_plaza_fountain: { dx: -128, dy: -200, dw: 384, dh: 400 },
+    // Khuôn viên 3x3: chỉ còn cây/giếng/ghế/hoa, không vẽ nền riêng —
+    // mặt đất bên dưới là texture cỏ chung của bản đồ.
+    d01_plaza_fountain: { dx: -96, dy: -150, dw: 320, dh: 324 },
     // Kho Tổng Hợp 2x2: silhouette rộng đúng 256px (2 ô), chân đế chạm đáy hình thoi 2x2.
     // Ảnh gốc 1024px có bbox x 79..983, y 34..929 nên scale 290px cho bề ngang ~256px.
     b60_combined_warehouse: { dx: -86, dy: -135, dw: 290, dh: 290 },
