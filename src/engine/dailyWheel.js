@@ -121,7 +121,8 @@ export class DailyWheelManager {
     try {
       const last = localStorage.getItem(STORAGE_KEY_LAST_SPIN);
       if (!last) return true;
-      const lastTime = parseInt(last, 10);
+      const lastTime = Number(last);
+      if (!Number.isFinite(lastTime) || lastTime <= 0) return true;
       return (Date.now() - lastTime) >= COOLDOWN_MS;
     } catch (e) {
       return true;
@@ -233,9 +234,9 @@ export class DailyWheelManager {
         return;
       }
       if (this.ctx.deductPlayerGems) this.ctx.deductPlayerGems(5);
-    } else {
-      localStorage.setItem(STORAGE_KEY_LAST_SPIN, Date.now().toString());
     }
+    // Lượt free chỉ được ghi cooldown SAU khi animation kết thúc và trao thưởng (trong setTimeout bên dưới).
+    // Ghi ngay tại đây sẽ khiến người chơi F5 giữa animation bị mất lượt mà không nhận được thưởng.
 
     this.isSpinning = true;
     const spinBtn = document.getElementById("wheel-spin-btn");
@@ -264,6 +265,13 @@ export class DailyWheelManager {
     setTimeout(() => {
       this.isSpinning = false;
       if (spinBtn) spinBtn.disabled = false;
+
+      // Chỉ chốt cooldown khi đã thực sự trao thưởng.
+      if (isFree) {
+        try {
+          localStorage.setItem(STORAGE_KEY_LAST_SPIN, Date.now().toString());
+        } catch (e) {}
+      }
 
       // Trao thưởng
       if (winningSlice.type === "gold" && this.ctx.addPlayerGold) {

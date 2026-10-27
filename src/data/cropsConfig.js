@@ -5,6 +5,7 @@ export const CROPS_CONFIG = {
   wheat: {
     id: "wheat",
     name: "Lúa Mì Hoàng Kim",
+    shortName: "Lúa mì",
     icon: "🌾",
     seedCost: 4,
     growTimeSec: 25,
@@ -17,6 +18,7 @@ export const CROPS_CONFIG = {
   carrot: {
     id: "carrot",
     name: "Cà Rốt Nông Trang",
+    shortName: "Cà rốt",
     icon: "🥕",
     seedCost: 8,
     growTimeSec: 45,
@@ -29,6 +31,7 @@ export const CROPS_CONFIG = {
   tomato: {
     id: "tomato",
     name: "Cà Chua Bi Đỏ",
+    shortName: "Cà chua",
     icon: "🍅",
     seedCost: 14,
     growTimeSec: 75,
@@ -41,6 +44,7 @@ export const CROPS_CONFIG = {
   strawberry: {
     id: "strawberry",
     name: "Dâu Tây Đỏ Mọng",
+    shortName: "Dâu tây",
     icon: "🍓",
     seedCost: 20,
     growTimeSec: 120,
@@ -53,6 +57,7 @@ export const CROPS_CONFIG = {
   corn: {
     id: "corn",
     name: "Bắp Ngô Mật Ong",
+    shortName: "Bắp ngô",
     icon: "🌽",
     seedCost: 30,
     growTimeSec: 180,
@@ -65,6 +70,7 @@ export const CROPS_CONFIG = {
   cabbage: {
     id: "cabbage",
     name: "Bắp Cải Xanh Giòn",
+    shortName: "Bắp cải",
     icon: "🥬",
     seedCost: 42,
     growTimeSec: 240,
@@ -77,6 +83,7 @@ export const CROPS_CONFIG = {
   pumpkin: {
     id: "pumpkin",
     name: "Bí Ngô Khổng Lồ",
+    shortName: "Bí ngô",
     icon: "🎃",
     seedCost: 55,
     growTimeSec: 300,
@@ -89,6 +96,7 @@ export const CROPS_CONFIG = {
   watermelon: {
     id: "watermelon",
     name: "Dưa Hấu Sọc Ngọt",
+    shortName: "Dưa hấu",
     icon: "🍉",
     seedCost: 75,
     growTimeSec: 420,
@@ -101,6 +109,7 @@ export const CROPS_CONFIG = {
   grapes: {
     id: "grapes",
     name: "Nho Tím Hoàng Gia",
+    shortName: "Nho tím",
     icon: "🍇",
     seedCost: 100,
     growTimeSec: 540,
@@ -113,6 +122,7 @@ export const CROPS_CONFIG = {
   sunflower: {
     id: "sunflower",
     name: "Hoa Hướng Dương Vàng",
+    shortName: "Hướng dương",
     icon: "🌻",
     seedCost: 140,
     growTimeSec: 600,
@@ -123,3 +133,13 @@ export const CROPS_CONFIG = {
     desc: "Cấp 6 • Đóa hướng dương khổng lồ đón nắng (10p), thu 3 đóa hoa rực rỡ siêu giá trị."
   }
 };
+
+export function getCropGrowDurationMs(farmData) {
+  if (farmData && Number.isFinite(farmData.growDurationMs) && farmData.growDurationMs > 0) {
+    return farmData.growDurationMs;
+  }
+  const crop = farmData ? CROPS_CONFIG[farmData.seedId] : null;
+  const ms = (crop?.growTimeSec || 30) * 1000;
+  if (farmData) farmData.growDurationMs = ms;
+  return ms;
+}

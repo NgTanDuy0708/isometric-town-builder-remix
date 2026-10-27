@@ -119,6 +119,32 @@ export class TownCaretakerManager {
     this.updateHUD();
   }
 
+  reset() {
+    this.state.hiredUntil = 0;
+    this.state.freeTrialClaimed = false;
+    this.state.options = {
+      autoCrops: true,
+      autoFruitTrees: true,
+      autoLivestock: true,
+      autoWorkshops: true
+    };
+    this.state.stats = {
+      cropsHarvested: 0,
+      fruitHarvested: 0,
+      animalsHarvested: 0,
+      animalsFed: 0,
+      workshopsHarvested: 0
+    };
+    this.autoHarvestTimer = 0;
+    this.wasHired = false;
+    try {
+      localStorage.removeItem("town_builder_caretaker_hired_until");
+      localStorage.removeItem("town_builder_caretaker_trial_claimed");
+    } catch (e) {}
+    this.updateHUD();
+    if (this.isModalOpen) this.renderModal();
+  }
+
   getSaveState() {
     return {
       hiredUntil: this.state.hiredUntil,

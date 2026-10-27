@@ -118,7 +118,7 @@ export class TownVisitorManager {
       dialogue: dialogues[Math.floor(Math.random() * dialogues.length)],
       row: 31.0,
       col: 15.0,
-      targetRow: 15.6 + (this.visitors.length === 0 ? 0 : 0.6), // Đứng tại thềm trước Tòa Thị Chính
+      targetRow: 17.6 + (this.visitors.length === 0 ? 0 : 0.6), // Đứng tại thềm quảng trường hoàng gia
       targetCol: 14.5 + (this.visitors.length === 0 ? 0 : 1.0),
       state: "walking_in", // "walking_in" | "waiting" | "walking_out"
       walkSpeed: 1.2, // ô mỗi giây (thong thả dạo bước)

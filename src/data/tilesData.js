@@ -67,16 +67,10 @@ export const TILES_DATA = [
     "doc": "Xưởng xẻ gỗ và hội trường thợ mộc với mái gỗ tuyết tùng, đống gỗ súc và giá cưa cơ khí."
   },
   {
-    "id": "b12_general_store",
-    "label": "Nhà Kho Barn (Vật Tư & Thành Phẩm)",
+    "id": "b60_combined_warehouse",
+    "label": "Kho Tổng Hợp Hoàng Gia",
     "category": "building",
-    "doc": "Nhà Kho Barn kiên cố chuyên lưu trữ vật tư xây dựng, sản phẩm chăn nuôi (trứng, sữa, bơ, len, vải) và hàng hóa chế biến. Nhấp để quản lý và nâng cấp sức chứa kho."
-  },
-  {
-    "id": "b13_barn_silo",
-    "label": "Kho Silo (Nông Sản)",
-    "category": "building",
-    "doc": "Tháp Silo kiên cố chuyên lưu trữ toàn bộ nông sản thu hoạch từ đồng ruộng. Nhấp để quản lý và nâng cấp sức chứa kho."
+    "doc": "Kho 2×2 lưu trữ chung toàn bộ nông sản, vật tư và thành phẩm. Sức chứa ban đầu 300, có thể nâng cấp thêm."
   },
   {
     "id": "b14_town_hall",
@@ -1619,6 +1613,36 @@ export const TILES_DATA = [
     "label": "Cột Cờ Hiệu Hoàng Triều",
     "category": "decoration",
     "doc": "Cột cờ đồng cao vút với dải cờ đỏ viền vàng phất phới theo ngọn gió đại ngàn."
+  },
+  {
+    "id": "d28_forest_dense_canopy",
+    "label": "Tán Rừng Sồi Dày Đặc",
+    "category": "decoration",
+    "doc": "Mảng rừng sồi rậm rạp với tán lá chồng chất che kín bầu trời, mát lạnh quanh năm."
+  },
+  {
+    "id": "d29_forest_oak_woodland",
+    "label": "Rừng Sồi Đại Ngàn",
+    "category": "decoration",
+    "doc": "Cánh rừng sồi cổ thụ thân gỗ vững chãi xen những bụi cây thấp, nơi chim muông trú ngụ."
+  },
+  {
+    "id": "d30_forest_oak_thicket",
+    "label": "Rừng Sồi Bụi Xanh",
+    "category": "decoration",
+    "doc": "Rừng sồi tán tròn xanh tươi quây quần bên các bụi cây thấp mọc sát chân."
+  },
+  {
+    "id": "d31_forest_pine_cliff",
+    "label": "Rừng Thông Vách Đá Rêu",
+    "category": "decoration",
+    "doc": "Rừng thông kim sừng sững bên vách đá phủ rêu xanh ẩm mát."
+  },
+  {
+    "id": "d32_forest_pine_boulders",
+    "label": "Rừng Thông Đá Tảng",
+    "category": "decoration",
+    "doc": "Rừng thông trầm mặc điểm xuyết những tảng đá lớn phủ rêu phong cổ kính."
   }
 ];
 

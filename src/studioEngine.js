@@ -20,12 +20,12 @@ import {
 } from "./data/landConfig.js";
 import {
   RESOURCE_MAX_CAPACITY, RESOURCES_CONFIG, RESOURCE_CHAINS,
-  isSiloResource, isBarnResource, getSiloUsed, getBarnUsed, SILO_RESOURCE_IDS, BARN_RESOURCE_IDS
+  isSiloResource, isBarnResource, getSiloUsed, getBarnUsed, getWarehouseUsed, WAREHOUSE_RESOURCE_IDS
 } from "./data/resourcesConfig.js";
 import {
   MAX_BUILDING_LEVEL, UPGRADES_CONFIG, getNextUpgrade, getBuildingLevelPopulation
 } from "./data/upgradesConfig.js";
-import { CROPS_CONFIG } from "./data/cropsConfig.js";
+import { CROPS_CONFIG, getCropGrowDurationMs } from "./data/cropsConfig.js";
 import { FRUIT_TREES_CONFIG } from "./data/resourcesConfig.js";
 import { VillagerManager, VILLAGER_DIALOGUES_BY_ROLE } from "./engine/villagers.js";
 import { PetManager } from "./engine/pets.js";
@@ -54,12 +54,12 @@ import { TownVisitorManager } from "./engine/townVisitors.js";
 import { TownCaretakerManager } from "./engine/townCaretaker.js";
 import { HarborShipManager } from "./engine/harborShipManager.js";
 import { VehicleManager } from "./engine/trafficVehicles.js";
-import { KingdomWondersManager } from "./engine/kingdomWonders.js";
+import { KingdomWondersManager, WONDERS_CONFIG } from "./engine/kingdomWonders.js";
 import { FishingManager } from "./engine/fishingMinigame.js";
 import { DailyWheelManager } from "./engine/dailyWheel.js";
 import { SeasonalThemeManager } from "./engine/seasonalThemes.js";
 import { AESTHETIC_TILE_URIS } from "./data/aestheticTileIcons.js";
-import { createStarterTownMap32, getStarterFarmlandState, isProtectedTile, isIndestructibleTile } from "./data/starterMap.js";
+import { createStarterTownMap32, applyTownCenterLayout, getStarterFarmlandState, isProtectedTile, isIndestructibleTile, migrateLegacyWarehouseLayout } from "./data/starterMap.js";
 import { DEV_FULL_VILLAGE_SAVE } from "./data/devSaveData.js";
 
 let globalAnimLoopId = null;
@@ -128,6 +128,9 @@ export function initIsometricStudio() {
     let brushFlipped = false;
 
     function setActiveBrush(brushId) {
+      if (brushId && kingdomWondersManager && kingdomWondersManager.movingWonderId) {
+        kingdomWondersManager.cancelRelocating();
+      }
       if (brushId && brushId !== activeBrush) playTileSelectSound();
       activeBrush = brushId;
       updateBrushCardCost();
@@ -180,35 +183,12 @@ export function initIsometricStudio() {
     const initialSave = loadGameSave(starterMapGrid) || getDefaultSaveState(starterMapGrid);
     let currentGrid = (initialSave.grid && initialSave.grid.length === 16) ? expandGrid16to32(initialSave.grid) : (initialSave.grid || starterMapGrid);
     
-    // Tự động kiểm tra & cập nhật bản đồ cho các save cũ:
-    // 1. Kho Silo (b13_barn_silo) và Kho Barn (b12_general_store)
-    let hasSilo = false;
-    let hasBarn = false;
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        // Tự động chuyển đổi Nhà Kho cũ (b48_winery_press_barn_se hoặc b47_winery_press_barn_sw) sang b12_general_store
-        if (currentGrid[r]?.[c] === "b48_winery_press_barn_se" || currentGrid[r]?.[c] === "b47_winery_press_barn_sw") {
-          currentGrid[r][c] = "b12_general_store";
-        }
-        if (currentGrid[r]?.[c] === "b13_barn_silo") hasSilo = true;
-        if (currentGrid[r]?.[c] === "b12_general_store") hasBarn = true;
-      }
-    }
-    if (!hasSilo && currentGrid[12]) {
-      currentGrid[12][12] = "b13_barn_silo";
-    }
-    if (!hasBarn && currentGrid[12]) {
-      currentGrid[12][18] = "b12_general_store";
-    }
+    // Di trú save cũ: Kho Barn (b12) & Kho Silo (b13) đã được gộp hẳn vào Kho Tổng Hợp 2×2 (b60).
+    // Dùng chung hàm với luồng import JSON/dev map để mọi nguồn dữ liệu đều nhất quán.
+    migrateLegacyWarehouseLayout(currentGrid);
 
-    // 2. Tòa Thị Chính tại (14, 15), Đài phun nước quảng trường tại (15, 15), và Trục đường ra làng (16..31, 15)
-    if (currentGrid[14]) currentGrid[14][15] = "b14_town_hall";
-    if (currentGrid[15]) {
-      currentGrid[15][15] = "d01_plaza_fountain"; // Mặt đường cũ trước Tòa Thị Chính thay bằng Đài phun nước quảng trường
-    }
-    for (let r = 16; r <= 31; r++) {
-      if (currentGrid[r]) currentGrid[r][15] = "r01_road_straight_ns";
-    }
+    // 2. Đặt lại khu trung tâm theo footprint tòa thị chính 2x3 và quảng trường 3x3.
+    applyTownCenterLayout(currentGrid);
 
     // Dọn sạch hoàn toàn các ô r02_cobblestone không có hình ảnh từ các bản đồ save cũ
     for (let r = 0; r < ROWS; r++) {
@@ -224,9 +204,12 @@ export function initIsometricStudio() {
     let playerGold = typeof initialSave.economy?.playerGold === "number" ? initialSave.economy.playerGold : INITIAL_GOLD;
     let playerGems = typeof initialSave.economy?.playerGems === "number" ? initialSave.economy.playerGems : INITIAL_GEMS;
     
-    // Storage & Livestock State (Hay Day Style)
-    let siloCapacity = typeof initialSave.storage?.siloCapacity === "number" ? initialSave.storage.siloCapacity : 100;
-    let barnCapacity = typeof initialSave.storage?.barnCapacity === "number" ? initialSave.storage.barnCapacity : 100;
+    // Kho Tổng Hợp kế thừa tổng sức chứa từ save cũ nhưng luôn nằm trong [300, 1000].
+    const legacyStorageCapacity = (initialSave.storage?.siloCapacity || 0) + (initialSave.storage?.barnCapacity || 0);
+    const savedWarehouseCapacity = typeof initialSave.storage?.warehouseCapacity === "number"
+      ? initialSave.storage.warehouseCapacity
+      : legacyStorageCapacity;
+    let warehouseCapacity = Math.min(1000, Math.max(300, savedWarehouseCapacity));
     let livestockState = (initialSave.livestockState && typeof initialSave.livestockState === "object") ? initialSave.livestockState : {};
     
     // Production Buildings and Floating Texts State
@@ -235,28 +218,41 @@ export function initIsometricStudio() {
     for (const [k, f] of Object.entries(farmlandState)) {
       if (!f || typeof f !== 'object' || !f.seedId) {
         delete farmlandState[k];
+        continue;
       }
+      getCropGrowDurationMs(f);
     }
     let fruitTreesState = (initialSave.fruitTreesState && typeof initialSave.fruitTreesState === 'object') ? initialSave.fruitTreesState : {};
 
-    // Đảm bảo không còn productionState sót lại cho các ô Nhà Kho (Barn & Silo)
+    // Đảm bảo không còn productionState sót lại cho các ô kho.
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const tid = currentGrid[r]?.[c];
-        if (tid === "b12_general_store" || tid === "b13_barn_silo") {
+        if (tid === "b60_combined_warehouse" || tid === "b12_general_store" || tid === "b13_barn_silo") {
           delete productionState[`${r}_${c}`];
           delete productionState[`${r},${c}`];
         }
       }
     }
 
-    // Tự động khởi tạo quả chín sẵn sàng thu hoạch cho mọi cây ăn quả trên bản đồ
+    // Khởi tạo trạng thái cây ăn quả: CHỈ tạo mới khi chưa có, giữ nguyên cooldown đã lưu.
+    // (Trước đây khối này ghi đè lastHarvest = 0 mỗi lần load nên F5 là hái lại được toàn bộ cây.)
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        if (currentGrid[r] && FRUIT_TREES_CONFIG[currentGrid[r][c]]) {
-          const k = `${r}_${c}`;
-          productionState[k] = { lastHarvest: 0, ready: true };
+        const tid = currentGrid[r] ? currentGrid[r][c] : null;
+        if (!FRUIT_TREES_CONFIG[tid]) continue;
+        const k = `${r}_${c}`;
+        const treeCfg = FRUIT_TREES_CONFIG[tid];
+        if (!fruitTreesState[k] || typeof fruitTreesState[k].lastHarvest !== "number") {
           fruitTreesState[k] = { lastHarvest: 0 };
+        }
+        if (!productionState[k]) {
+          const lastHarvest = fruitTreesState[k].lastHarvest || 0;
+          const elapsedSec = (Date.now() - lastHarvest) / 1000;
+          productionState[k] = {
+            lastHarvest,
+            ready: elapsedSec >= (treeCfg.intervalSec || 45)
+          };
         }
       }
     }
@@ -294,7 +290,7 @@ export function initIsometricStudio() {
       }
     }
 
-    // Farm Tools Manager: 'sickle' (liềm) | 'shovel' (xẻng) | bulk seed sowing
+    // Farm Tools Manager: gieo hạt hàng loạt + thu hoạch hàng loạt
     let farmToolsManager = null;
     let isMouseDown = false;
 
@@ -348,10 +344,7 @@ export function initIsometricStudio() {
           playerGold,
           playerGems
         },
-        storage: {
-          siloCapacity,
-          barnCapacity
-        },
+        storage: { warehouseCapacity },
         livestockState,
         quests: {
           harvestsCount: totalHarvestsCount,
@@ -387,7 +380,10 @@ export function initIsometricStudio() {
           : (initialSave?.dailyWheel || null),
         activeSeason: seasonalThemeManager
           ? seasonalThemeManager.currentSeason
-          : (initialSave?.activeSeason || "summer")
+          : (initialSave?.activeSeason || "summer"),
+        achievements: (uiModalController && typeof uiModalController.getClaimedAchievements === "function")
+          ? uiModalController.getClaimedAchievements()
+          : (initialSave?.achievements || null)
       };
     }
 
@@ -433,6 +429,8 @@ export function initIsometricStudio() {
     let redoStack = [];
     let hoverCell = null;
     let movingBuilding = null;
+    var selectedObjectCell = null; // công trình đang được chọn (giữ lâu) -> vẽ mờ
+    var wasPlacingGhost = false;   // đang ở chế độ đặt (bóng mờ) hay không
     const villagerManager = new VillagerManager();
     const petManager = new PetManager();
 
@@ -757,8 +755,7 @@ export function initIsometricStudio() {
       gameMode = "game";
       playerGold = INITIAL_GOLD; // 500 gold
       playerGems = INITIAL_GEMS; // 30 gems
-      siloCapacity = 100;
-      barnCapacity = 100;
+      warehouseCapacity = 300;
       livestockState = {};
       playerLevel = 1;
       playerXP = 0;
@@ -791,13 +788,15 @@ export function initIsometricStudio() {
         townVisitorManager.nextSpawnTimer = 6;
       }
       if (townCaretakerManager) {
-        townCaretakerManager.init(null);
+        if (typeof townCaretakerManager.reset === "function") townCaretakerManager.reset();
+        else townCaretakerManager.init(null);
       }
       if (harborShipManager) {
         harborShipManager.init(null);
       }
       if (kingdomWondersManager) {
-        kingdomWondersManager.init(null);
+        if (typeof kingdomWondersManager.reset === "function") kingdomWondersManager.reset();
+        else kingdomWondersManager.init(null);
       }
       if (dailyWheelManager) {
         dailyWheelManager.init(null);
@@ -1155,6 +1154,41 @@ export function initIsometricStudio() {
       }
     }
 
+    // Đặt bóng mờ ban đầu: gần giữa màn hình, ưu tiên ô cỏ trống đã mở khóa
+    function initGhostCell() {
+      try {
+        if (movingBuilding) {
+          hoverCell = { row: movingBuilding.fromRow, col: movingBuilding.fromCol };
+          requestRender();
+          return;
+        }
+        const vp = getViewportSize();
+        const w = screenToWorldCoords(vp.width / 2, vp.height / 2 - 40);
+        const c0 = worldToCell(w.x, w.y);
+        let best = c0;
+        if (c0) {
+          const isFree = (r, c) => {
+            const g = currentGrid[r] ? currentGrid[r][c] : undefined;
+            return (g === "d12_meadow_wildflowers" || g === "g01_grass_flat") && !constructions[`${r}_${c}`] && isCellUnlocked(r, c, landUnlockedChunks, gameMode);
+          };
+          search: for (let d = 0; d <= 8; d++) {
+            for (let dr = -d; dr <= d; dr++) {
+              for (let dc = -d; dc <= d; dc++) {
+                if (Math.max(Math.abs(dr), Math.abs(dc)) !== d) continue;
+                if (isFree(c0.row + dr, c0.col + dc)) {
+                  best = { row: c0.row + dr, col: c0.col + dc };
+                  break search;
+                }
+              }
+            }
+          }
+        }
+        hoverCell = best || null;
+        requestRender();
+      } catch (err) {
+        /* bỏ qua: không đặt được bóng mờ ban đầu */
+      }
+    }
     // Floating Active Brush & Moving Building HUD
     function updateFloatingBrushHUD() {
       const hud = document.getElementById("floating-brush-hud");
@@ -1162,6 +1196,23 @@ export function initIsometricStudio() {
       const metaEl = document.getElementById("floating-brush-meta");
       const thumbEl = document.getElementById("floating-brush-thumb");
       if (!hud) return;
+
+      // Chế độ đặt (bóng mờ): vào chế độ -> đặt bóng mờ gần giữa màn hình; thoát -> bỏ bóng mờ
+      const placingNow = !!((activeBrush && activeBrush !== "erase") || movingBuilding || (kingdomWondersManager && kingdomWondersManager.movingWonderId));
+      if (placingNow && !wasPlacingGhost) {
+        selectedObjectCell = null;
+        const objOverlayEl = document.getElementById("object-action-overlay");
+        if (objOverlayEl) { objOverlayEl.classList.add("hidden"); objOverlayEl.style.display = "none"; }
+        initGhostCell();
+      } else if (!placingNow && wasPlacingGhost) {
+        hoverCell = null;
+        requestRender();
+      }
+      wasPlacingGhost = placingNow;
+      const confirmBtnEl = document.getElementById("floating-brush-confirm");
+      const rotateBtnEl = document.getElementById("floating-brush-rotate");
+      if (confirmBtnEl) confirmBtnEl.style.display = placingNow ? "" : "none";
+      if (rotateBtnEl) rotateBtnEl.style.display = placingNow ? "" : "none";
 
       if (!activeBrush && !movingBuilding && !(kingdomWondersManager && kingdomWondersManager.movingWonderId)) {
         hud.classList.add("hidden");
@@ -1177,8 +1228,16 @@ export function initIsometricStudio() {
           poseidon_statue: "Tượng Thần Biển Poseidon"
         };
         const isFlipped = !!kingdomWondersManager.movingWonderFlipped;
-        if (titleEl) titleEl.textContent = `🚚 Di chuyển: ${names[wid] || "Kỳ Quan"}` + (isFlipped ? " (Đã xoay)" : "");
-        if (metaEl) metaEl.textContent = "Nhấp bất kỳ ô nào để đặt • R: Xoay hướng • Esc: Hủy";
+        const buying = !!kingdomWondersManager.purchasingWonder;
+        const cost = WONDERS_CONFIG[wid]?.purchaseGold || 0;
+        if (titleEl) {
+          titleEl.textContent = (buying ? `🏛️ Mua & đặt: ${names[wid] || "Kỳ Quan"}` : `🚚 Di chuyển: ${names[wid] || "Kỳ Quan"}`) + (isFlipped ? " (Đã xoay)" : "");
+        }
+        if (metaEl) {
+          metaEl.textContent = buying
+            ? `Giai đoạn 0 • ${cost > 0 ? cost.toLocaleString() + " 🪙" : "Miễn phí"} • Ô cỏ trống • R: Xoay • Esc: Hủy`
+            : "Nhấp ô cỏ trống để đặt • R: Xoay hướng • Esc: Hủy";
+        }
         if (thumbEl) {
           thumbEl.src = `/assets/wonders/${wid}.png`;
           thumbEl.style.transform = isFlipped ? "scaleX(-1)" : "none";
@@ -1267,6 +1326,11 @@ export function initIsometricStudio() {
     const hudCancelBtn = document.getElementById("floating-brush-cancel");
     if (hudRotateBtn) {
       hudRotateBtn.addEventListener("click", () => {
+        if (kingdomWondersManager && kingdomWondersManager.movingWonderId) {
+          kingdomWondersManager.toggleMovingWonderFlip();
+          updateFloatingBrushHUD();
+          return;
+        }
         if (movingBuilding) {
           rotateMovingBuilding();
           return;
@@ -1606,8 +1670,7 @@ export function initIsometricStudio() {
       requestRender,
       centerCamera,
       renderCanvas,
-      getSiloCapacity: () => siloCapacity,
-      getBarnCapacity: () => barnCapacity,
+      getWarehouseCapacity: () => warehouseCapacity,
       getActiveFarmlandCell: () => activeFarmlandCell,
       setActiveFarmlandCell: (cell) => { activeFarmlandCell = cell; },
       activateBulkSeedBrush: (crop) => {
@@ -1615,12 +1678,17 @@ export function initIsometricStudio() {
       },
       loadImportedState: (imported) => {
         currentGrid = imported.grid;
+        migrateLegacyWarehouseLayout(currentGrid);
         flippedGrid = imported.flippedGrid || {};
         constructions = imported.constructions || {};
         productionState = imported.productionState || {};
         buildingLevels = imported.buildingLevels || {};
         upgradesInProgress = imported.upgradesInProgress || {};
         farmlandState = imported.farmlandState || {};
+        for (const [k, f] of Object.entries(farmlandState)) {
+          if (!f || typeof f !== "object" || !f.seedId) delete farmlandState[k];
+          else getCropGrowDurationMs(f);
+        }
         landUnlockedChunks = Array.isArray(imported.land?.unlockedChunks) ? imported.land.unlockedChunks : [...INITIAL_UNLOCKED_CHUNKS];
         if (imported.economy) {
           gameMode = imported.economy.gameMode || "game";
@@ -1628,8 +1696,10 @@ export function initIsometricStudio() {
           if (typeof imported.economy.playerGems === "number") playerGems = imported.economy.playerGems;
         }
         if (imported.storage) {
-          if (typeof imported.storage.siloCapacity === "number") siloCapacity = imported.storage.siloCapacity;
-          if (typeof imported.storage.barnCapacity === "number") barnCapacity = imported.storage.barnCapacity;
+          const importedCap = typeof imported.storage.warehouseCapacity === "number"
+            ? imported.storage.warehouseCapacity
+            : (imported.storage.siloCapacity || 0) + (imported.storage.barnCapacity || 0);
+          warehouseCapacity = Math.min(1000, Math.max(300, importedCap));
         }
         if (imported.livestockState && typeof imported.livestockState === "object") {
           livestockState = imported.livestockState;
@@ -1652,6 +1722,15 @@ export function initIsometricStudio() {
         if (imported.resources) {
           playerResources = { ...playerResources, ...imported.resources };
         }
+        // Khôi phục tiến trình nhiệm vụ khi import, tránh nhận lại toàn bộ thưởng đã nhận.
+        if (imported.quests && typeof imported.quests === "object") {
+          if (typeof imported.quests.harvestsCount === "number") {
+            totalHarvestsCount = imported.quests.harvestsCount;
+          }
+          if (imported.quests.claimedQuests && typeof imported.quests.claimedQuests === "object") {
+            questsClaimed = imported.quests.claimedQuests;
+          }
+        }
         if (orderBoardManager && imported.orderBoard) {
           orderBoardManager.restoreFromSave(imported.orderBoard);
         }
@@ -1670,6 +1749,9 @@ export function initIsometricStudio() {
         if (dailyWheelManager && imported.dailyWheel) {
           dailyWheelManager.init(imported.dailyWheel);
         }
+        if (uiModalController && typeof uiModalController.setClaimedAchievements === "function" && imported.achievements) {
+          uiModalController.setClaimedAchievements(imported.achievements);
+        }
         if (seasonalThemeManager && imported.activeSeason) {
           seasonalThemeManager.setSeason(imported.activeSeason);
         }
@@ -1685,10 +1767,20 @@ export function initIsometricStudio() {
       }
     });
 
+    // Khôi phục thành tựu đã nhận từ save (trước đây chỉ lưu ở localStorage riêng nên export/import bị mất).
+    if (uiModalController && typeof uiModalController.setClaimedAchievements === "function" && initialSave && initialSave.achievements) {
+      uiModalController.setClaimedAchievements(initialSave.achievements);
+    }
+
     // Global Dev testing shortcut for console or instant testing
     window.loadDevTestSave = () => {
       if (uiModalController && uiModalController.loadImportedState) {
-        uiModalController.loadImportedState(DEV_FULL_VILLAGE_SAVE);
+        const devSave = {
+          ...DEV_FULL_VILLAGE_SAVE,
+          grid: DEV_FULL_VILLAGE_SAVE.grid.map(row => [...row])
+        };
+        applyTownCenterLayout(devSave.grid);
+        uiModalController.loadImportedState(devSave);
       }
       centerCamera();
       requestRender();
@@ -1760,6 +1852,25 @@ export function initIsometricStudio() {
     }
 
     if (btnOpenShop) btnOpenShop.addEventListener("click", openShopModal);
+
+    // Gom/sổ cụm nút tròn phía dưới (điện thoại)
+    const deckToggleBtn = document.getElementById("deck-toggle-btn");
+    const bottomLeftDeck = document.getElementById("bottom-left-deck");
+    if (deckToggleBtn && bottomLeftDeck) {
+      deckToggleBtn.addEventListener("click", () => {
+        playUIClickSound();
+        const isOpen = bottomLeftDeck.classList.toggle("open");
+        deckToggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+      bottomLeftDeck.addEventListener("click", (e) => {
+        if (e.target.closest && e.target.closest(".deck-buttons .deck-circle-btn")) {
+          setTimeout(() => {
+            bottomLeftDeck.classList.remove("open");
+            deckToggleBtn.setAttribute("aria-expanded", "false");
+          }, 0);
+        }
+      });
+    }
     const btnToggleDemolish = document.getElementById("btn-toggle-demolish");
     if (btnToggleDemolish) {
       btnToggleDemolish.addEventListener("click", () => {
@@ -1789,28 +1900,16 @@ export function initIsometricStudio() {
     }
 
     // Storage Badges & Modals Listeners
-    const hudSiloBadge = document.getElementById("hud-storage-silo-badge");
-    const hudBarnBadge = document.getElementById("hud-storage-barn-badge");
+    const hudWarehouseBadge = document.getElementById("hud-storage-warehouse-badge");
     const hudQuickStorageBtn = document.getElementById("hud-quick-storage-btn");
     const storageModalClose = document.getElementById("storage-modal-close");
     const storageDismissBtn = document.getElementById("storage-dismiss-btn");
-    const storageTabSilo = document.getElementById("storage-tab-silo");
-    const storageTabBarn = document.getElementById("storage-tab-barn");
     const storageUpgradeBtn = document.getElementById("storage-upgrade-btn");
 
-    if (hudSiloBadge) hudSiloBadge.addEventListener("click", () => openStorageModal("silo"));
-    if (hudBarnBadge) hudBarnBadge.addEventListener("click", () => openStorageModal("barn"));
-    if (hudQuickStorageBtn) hudQuickStorageBtn.addEventListener("click", () => openStorageModal("silo"));
+    if (hudWarehouseBadge) hudWarehouseBadge.addEventListener("click", openStorageModal);
+    if (hudQuickStorageBtn) hudQuickStorageBtn.addEventListener("click", openStorageModal);
     if (storageModalClose) storageModalClose.addEventListener("click", closeStorageModal);
     if (storageDismissBtn) storageDismissBtn.addEventListener("click", closeStorageModal);
-    if (storageTabSilo) storageTabSilo.addEventListener("click", () => {
-      currentStorageTab = "silo";
-      renderStorageModalContent();
-    });
-    if (storageTabBarn) storageTabBarn.addEventListener("click", () => {
-      currentStorageTab = "barn";
-      renderStorageModalContent();
-    });
     if (storageUpgradeBtn) storageUpgradeBtn.addEventListener("click", upgradeStorageCurrentTab);
 
     // Storage Full Warning Listeners
@@ -1821,9 +1920,8 @@ export function initIsometricStudio() {
 
     if (storageFullCloseBtn) storageFullCloseBtn.addEventListener("click", closeStorageFullModal);
     if (storageFullUpgradeBtn) storageFullUpgradeBtn.addEventListener("click", () => {
-      const type = storageFullModal?.dataset?.fullType || "silo";
       closeStorageFullModal();
-      openStorageModal(type);
+      openStorageModal();
     });
     if (storageFullOrdersBtn) storageFullOrdersBtn.addEventListener("click", () => {
       closeStorageFullModal();
@@ -1867,6 +1965,36 @@ export function initIsometricStudio() {
     function renderShopItems() {
       if (!shopItemsContainer) return;
       shopItemsContainer.innerHTML = "";
+
+      if (activeShopCategory === 'wonders') {
+        Object.values(WONDERS_CONFIG).forEach((wonder) => {
+          const placed = kingdomWondersManager && kingdomWondersManager.isWonderPlaced(wonder.id);
+          const stage = kingdomWondersManager ? (kingdomWondersManager.wondersState[wonder.id] || 0) : 0;
+          const cost = wonder.purchaseGold || 0;
+          const card = document.createElement("div");
+          card.className = "shop-item-card" + (placed ? " selected" : "");
+          card.innerHTML = `
+            <img class="shop-item-thumb" src="/assets/wonders/${wonder.id}.png" alt="${wonder.name}" onerror="this.onerror=null; this.src='tiles/d12_meadow_wildflowers_128.png';" />
+            <div class="shop-item-name">${wonder.icon} ${wonder.name}</div>
+            <div class="shop-item-desc">${placed ? `Đã đặt • Giai đoạn ${stage}/4. Nhấp để thi công.` : `Mua và tự đặt (Giai đoạn 0), sau đó mới thi công. ${wonder.buffDescription}`}</div>
+            <div class="shop-item-badges">
+              <span class="shop-item-cost">${placed ? "Đã sở hữu" : (cost === 0 ? "Miễn phí" : `${cost} 🪙`)}</span>
+            </div>
+          `;
+          card.addEventListener("click", () => {
+            if (!kingdomWondersManager) return;
+            if (placed) {
+              closeShopModal();
+              kingdomWondersManager.openModal(wonder.id);
+              return;
+            }
+            const ok = kingdomWondersManager.startPurchasingWonder(wonder.id);
+            if (ok) closeShopModal();
+          });
+          shopItemsContainer.appendChild(card);
+        });
+        return;
+      }
 
       if (activeShopCategory === 'erase') {
         const card = document.createElement("div");
@@ -1995,7 +2123,7 @@ export function initIsometricStudio() {
     }
 
     // =========================================================================
-    // FARM TOOLS (LIỀM & XẺNG) SYSTEM (Refactored to src/engine/farmTools.js)
+    // FARM TOOLS (GIEO HẠT & THU HOẠCH HÀNG LOẠT) (Refactored to src/engine/farmTools.js)
     // =========================================================================
     farmToolsManager = createFarmToolsManager({
       getCurrentGrid: () => currentGrid,
@@ -2024,12 +2152,14 @@ export function initIsometricStudio() {
       checkAndFeedBakeries: () => checkAndFeedBakeries(),
       saveGameEconomyState: () => saveGameEconomyState(),
       persistGameState: () => persistGameState(),
+      getLandUnlockedChunks: () => landUnlockedChunks,
+      getGameMode: () => gameMode,
       checkQuestsProgress: (showToast) => checkQuestsProgress(showToast),
       onTutorialAction: (action, payload) => tutorialManager.onAction(action, payload),
       getCropYieldMultiplier: () => (townEventsManager ? townEventsManager.getCropYieldMultiplier() : 1),
       getXpMultiplier: () => (townEventsManager ? townEventsManager.getXpMultiplier() : 1.0),
       openSeedModal: (row, col) => uiModalController.openSeedModal(row, col),
-      getSiloCapacity: () => siloCapacity,
+      getWarehouseCapacity: () => warehouseCapacity,
       showStorageFullModal: (type) => showStorageFullModal(type),
       requestRender: () => requestRender()
     });
@@ -2205,27 +2335,18 @@ export function initIsometricStudio() {
     }
 
     // =========================================================================
-    // STORAGE & SILO/BARN MANAGEMENT
+    // KHO TỔNG HỢP MANAGEMENT
     // =========================================================================
-    let currentStorageTab = "silo"; // "silo" | "barn"
-
     function updateStorageHUD() {
-      const sUsed = getSiloUsed(playerResources);
-      const bUsed = getBarnUsed(playerResources);
+      const used = getWarehouseUsed(playerResources);
+      const warehouseCountEl = document.getElementById("hud-warehouse-count");
+      const warehouseBadge = document.getElementById("storage-badge-warehouse");
 
-      const siloCountEl = document.getElementById("hud-silo-count");
-      const barnCountEl = document.getElementById("hud-barn-count");
-      const siloBadge = document.getElementById("storage-badge-silo");
-      const barnBadge = document.getElementById("storage-badge-barn");
-
-      if (siloCountEl) siloCountEl.textContent = `${sUsed}/${siloCapacity}`;
-      if (barnCountEl) barnCountEl.textContent = `${bUsed}/${barnCapacity}`;
-      if (siloBadge) siloBadge.textContent = `${sUsed}/${siloCapacity}`;
-      if (barnBadge) barnBadge.textContent = `${bUsed}/${barnCapacity}`;
+      if (warehouseCountEl) warehouseCountEl.textContent = `${used}/${warehouseCapacity}`;
+      if (warehouseBadge) warehouseBadge.textContent = `${used}/${warehouseCapacity}`;
     }
 
-    function openStorageModal(tab = "silo") {
-      currentStorageTab = tab;
+    function openStorageModal() {
       const modal = document.getElementById("storage-modal");
       renderStorageModalContent();
       if (modal) {
@@ -2245,31 +2366,23 @@ export function initIsometricStudio() {
     }
 
     function renderStorageModalContent() {
-      const isSilo = currentStorageTab === "silo";
-      const tabSiloBtn = document.getElementById("storage-tab-silo");
-      const tabBarnBtn = document.getElementById("storage-tab-barn");
       const capTitle = document.getElementById("storage-cap-title");
       const capValue = document.getElementById("storage-cap-value");
       const meterFill = document.getElementById("storage-meter-fill");
       const gridEl = document.getElementById("storage-items-grid");
 
-      if (tabSiloBtn) tabSiloBtn.classList.toggle("active", isSilo);
-      if (tabBarnBtn) tabBarnBtn.classList.toggle("active", !isSilo);
+      const used = getWarehouseUsed(playerResources);
+      const pct = Math.min(100, Math.round((used / warehouseCapacity) * 100));
 
-      const used = isSilo ? getSiloUsed(playerResources) : getBarnUsed(playerResources);
-      const cap = isSilo ? siloCapacity : barnCapacity;
-      const pct = Math.min(100, Math.round((used / cap) * 100));
-
-      if (capTitle) capTitle.textContent = isSilo ? "Sức chứa Kho Nông Sản (Silo):" : "Sức chứa Kho Thành Phẩm (Barn):";
-      if (capValue) capValue.textContent = `${used} / ${cap}`;
+      if (capTitle) capTitle.textContent = "Sức chứa Kho Tổng Hợp:";
+      if (capValue) capValue.textContent = `${used} / ${warehouseCapacity}`;
       if (meterFill) {
         meterFill.style.width = `${pct}%`;
         meterFill.classList.toggle("near-full", pct >= 90);
       }
 
-      const resList = isSilo ? SILO_RESOURCE_IDS : BARN_RESOURCE_IDS;
       if (gridEl) {
-        gridEl.innerHTML = resList.map(id => {
+        gridEl.innerHTML = WAREHOUSE_RESOURCE_IDS.map(id => {
           const cfg = RESOURCES_CONFIG[id];
           const qty = playerResources[id] || 0;
           return `
@@ -2288,6 +2401,13 @@ export function initIsometricStudio() {
     function upgradeStorageCurrentTab() {
       const costGold = 200;
       const costGems = 5;
+      const MAX_WAREHOUSE_CAPACITY = 1000;
+
+      if (warehouseCapacity >= MAX_WAREHOUSE_CAPACITY) {
+        playErrorSound();
+        showToast(`🏆 Kho Tổng Hợp đã đạt sức chứa tối đa ${MAX_WAREHOUSE_CAPACITY}!`, "info");
+        return;
+      }
 
       if (playerGold < costGold) {
         playErrorSound();
@@ -2303,13 +2423,8 @@ export function initIsometricStudio() {
       playerGold -= costGold;
       deductGems(costGems);
 
-      if (currentStorageTab === "silo") {
-        siloCapacity += 25;
-        showToast(`🎉 Đã nâng cấp Kho Silo (+25 Sức Chứa)! Sức chứa mới: ${siloCapacity}`, "success");
-      } else {
-        barnCapacity += 25;
-        showToast(`🎉 Đã nâng cấp Kho Barn (+25 Sức Chứa)! Sức chứa mới: ${barnCapacity}`, "success");
-      }
+      warehouseCapacity = Math.min(MAX_WAREHOUSE_CAPACITY, warehouseCapacity + 25);
+      showToast(`🎉 Đã nâng cấp Kho Tổng Hợp (+25 sức chứa)! Sức chứa mới: ${warehouseCapacity}`, "success");
 
       playUpgradeSound();
       updateGoldDisplay();
@@ -2318,23 +2433,15 @@ export function initIsometricStudio() {
       renderStorageModalContent();
     }
 
-    function showStorageFullModal(type = "silo") {
+    function showStorageFullModal() {
       const modal = document.getElementById("storage-full-modal");
       const titleEl = document.getElementById("storage-full-title");
       const descEl = document.getElementById("storage-full-desc");
-
-      if (type === "silo") {
-        const sUsed = getSiloUsed(playerResources);
-        if (titleEl) titleEl.textContent = "🌾 Kho Nông Sản (Silo) Đã Đầy!";
-        if (descEl) descEl.textContent = `Sức chứa kho nông sản (${sUsed}/${siloCapacity}) đã đạt giới hạn tối đa. Bạn cần giải phóng nông sản bằng cách giao đơn hàng hoặc nâng cấp Silo để tiếp tục thu hoạch.`;
-      } else {
-        const bUsed = getBarnUsed(playerResources);
-        if (titleEl) titleEl.textContent = "📦 Kho Thành Phẩm (Barn) Đã Đầy!";
-        if (descEl) descEl.textContent = `Sức chứa kho vật tư & thành phẩm (${bUsed}/${barnCapacity}) đã đạt giới hạn tối đa. Bạn cần hoàn thành đơn hàng cho NPC hoặc nâng cấp Barn để tiếp tục thu hoạch.`;
-      }
+      const used = getWarehouseUsed(playerResources);
+      if (titleEl) titleEl.textContent = "📦 Kho Tổng Hợp Đã Đầy!";
+      if (descEl) descEl.textContent = `Sức chứa kho (${used}/${warehouseCapacity}) đã đạt giới hạn tối đa. Hãy giao bớt hàng hoặc nâng cấp kho để tiếp tục thu hoạch.`;
 
       if (modal) {
-        modal.dataset.fullType = type;
         modal.classList.remove("hidden");
         modal.style.display = "flex";
       }
@@ -2554,6 +2661,16 @@ export function initIsometricStudio() {
     function confirmLandExpansion() {
       if (pendingExpansionChunkId === null || pendingExpansionChunkId === undefined) return;
       const cId = pendingExpansionChunkId;
+      if (landUnlockedChunks.includes(cId)) {
+        closeLandExpansionModal();
+        return;
+      }
+      if (!isChunkAdjacentToUnlocked(cId, landUnlockedChunks)) {
+        playErrorSound();
+        showToast("🔒 Mảnh đất này chưa thể mở! Hãy mở các mảnh đất kề cận trước.", "warning");
+        closeLandExpansionModal();
+        return;
+      }
       const cost = getNextChunkCost(landUnlockedChunks.length);
       const goldOk = playerGold >= cost.gold;
 
@@ -2570,6 +2687,10 @@ export function initIsometricStudio() {
         showToast("⚠️ Bạn chưa có đủ Vàng hoặc Nguyên liệu để khai hoang!", "error");
         return;
       }
+
+      pendingExpansionChunkId = null;
+      const landConfirmBtn = document.getElementById("land-modal-confirm-btn");
+      if (landConfirmBtn) landConfirmBtn.disabled = true;
 
       // Deduct gold & resources
       playerGold -= cost.gold;
@@ -2943,6 +3064,8 @@ export function initIsometricStudio() {
       ls.state = "producing";
       ls.feedTime = Date.now();
       ls.durationMs = cfg.durationSec * 1000;
+      // Chốt số con được cho ăn: mua thêm con giữa chu kỳ sẽ không sinh thêm sản phẩm miễn phí.
+      ls.fedCount = ls.animalCount;
 
       if (!silent) {
         cfg.sound();
@@ -2973,13 +3096,13 @@ export function initIsometricStudio() {
       if (ls.state !== "ready") return false;
 
       // Check Kho Barn Sức Chứa
-      const yieldAmt = ls.animalCount;
-      if (getBarnUsed(playerResources) + yieldAmt > barnCapacity) {
-        if (!silent) showStorageFullModal("barn");
+      const yieldAmt = Math.max(1, Math.min(ls.animalCount, typeof ls.fedCount === "number" ? ls.fedCount : ls.animalCount));
+      if (getWarehouseUsed(playerResources) + yieldAmt > warehouseCapacity) {
+        if (!silent) showStorageFullModal();
         return false;
       }
 
-      playerResources[cfg.productRes] = (playerResources[cfg.productRes] || 0) + yieldAmt;
+      playerResources[cfg.productRes] = Math.min(RESOURCE_MAX_CAPACITY, (playerResources[cfg.productRes] || 0) + yieldAmt);
       const goldMult = (townEventsManager && typeof townEventsManager.getGoldMultiplier === "function") ? townEventsManager.getGoldMultiplier() : 1.0;
       const xpMult = (townEventsManager && typeof townEventsManager.getXpMultiplier === "function") ? townEventsManager.getXpMultiplier() : 1.0;
       const goldEarned = Math.round(cfg.goldGain * goldMult);
@@ -2999,6 +3122,7 @@ export function initIsometricStudio() {
       }
 
       ls.state = "hungry";
+      delete ls.fedCount;
       updateGoldDisplay();
       updateResourcesUI();
       persistGameState();
@@ -3060,6 +3184,8 @@ export function initIsometricStudio() {
       if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
       if (!activeBrush) return false;
       if (gameMode === "game" && !isCellUnlocked(row, col, landUnlockedChunks, gameMode)) return false;
+      if (kingdomWondersManager && typeof kingdomWondersManager.getWonderAt === "function" &&
+          kingdomWondersManager.getWonderAt(row, col)) return false;
       const key = `${row}_${col}`;
       if (constructions[key]) return false;
       if (currentGrid[row][col] === activeBrush) return false;
@@ -3109,24 +3235,28 @@ export function initIsometricStudio() {
         return harvestLivestock(row, col, silent);
       }
 
+      // Cây ăn quả: dùng chung một nguồn thời gian (fruitTreesState) với quét chuột,
+      // tránh trường hợp click bong bóng rồi kéo chuột qua cây sẽ nhận thưởng 2 lần.
+      if (FRUIT_TREES_CONFIG[curTid]) {
+        return harvestFruitTree(row, col, silent);
+      }
+
       const prod = PRODUCTION_BUILDINGS[curTid];
       if (!prod || !productionState[pKey] || !productionState[pKey].ready) return false;
 
       const bLvl = buildingLevels[pKey] || 1;
       const yieldQty = getBuildingYield(curTid, bLvl);
 
-      // Kiểm tra sức chứa kho Silo / Barn trước khi cho phép thu hoạch
-      const isSiloItem = curTid === "b04_windmill" || curTid.startsWith("d2");
-      if (isSiloItem) {
-        if (getSiloUsed(playerResources) + yieldQty > siloCapacity) {
-          if (!silent) showStorageFullModal("silo");
-          return false;
-        }
-      } else {
-        if (getBarnUsed(playerResources) + yieldQty > barnCapacity) {
-          if (!silent) showStorageFullModal("barn");
-          return false;
-        }
+      // Chỉ công trình thực sự sinh tài nguyên mới bị chặn bởi sức chứa kho.
+      // Quán trọ Tudor (b02_tudor_inn) và Cối xay nước (b05_watermill) chỉ sinh vàng,
+      // nên vẫn phải thu hoạch được khi kho đầy (trước đây bị chặn oan).
+      const isResourceProducing = curTid === "b04_windmill" || curTid === "b06_bakery" ||
+        curTid === "b03_blacksmith_forge" || curTid === "b58_textile_mill" ||
+        curTid === "b59_dairy_factory" || curTid === "b47_winery_press_barn_sw" ||
+        curTid === "b48_winery_press_barn_se";
+      if (isResourceProducing && getWarehouseUsed(playerResources) + yieldQty > warehouseCapacity) {
+        if (!silent) showStorageFullModal();
+        return false;
       }
 
       productionState[pKey].ready = false;
@@ -3134,7 +3264,11 @@ export function initIsometricStudio() {
       totalHarvestsCount++;
 
       const goldMult = (townEventsManager && typeof townEventsManager.getGoldMultiplier === "function") ? townEventsManager.getGoldMultiplier() : 1.0;
-      const baseGold = prod.rewardGold || 25;
+      // Vàng theo cấp nâng cấp: revenueGold thay thế, hoặc goldBonus cộng thêm vào mức gốc.
+      const upgradeCfg = UPGRADES_CONFIG[curTid] ? UPGRADES_CONFIG[curTid][bLvl] : null;
+      const baseGold = (upgradeCfg && typeof upgradeCfg.revenueGold === "number")
+        ? upgradeCfg.revenueGold
+        : (prod.rewardGold || 25) + (upgradeCfg && typeof upgradeCfg.goldBonus === "number" ? upgradeCfg.goldBonus : 0);
       const rewardGoldGain = Math.round(baseGold * goldMult);
       let rewardMsg = `+${yieldQty} ${prod.icon || "📦"} +${rewardGoldGain} 🪙`;
 
@@ -3285,9 +3419,9 @@ export function initIsometricStudio() {
       const yieldMult = townEventsManager ? townEventsManager.getCropYieldMultiplier() : 1;
       const yieldQty = (treeCfg.yieldQty || 3) * yieldMult;
 
-      // Kiểm tra sức chứa Silo
-      if (getSiloUsed(playerResources) + yieldQty > siloCapacity) {
-        if (!silent) showStorageFullModal("silo");
+      // Kiểm tra sức chứa Kho Tổng Hợp.
+      if (getWarehouseUsed(playerResources) + yieldQty > warehouseCapacity) {
+        if (!silent) showStorageFullModal();
         return false;
       }
 
@@ -3313,6 +3447,11 @@ export function initIsometricStudio() {
       fruitTreesState[pKey] = {
         lastHarvest: Date.now()
       };
+      // Đồng bộ luôn productionState để bong bóng/Quản gia không đọc phải trạng thái cũ.
+      productionState[pKey] = {
+        lastHarvest: Date.now(),
+        ready: false
+      };
 
       if (!silent) {
         const ox = ORIGIN_X + (col - row) * HALF_W;
@@ -3327,14 +3466,16 @@ export function initIsometricStudio() {
 
         spawnFlyingCoin(col, row, 3);
         spawnFlyingXP(col, row, xpEarned);
+        spawnFlyingProduce(col, row, treeCfg.icon);
+        showToast(`🍎 Đã rung cây thu hoạch ${yieldQty} ${treeCfg.fruitName}! (+${goldEarned}🪙, +${xpEarned}XP)`, "success");
+      } else {
+        spawnFlyingProduce(col, row, treeCfg.icon);
       }
-      spawnFlyingProduce(col, row, treeCfg.icon);
 
       updateResourcesUI();
       persistGameState();
       checkQuestsProgress(true);
       requestRender();
-      showToast(`🍎 Đã rung cây thu hoạch ${yieldQty} ${treeCfg.fruitName}! (+${goldEarned}🪙, +${xpEarned}XP)`, "success");
       return true;
     }
 
@@ -3358,8 +3499,7 @@ export function initIsometricStudio() {
         addPlayerXP(amt, reason);
       },
       getPlayerResources: () => playerResources,
-      getSiloCapacity: () => siloCapacity,
-      getBarnCapacity: () => barnCapacity,
+      getWarehouseCapacity: () => warehouseCapacity,
       getCurrentGrid: () => currentGrid,
       getFarmlandState: () => farmlandState,
       harvestCropCell: (r, c, silent) => farmToolsManager ? farmToolsManager.harvestCropCell(r, c, silent) : false,
@@ -3412,6 +3552,10 @@ export function initIsometricStudio() {
 
     // Gói 2: Đại Kỳ Quan Hoàng Gia (Kingdom Wonders Manager: Lâu Đài, Thư Viện Biển, Tượng Thần Biển)
     kingdomWondersManager = new KingdomWondersManager({
+      getCurrentGrid: () => currentGrid,
+      getConstructions: () => constructions,
+      setActiveBrush: (id) => setActiveBrush(id),
+      clearMovingBuilding: () => { movingBuilding = null; },
       getPlayerGold: () => playerGold,
       deductPlayerGold: (amt) => {
         playerGold -= amt;
@@ -3434,6 +3578,7 @@ export function initIsometricStudio() {
       persistGameState,
       getLandUnlockedChunks: () => landUnlockedChunks,
       getGameMode: () => gameMode,
+      updateFloatingBrushHUD: () => updateFloatingBrushHUD(),
       requestRender: () => requestRender()
     });
     kingdomWondersManager.init(
@@ -3505,10 +3650,11 @@ export function initIsometricStudio() {
       onTutorialAction: (type, payload) => tutorialManager.onAction(type, payload),
       setHoverCell: (val) => { hoverCell = val; },
       getHoverCell: () => hoverCell,
+      getSelectedObjectCell: () => selectedObjectCell,
+      setSelectedObjectCell: (val) => { selectedObjectCell = val; requestRender(); },
+      updateFloatingBrushHUD: () => updateFloatingBrushHUD(),
       getActiveSeedBrush: () => (farmToolsManager ? farmToolsManager.getActiveSeedBrush() : null),
       setActiveSeedBrush: (val) => { if (farmToolsManager) farmToolsManager.setActiveSeedBrush(val); },
-      getActiveFarmTool: () => (farmToolsManager ? farmToolsManager.getActiveFarmTool() : null),
-      setActiveFarmTool: (val) => { if (farmToolsManager) farmToolsManager.setActiveFarmTool(val); },
       getActiveBrush: () => activeBrush,
       setActiveBrush,
       getBrushFlipped: () => brushFlipped,
@@ -3557,7 +3703,7 @@ export function initIsometricStudio() {
       getFruitTreesState: () => fruitTreesState,
       getDayNightWeather: () => dayNightWeather,
       tryApplySeedBrush: (r, c) => farmToolsManager && farmToolsManager.tryApplySeedBrush(r, c),
-      tryApplyFarmTool: (r, c) => farmToolsManager && farmToolsManager.tryApplyFarmTool(r, c),
+      tryHarvestCrop: (r, c) => farmToolsManager && farmToolsManager.tryHarvestCrop(r, c),
       tryPlaceContinuousBrush,
       harvestProductionBuilding,
       harvestFruitTree,
@@ -3570,7 +3716,7 @@ export function initIsometricStudio() {
       eraseCell: (r, c) => eraseCell(r, c),
       openMarketModal,
       openSeedModal,
-      openFarmToolPopup: (r, c) => farmToolsManager && farmToolsManager.openFarmToolPopup(r, c),
+      inspectGrowingCrop: (r, c) => farmToolsManager && farmToolsManager.inspectGrowingCrop(r, c),
       openUpgradeModal: (r, c) => upgradeManager.openUpgradeModal(r, c),
       openAchievementsModal: () => uiModalController.openAchievementsModal(),
       hasClaimableAchievements: () => (uiModalController ? uiModalController.hasClaimableAchievements() : false),
@@ -3580,8 +3726,7 @@ export function initIsometricStudio() {
       openLivestockModal,
       closeLivestockModal,
       showStorageFullModal,
-      getSiloCapacity: () => siloCapacity,
-      getBarnCapacity: () => barnCapacity,
+      getWarehouseCapacity: () => warehouseCapacity,
       getLivestockState: () => livestockState,
       deactivateFarmTool: () => farmToolsManager && farmToolsManager.deactivateFarmTool(),
       pushUndo,
@@ -3630,14 +3775,13 @@ export function initIsometricStudio() {
       getFruitTreesState: () => fruitTreesState,
       getDayNightWeather: () => dayNightWeather,
       getHoverCell: () => hoverCell,
+      getSelectedObjectCell: () => selectedObjectCell,
       getActiveBrush: () => activeBrush,
       getBrushFlipped: () => brushFlipped,
-      getActiveFarmTool: () => (farmToolsManager ? farmToolsManager.getActiveFarmTool() : null),
       getActiveSeedBrush: () => (farmToolsManager ? farmToolsManager.getActiveSeedBrush() : null),
       getMovingBuilding: () => movingBuilding,
       getAnimTime: () => animTime,
-      getSiloCapacity: () => siloCapacity,
-      getBarnCapacity: () => barnCapacity,
+      getWarehouseCapacity: () => warehouseCapacity,
       getLivestockState: () => livestockState,
       hasClaimableAchievements: () => (uiModalController ? uiModalController.hasClaimableAchievements() : false),
       updateResourcesUI,
@@ -3667,6 +3811,7 @@ export function initIsometricStudio() {
     }
 
     let lastAmbientSoundTime = 0;
+    let lastWorkshopFeedCheck = 0;
     let _renderErrorCount = 0;
     function startAnimationLoop() {
       let lastTime = performance.now();
@@ -3691,6 +3836,14 @@ export function initIsometricStudio() {
         // Update Constructions tick (separated from render)
         updateConstructions();
         updateLivestockTick();
+
+        // Mỗi giây quét lại các xưởng đang "thiếu nguyên liệu": nếu kho đã có sữa/lông/...
+        // (ví dụ vừa vắt sữa, vừa nhận thưởng) thì cho xưởng chạy lại ngay.
+        // Trước đây việc này chỉ chạy khi thu hoạch nông sản nên xưởng có thể treo vĩnh viễn.
+        if (now - lastWorkshopFeedCheck > 1000) {
+          lastWorkshopFeedCheck = now;
+          checkAndFeedBakeries();
+        }
 
         villagerManager.update(
           dt,

@@ -22,6 +22,13 @@ const STUDIO_MARKUP = `
       <div class="hud-xp-num" id="hud-player-xp-text">10 / 100 XP</div>
     </div>
 
+    <!-- Sổ Nhiệm Vụ -->
+    <button type="button" class="deck-circle-btn quest-circle" id="quest-book-btn" title="📜 Sổ Nhiệm Vụ Vương Quốc (Nhận thưởng Vàng & Kinh nghiệm)">
+      <span class="circle-btn-icon"><img src="/assets/ui/icon_mission.png" alt="Nhiệm vụ" class="deck-shop-icon-img" /></span>
+      <span class="quest-badge hidden" id="quest-notify-badge">0</span>
+      <span class="circle-btn-tooltip">Sổ Nhiệm Vụ</span>
+    </button>
+
     <!-- Season Indicator & Switcher Widget -->
     <button type="button" class="hud-card hud-season-badge-card summer" id="hud-season-pill" title="Cảnh sắc 4 Mùa Hoàng Gia (Nhấp để đổi nhanh: Hạ ☀️, Thu 🍁, Đông ❄️, Anh Đào 🌸)">
       ☀️ Mùa Hạ Nắng Vàng
@@ -92,23 +99,19 @@ const STUDIO_MARKUP = `
 
   <!-- Bottom Left Floating Action Deck (Chỉ giữ lại: Cửa Hàng, Chợ, Nhiệm Vụ, Cài Đặt) -->
   <div class="bottom-left-deck" id="bottom-left-deck">
+    <!-- Nút mũi tên: gom/sổ các nút tròn (điện thoại) -->
+    <button type="button" class="deck-toggle-btn" id="deck-toggle-btn" aria-expanded="false" aria-label="Mở menu" title="Mở / đóng menu"><span class="deck-toggle-arrow">▲</span></button>
+    <div class="deck-buttons" id="deck-buttons">
     <!-- Cửa Hàng Xây Dựng -->
     <button type="button" class="deck-circle-btn shop-circle" id="btn-open-shop" title="🏗️ Cửa Hàng Xây Dựng (Nhà ở, Cửa hàng, Đường đi, Cảnh quan, Luống đất...)">
-      <span class="circle-btn-icon">🏗️</span>
+      <span class="circle-btn-icon"><img src="/assets/ui/icon_shop.png" alt="Cửa Hàng" class="deck-shop-icon-img" /></span>
       <span class="circle-btn-tooltip">Cửa Hàng</span>
     </button>
 
     <!-- Chợ Nông Sản -->
     <button type="button" class="deck-circle-btn market-circle" id="btn-open-market" title="🏪 Chợ Nông Sản (Bán nông sản & hàng hóa kiếm vàng)">
-      <span class="circle-btn-icon">🏪</span>
+      <span class="circle-btn-icon"><img src="/assets/ui/icon_market.png" alt="Chợ" class="deck-shop-icon-img" /></span>
       <span class="circle-btn-tooltip">Chợ Bán Nông Sản</span>
-    </button>
-
-    <!-- Sổ Nhiệm Vụ -->
-    <button type="button" class="deck-circle-btn quest-circle" id="quest-book-btn" title="📜 Sổ Nhiệm Vụ Vương Quốc (Nhận thưởng Vàng & Kinh nghiệm)">
-      <span class="circle-btn-icon">📜</span>
-      <span class="quest-badge hidden" id="quest-notify-badge">0</span>
-      <span class="circle-btn-tooltip">Sổ Nhiệm Vụ</span>
     </button>
 
     <!-- Quản Gia Thu Hoạch (Caretaker) -->
@@ -132,12 +135,6 @@ const STUDIO_MARKUP = `
       <span class="circle-btn-tooltip">Vòng Quay May Mắn</span>
     </button>
 
-    <!-- Đại Kỳ Quan (Kingdom Wonders) -->
-    <button type="button" class="deck-circle-btn wonders-circle" id="btn-open-wonders" title="🏛️ Đại Kỳ Quan Hoàng Gia (Xây dựng 3 công trình biểu tượng vĩ đại, nhận buff vĩnh viễn)">
-      <span class="circle-btn-icon">🏛️</span>
-      <span class="circle-btn-tooltip">Đại Kỳ Quan</span>
-    </button>
-
     <!-- Bến Câu Cá (Fishing Spot) -->
     <button type="button" class="deck-circle-btn fishing-circle" id="btn-open-fishing" title="🎣 Bến Câu Cá Thư Giãn (Nhấp thả cần câu cá hồi, tôm hoàng gia & rương kho báu)">
       <span class="circle-btn-icon">🎣</span>
@@ -149,20 +146,27 @@ const STUDIO_MARKUP = `
       <span class="circle-btn-icon">⚙️</span>
       <span class="circle-btn-tooltip">Cài Đặt & Thời Tiết</span>
     </button>
+    </div>
   </div>
 
-  <!-- Object Action Overlay: Long Press Floating Badge (2 Buttons: Move & Demolish) -->
+  <!-- Thanh thao tác công trình (giữ lâu vào công trình): Xoay | Di chuyển | Gỡ -->
   <div class="object-action-overlay hidden" id="object-action-overlay" style="display: none;" role="toolbar" aria-label="Thao tác công trình">
-    <button type="button" class="obj-action-btn move-btn" id="obj-action-move-btn" title="↔️ Di chuyển vật phẩm này sang vị trí khác">
-      <span class="obj-action-icon">↔️</span>
-      <span class="obj-action-label">Di Chuyển</span>
-    </button>
-    <button type="button" class="obj-action-btn demolish-btn" id="obj-action-demolish-btn" title="🗑️ Gỡ bỏ vật phẩm này (Hoàn lại 50% 🪙)">
-      <span class="obj-action-icon">🗑️</span>
-      <span class="obj-action-label">Gỡ Bỏ</span>
-    </button>
+    <div class="action-bar-title" id="obj-action-title">Công trình</div>
+    <div class="action-bar-row">
+      <button type="button" class="action-bar-btn rotate-btn" id="obj-action-rotate-btn" title="Xoay hướng công trình">
+        <span class="action-bar-icon">🔄</span>
+        <span class="action-bar-label">Xoay</span>
+      </button>
+      <button type="button" class="action-bar-btn move-btn" id="obj-action-move-btn" title="Di chuyển sang vị trí khác">
+        <span class="action-bar-icon">↔️</span>
+        <span class="action-bar-label">Di chuyển</span>
+      </button>
+      <button type="button" class="action-bar-btn demolish-btn" id="obj-action-demolish-btn" title="Gỡ bỏ (hoàn lại 50% 🪙)">
+        <span class="action-bar-icon">🗑️</span>
+        <span class="action-bar-label">Gỡ</span>
+      </button>
+    </div>
   </div>
-
   <!-- Floating Camera & Zoom Controls (Bottom Right Deck) -->
   <aside class="floating-camera-deck" id="floating-camera-deck" aria-label="Điều khiển góc nhìn">
     <div class="camera-zoom-pill">
@@ -180,56 +184,41 @@ const STUDIO_MARKUP = `
     <div class="camera-coord-tag" id="builder-coord-status">Vương Quốc Khởi Nguyên</div>
   </aside>
 
-  <!-- Farm Tool Radial Selection Popup (Hay Day Style 2 Options) -->
-  <div class="farm-tool-popup hidden" id="farm-tool-popup" role="dialog" aria-label="Chọn nông cụ canh tác">
-    <div class="farm-tool-popup-header">
-      <span class="farm-tool-popup-title">🌾 Nông Cụ Canh Tác</span>
-      <button type="button" class="farm-tool-popup-close" id="farm-tool-popup-close" title="Đóng">&times;</button>
-    </div>
-    <div class="farm-tool-popup-body">
-      <button type="button" class="farm-tool-choice-btn sickle" id="farm-tool-sickle-choice" title="Cầm liềm quét chuột qua các luống đất chín để gặt hàng loạt tức thì">
-        <span class="choice-icon">🌾</span>
-        <div class="choice-text-col">
-          <span class="choice-name">Liềm Thu Hoạch</span>
-          <span class="choice-hint">Di chuột gặt nhanh hàng loạt</span>
-        </div>
-      </button>
-
-      <button type="button" class="farm-tool-choice-btn shovel" id="farm-tool-shovel-choice" title="Cầm xẻng quét chuột qua luống đất để dỡ bỏ cây trồng">
-        <span class="choice-icon">⛏️</span>
-        <div class="choice-text-col">
-          <span class="choice-name">Xẻng Dỡ Bỏ</span>
-          <span class="choice-hint">Di chuột dọn sạch luống đất</span>
-        </div>
-      </button>
-    </div>
-  </div>
-
   <!-- Active Farm Tool Floating HUD (Follows or Anchors Bottom Center) -->
   <div class="farm-tool-active-hud hidden" id="farm-tool-active-hud">
-    <div class="farm-tool-active-badge" id="farm-tool-active-icon">🌾</div>
+    <div class="farm-tool-active-badge" id="farm-tool-active-icon">🌱</div>
     <div class="farm-tool-active-info">
-      <div class="farm-tool-active-title" id="farm-tool-active-title">Đang dùng: Liềm Thu Hoạch</div>
-      <div class="farm-tool-active-desc" id="farm-tool-active-desc">Giữ chuột hoặc di chuột quét qua các luống đất chín để gặt hàng loạt!</div>
+      <div class="farm-tool-active-title" id="farm-tool-active-title">Đang gieo hạt</div>
     </div>
     <button type="button" class="farm-tool-finish-btn" id="farm-tool-finish-btn" title="Hoàn tất và quay lại con trỏ tự do (Phím Esc)">✕ Hoàn thành</button>
   </div>
 
-  <!-- Floating Active Brush HUD (When selecting building/tile from shop) -->
+  <!-- Thanh đặt vật phẩm (bóng mờ kéo thả): Tích | Xoay | Hủy -->
   <div class="floating-brush-hud hidden" id="floating-brush-hud">
-    <div class="floating-brush-thumb-wrap">
-      <img id="floating-brush-thumb" src="" alt="Selected brush" />
+    <div class="fbh-label">
+      <div class="floating-brush-thumb-wrap">
+        <img id="floating-brush-thumb" src="" alt="Selected brush" />
+      </div>
+      <div class="floating-brush-info">
+        <div class="floating-brush-title" id="floating-brush-title">Cozy Cottage</div>
+        <div class="floating-brush-meta" id="floating-brush-meta">Giá: 50 🪙</div>
+      </div>
     </div>
-    <div class="floating-brush-info">
-      <div class="floating-brush-title" id="floating-brush-title">Cozy Cottage</div>
-      <div class="floating-brush-meta" id="floating-brush-meta">Giá: 50 🪙</div>
-    </div>
-    <div class="floating-brush-btns">
-      <button type="button" class="floating-brush-btn" id="floating-brush-rotate" title="Phím tắt [E] hoặc [R]">🔄 Xoay</button>
-      <button type="button" class="floating-brush-btn cancel" id="floating-brush-cancel" title="Phím tắt [Esc] hoặc chuột phải">✕ Hủy</button>
+    <div class="action-bar-row">
+      <button type="button" class="action-bar-btn confirm-btn" id="floating-brush-confirm" title="Đặt xuống vị trí bóng mờ">
+        <span class="action-bar-icon">✓</span>
+        <span class="action-bar-label">Tích</span>
+      </button>
+      <button type="button" class="action-bar-btn rotate-btn" id="floating-brush-rotate" title="Xoay hướng (phím R)">
+        <span class="action-bar-icon">🔄</span>
+        <span class="action-bar-label">Xoay</span>
+      </button>
+      <button type="button" class="action-bar-btn cancel-btn" id="floating-brush-cancel" title="Hủy (phím Esc)">
+        <span class="action-bar-icon">✕</span>
+        <span class="action-bar-label">Hủy</span>
+      </button>
     </div>
   </div>
-
   <!-- Toast Notification -->
   <div id="game-toast" class="game-toast"></div>
 
@@ -781,6 +770,7 @@ const STUDIO_MARKUP = `
         <button type="button" class="shop-tab-btn" data-shop-cat="roads">🛣️ Đường & Cầu</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="decor">🌸 Phong cảnh & Hoa</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="nature">🏞️ Địa hình & Biomes</button>
+        <button type="button" class="shop-tab-btn" data-shop-cat="wonders">🏛️ Kỳ Quan</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="erase" style="color: #ef4444; font-weight: 700; border-color: #fca5a5; background: #fff5f5;">❌ Phá Dỡ (Xóa)</button>
       </div>
 
@@ -879,25 +869,22 @@ const STUDIO_MARKUP = `
     </div>
   </div>
 
-  <!-- Storage Modal Dialog (Silo & Barn) -->
+  <!-- Storage Modal Dialog (Combined Warehouse) -->
   <div class="storage-modal-backdrop hidden" id="storage-modal" style="display: none;" role="dialog" aria-modal="true">
     <div class="storage-modal-card">
       <div class="storage-modal-header">
         <div class="storage-header-tabs">
-          <button type="button" class="storage-tab-btn active" id="storage-tab-silo" data-tab="silo">
-            🌾 Kho Nông Sản (Silo) <span class="storage-tab-badge" id="storage-badge-silo">0/100</span>
-          </button>
-          <button type="button" class="storage-tab-btn" id="storage-tab-barn" data-tab="barn">
-            📦 Kho Thành Phẩm (Barn) <span class="storage-tab-badge" id="storage-badge-barn">0/100</span>
-          </button>
+          <div class="storage-tab-btn active">
+            📦 Kho Tổng Hợp <span class="storage-tab-badge" id="storage-badge-warehouse">0/300</span>
+          </div>
         </div>
         <button type="button" class="storage-modal-close" id="storage-modal-close" title="Đóng">&times;</button>
       </div>
       <div class="storage-modal-body">
         <div class="storage-capacity-bar-wrap">
           <div class="storage-capacity-info">
-            <span id="storage-cap-title">Sức chứa Kho Nông Sản:</span>
-            <strong id="storage-cap-value">0 / 100</strong>
+            <span id="storage-cap-title">Sức chứa Kho Tổng Hợp:</span>
+            <strong id="storage-cap-value">0 / 300</strong>
           </div>
           <div class="storage-meter">
             <div class="storage-meter-fill" id="storage-meter-fill" style="width: 0%;"></div>

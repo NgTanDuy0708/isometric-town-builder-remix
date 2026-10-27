@@ -1,7 +1,7 @@
 // Configuration for resources, storage capacity, market trading, and production chains
 
 export const RESOURCE_MAX_CAPACITY = 999;
-export const INITIAL_STORAGE_CAPACITY = 100; // Sức chứa khởi đầu Silo & Barn
+export const INITIAL_STORAGE_CAPACITY = 300; // Sức chứa khởi đầu Kho Tổng Hợp
 
 // Danh mục nông sản chỉ chứa trong Kho Silo
 export const SILO_RESOURCE_IDS = [
@@ -14,6 +14,9 @@ export const SILO_RESOURCE_IDS = [
 export const BARN_RESOURCE_IDS = [
   "egg", "milk", "wool", "bread", "butter", "fabric", "ironTools", "wine"
 ];
+
+// Kho Tổng Hợp chứa toàn bộ tài nguyên mà Silo và Barn cũ từng tách riêng.
+export const WAREHOUSE_RESOURCE_IDS = [...SILO_RESOURCE_IDS, ...BARN_RESOURCE_IDS];
 
 export function isSiloResource(resId) {
   return SILO_RESOURCE_IDS.includes(resId);
@@ -31,6 +34,11 @@ export function getSiloUsed(resources) {
 export function getBarnUsed(resources) {
   if (!resources) return 0;
   return BARN_RESOURCE_IDS.reduce((sum, id) => sum + (resources[id] || 0), 0);
+}
+
+export function getWarehouseUsed(resources) {
+  if (!resources) return 0;
+  return WAREHOUSE_RESOURCE_IDS.reduce((sum, id) => sum + (resources[id] || 0), 0);
 }
 
 export const RESOURCES_CONFIG = {

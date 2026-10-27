@@ -1,3 +1,7 @@
+import { ROWS, COLS } from "./isoMath.js";
+import { isCellUnlocked } from "../data/landConfig.js";
+import { isProtectedTile } from "../data/starterMap.js";
+
 /**
  * kingdomWonders.js - Hệ Thống Đại Kỳ Quan Vương Quốc (Kingdom Wonders)
  * 
@@ -16,6 +20,7 @@ export const WONDERS_CONFIG = {
     buffDescription: "Tăng vĩnh viễn +20% Vàng từ tất cả các nguồn (Chợ, Đơn hàng, Thuyền buôn)",
     buffType: "gold",
     buffMultiplier: 1.20,
+    purchaseGold: 800,
     stages: [
       {
         stage: 1,
@@ -59,6 +64,7 @@ export const WONDERS_CONFIG = {
     buffDescription: "Tăng vĩnh viễn +25% Điểm Kinh Nghiệm (XP) cho mọi hoạt động",
     buffType: "xp",
     buffMultiplier: 1.25,
+    purchaseGold: 700,
     stages: [
       {
         stage: 1,
@@ -102,6 +108,7 @@ export const WONDERS_CONFIG = {
     buffDescription: "x2 Sản lượng cá đánh bắt & Giảm 50% thời gian chờ Thuyền Buôn Caravel",
     buffType: "marine",
     buffMultiplier: 2.0,
+    purchaseGold: 750,
     stages: [
       {
         stage: 1,
@@ -166,7 +173,7 @@ export const DEFAULT_WONDER_SITES = {
   }
 };
 
-export let WONDER_SITES = { ...DEFAULT_WONDER_SITES };
+export let WONDER_SITES = {};
 
 const WONDER_IMAGES = {};
 export function getWonderImage(id, onRequestRender) {
@@ -189,9 +196,30 @@ export function getWonderImage(id, onRequestRender) {
   return WONDER_IMAGES[id];
 }
 
+// Ảnh riêng cho từng giai đoạn thi công (file: /assets/wonders/<id>_stage<N>.png)
+const WONDER_STAGE_SPRITES = { royal_palace: [0, 1, 2, 3] };
+const WONDER_STAGE_IMAGES = {};
+export function getWonderStageImage(id, stage, onRequestRender) {
+  const key = id + "_" + stage;
+  if (!WONDER_STAGE_IMAGES[key]) {
+    const img = new Image();
+    img.onload = () => {
+      if (typeof onRequestRender === "function") {
+        onRequestRender();
+      }
+    };
+    img.src = "/assets/wonders/" + id + "_stage" + stage + ".png";
+    WONDER_STAGE_IMAGES[key] = img;
+  }
+  return WONDER_STAGE_IMAGES[key];
+}
+
 export function preloadAllWonderImages(onRequestRender) {
   for (const id of ["royal_palace", "ocean_library", "poseidon_statue"]) {
     getWonderImage(id, onRequestRender);
+    for (const stage of (WONDER_STAGE_SPRITES[id] || [])) {
+      getWonderStageImage(id, stage, onRequestRender);
+    }
   }
 }
 
@@ -208,9 +236,10 @@ export class KingdomWondersManager {
       poseidon_statue: 0
     };
     this.selectedWonderId = "royal_palace";
-    this.wonderSites = this.loadSites();
+    this.wonderSites = {};
     this.movingWonderId = null;
     this.movingWonderFlipped = false;
+    this.purchasingWonder = false;
 
     preloadAllWonderImages(() => {
       if (this.ctx && this.ctx.requestRender) this.ctx.requestRender();
@@ -218,19 +247,7 @@ export class KingdomWondersManager {
   }
 
   loadSites() {
-    try {
-      const raw = localStorage.getItem("town_builder_kingdom_wonder_sites");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.royal_palace && parsed.ocean_library && parsed.poseidon_statue) {
-          for (const k of ["royal_palace", "ocean_library", "poseidon_statue"]) {
-            parsed[k].flipped = !!parsed[k].flipped;
-          }
-          return parsed;
-        }
-      }
-    } catch (e) {}
-    return JSON.parse(JSON.stringify(DEFAULT_WONDER_SITES));
+    return {};
   }
 
   saveSites() {
@@ -239,13 +256,95 @@ export class KingdomWondersManager {
     } catch (e) {}
   }
 
-  startRelocatingWonder(wonderId) {
+  /**
+   * Xoá sạch tiến độ kỳ quan khi người chơi "Chơi lại từ đầu".
+   * init() luôn đọc lại localStorage nên nếu chỉ gọi init(null) thì kỳ quan + buff sẽ sống sót.
+   */
+  reset() {
+    this.wondersState = { royal_palace: 0, ocean_library: 0, poseidon_statue: 0 };
+    this.wonderSites = {};
+    this.movingWonderId = null;
+    this.movingWonderFlipped = false;
+    this.purchasingWonder = false;
+    try {
+      localStorage.removeItem("town_builder_kingdom_wonders");
+      localStorage.removeItem("town_builder_kingdom_wonder_sites");
+    } catch (e) {}
+    if (this.ctx && this.ctx.requestRender) this.ctx.requestRender();
+  }
+
+  isWonderPlaced(wonderId) {
+    return !!(this.wonderSites[wonderId] && this.wonderSites[wonderId].placed);
+  }
+
+  canPlaceWonderAt(row, col, excludeId = null) {
+    if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
+      return { ok: false, reason: "🚫 Ngoài bản đồ vương quốc!" };
+    }
+    const mode = this.ctx.getGameMode ? this.ctx.getGameMode() : "game";
+    const chunks = this.ctx.getLandUnlockedChunks ? this.ctx.getLandUnlockedChunks() : [];
+    if (!isCellUnlocked(row, col, chunks, mode)) {
+      return { ok: false, reason: "🔒 Không thể đặt vào lãnh thổ chưa mở khóa!" };
+    }
+    const grid = this.ctx.getCurrentGrid ? this.ctx.getCurrentGrid() : null;
+    const tid = grid?.[row]?.[col];
+    if (isProtectedTile(row, col, tid)) {
+      return { ok: false, reason: "🚫 Ô này được bảo vệ, không thể đặt kỳ quan!" };
+    }
+    const constructions = this.ctx.getConstructions ? this.ctx.getConstructions() : {};
+    if (constructions[`${row}_${col}`]) {
+      return { ok: false, reason: "🏗️ Ô đang thi công!" };
+    }
+    const isEmptyGrass = tid === "d12_meadow_wildflowers" || tid === "g01_grass_flat";
+    if (!isEmptyGrass) {
+      return { ok: false, reason: "🚫 Chỉ đặt kỳ quan lên ô cỏ trống!" };
+    }
+    const other = this.getWonderAt(row, col);
+    if (other && other.id !== excludeId) {
+      return { ok: false, reason: "🚫 Đã có kỳ quan tại ô này!" };
+    }
+    return { ok: true };
+  }
+
+  startPurchasingWonder(wonderId) {
+    const wonder = WONDERS_CONFIG[wonderId];
+    if (!wonder) return false;
+    if (this.isWonderPlaced(wonderId)) {
+      this.openModal(wonderId);
+      return false;
+    }
+    const mode = this.ctx.getGameMode ? this.ctx.getGameMode() : "game";
+    const cost = wonder.purchaseGold || 0;
+    const gold = this.ctx.getPlayerGold ? this.ctx.getPlayerGold() : 0;
+    if (mode === "game" && gold < cost) {
+      if (this.ctx.showToast) {
+        this.ctx.showToast(`⚠️ Không đủ vàng! Cần ${cost.toLocaleString()} 🪙 để mua ${wonder.name}.`, "error");
+      }
+      return false;
+    }
+    if (this.ctx.setActiveBrush) this.ctx.setActiveBrush(null);
+    if (this.ctx.clearMovingBuilding) this.ctx.clearMovingBuilding();
     this.movingWonderId = wonderId;
+    this.purchasingWonder = true;
+    this.movingWonderFlipped = false;
+    if (this.ctx.showToast) {
+      this.ctx.showToast(`🏛️ Đã chọn ${wonder.name} (Giai đoạn 0). Đặt lên ô cỏ trống rồi bấm ✓.`, "info");
+    }
+    if (this.ctx.updateFloatingBrushHUD) this.ctx.updateFloatingBrushHUD();
+    if (this.ctx.requestRender) this.ctx.requestRender();
+    return true;
+  }
+
+  startRelocatingWonder(wonderId) {
+    if (!this.isWonderPlaced(wonderId)) return;
+    this.movingWonderId = wonderId;
+    this.purchasingWonder = false;
     this.movingWonderFlipped = !!(this.wonderSites[wonderId] && this.wonderSites[wonderId].flipped);
     const wonder = WONDERS_CONFIG[wonderId] || WONDERS_CONFIG.royal_palace;
     if (this.ctx.showToast) {
-      this.ctx.showToast(`🚚 Đang di chuyển ${wonder.name}! Nhấn [R] để xoay hướng, nhấp ô để đặt.`, "info");
+      this.ctx.showToast(`🚚 Đang di chuyển ${wonder.name}! Kéo bóng mờ tới vị trí rồi bấm ✓ Tích.`, "info");
     }
+    if (this.ctx.updateFloatingBrushHUD) this.ctx.updateFloatingBrushHUD();
     if (this.ctx.requestRender) this.ctx.requestRender();
   }
 
@@ -276,6 +375,7 @@ export class KingdomWondersManager {
 
   getWonderAt(row, col) {
     for (const site of Object.values(this.wonderSites)) {
+      if (!site || !site.placed) continue;
       if (site.row === row && site.col === col) return site;
     }
     return null;
@@ -285,54 +385,91 @@ export class KingdomWondersManager {
     if (!this.movingWonderId) return false;
     const wid = this.movingWonderId;
     const wonder = WONDERS_CONFIG[wid] || WONDERS_CONFIG.royal_palace;
+    const isPurchase = !!this.purchasingWonder;
+    const check = this.canPlaceWonderAt(row, col, isPurchase ? null : wid);
+    if (!check.ok) {
+      if (this.ctx.showToast) this.ctx.showToast(check.reason, "error");
+      return false;
+    }
 
-    this.wonderSites[wid].row = row;
-    this.wonderSites[wid].col = col;
-    this.wonderSites[wid].flipped = !!this.movingWonderFlipped;
+    if (isPurchase) {
+      const mode = this.ctx.getGameMode ? this.ctx.getGameMode() : "game";
+      const cost = wonder.purchaseGold || 0;
+      const gold = this.ctx.getPlayerGold ? this.ctx.getPlayerGold() : 0;
+      if (mode === "game" && cost > 0) {
+        if (gold < cost) {
+          if (this.ctx.showToast) {
+            this.ctx.showToast(`⚠️ Không đủ vàng! Cần ${cost.toLocaleString()} 🪙`, "error");
+          }
+          return false;
+        }
+        if (this.ctx.deductPlayerGold) this.ctx.deductPlayerGold(cost);
+      }
+      this.wondersState[wid] = 0;
+      this.wonderSites[wid] = {
+        ...(DEFAULT_WONDER_SITES[wid] || { id: wid, name: wonder.name }),
+        row,
+        col,
+        flipped: !!this.movingWonderFlipped,
+        placed: true
+      };
+      try {
+        localStorage.setItem("town_builder_kingdom_wonders", JSON.stringify(this.wondersState));
+      } catch (e) {}
+      if (this.ctx.persistGameState) this.ctx.persistGameState();
+    } else {
+      if (!this.wonderSites[wid]) return false;
+      this.wonderSites[wid].row = row;
+      this.wonderSites[wid].col = col;
+      this.wonderSites[wid].flipped = !!this.movingWonderFlipped;
+      this.wonderSites[wid].placed = true;
+    }
+
     this.saveSites();
     this.movingWonderId = null;
+    this.purchasingWonder = false;
 
     if (this.ctx.playBuildSound) this.ctx.playBuildSound();
-    if (this.ctx.showToast) this.ctx.showToast(`✨ Đã đặt ${wonder.name} thành công!`, "success");
+    if (this.ctx.showToast) {
+      this.ctx.showToast(
+        isPurchase
+          ? `✨ Đã đặt ${wonder.name} (Giai đoạn 0). Nhấp vào kỳ quan để bắt đầu thi công!`
+          : `✨ Đã đặt ${wonder.name} thành công!`,
+        "success"
+      );
+    }
+    if (this.ctx.updateFloatingBrushHUD) this.ctx.updateFloatingBrushHUD();
     if (this.ctx.requestRender) this.ctx.requestRender();
     return true;
   }
 
   cancelRelocating() {
     if (this.movingWonderId) {
+      const wasPurchase = this.purchasingWonder;
       this.movingWonderId = null;
-      if (this.ctx.showToast) this.ctx.showToast("Đã hủy di chuyển kỳ quan.", "info");
+      this.purchasingWonder = false;
+      if (this.ctx.showToast) {
+        this.ctx.showToast(wasPurchase ? "Đã hủy đặt kỳ quan." : "Đã hủy di chuyển kỳ quan.", "info");
+      }
+      if (this.ctx.updateFloatingBrushHUD) this.ctx.updateFloatingBrushHUD();
       if (this.ctx.requestRender) this.ctx.requestRender();
     }
   }
 
   init(savedState, savedSites) {
+    const keys = ["royal_palace", "ocean_library", "poseidon_statue"];
+    this.wondersState = { royal_palace: 0, ocean_library: 0, poseidon_statue: 0 };
     if (savedState && typeof savedState === "object") {
-      this.wondersState = {
-        royal_palace: savedState.royal_palace || 0,
-        ocean_library: savedState.ocean_library || 0,
-        poseidon_statue: savedState.poseidon_statue || 0
-      };
-    }
-    if (savedSites && typeof savedSites === "object") {
-      for (const k of ["royal_palace", "ocean_library", "poseidon_statue"]) {
-        if (savedSites[k] && typeof savedSites[k].row === "number" && typeof savedSites[k].col === "number") {
-          this.wonderSites[k] = {
-            ...this.wonderSites[k],
-            row: savedSites[k].row,
-            col: savedSites[k].col,
-            flipped: !!savedSites[k].flipped
-          };
-        }
+      for (const key of keys) {
+        if (typeof savedState[key] === "number") this.wondersState[key] = savedState[key];
       }
     }
-    // Dual persistence fallback via localStorage
     try {
       const raw = localStorage.getItem("town_builder_kingdom_wonders");
       if (raw) {
         const localW = JSON.parse(raw);
         if (localW && typeof localW === "object") {
-          for (const key of ["royal_palace", "ocean_library", "poseidon_statue"]) {
+          for (const key of keys) {
             if (typeof localW[key] === "number" && localW[key] > (this.wondersState[key] || 0)) {
               this.wondersState[key] = localW[key];
             }
@@ -340,6 +477,36 @@ export class KingdomWondersManager {
         }
       }
     } catch (e) {}
+
+    const applySite = (id, raw) => {
+      if (!raw || typeof raw.row !== "number" || typeof raw.col !== "number") return;
+      const stage = this.wondersState[id] || 0;
+      if (raw.placed !== true && stage <= 0) return;
+      this.wonderSites[id] = {
+        ...(DEFAULT_WONDER_SITES[id] || { id }),
+        row: raw.row,
+        col: raw.col,
+        flipped: !!raw.flipped,
+        placed: true
+      };
+    };
+
+    this.wonderSites = {};
+    if (savedSites && typeof savedSites === "object") {
+      for (const key of keys) applySite(key, savedSites[key]);
+    }
+    try {
+      const rawSites = localStorage.getItem("town_builder_kingdom_wonder_sites");
+      if (rawSites) {
+        const parsed = JSON.parse(rawSites);
+        if (parsed && typeof parsed === "object") {
+          for (const key of keys) {
+            if (!this.wonderSites[key]) applySite(key, parsed[key]);
+          }
+        }
+      }
+    } catch (e) {}
+    this.saveSites();
     this.bindEvents();
   }
 
@@ -491,9 +658,18 @@ export class KingdomWondersManager {
       }).join('');
     }
 
-    // Build action button
+    const placed = this.isWonderPlaced(wonder.id);
+    const relocateBtn = document.getElementById("wonder-relocate-btn");
+    const rotateBtn = document.getElementById("wonder-rotate-btn");
+    if (relocateBtn) relocateBtn.style.display = placed ? "" : "none";
+    if (rotateBtn) rotateBtn.style.display = placed ? "" : "none";
+
     if (buildBtn) {
-      if (isCompleted) {
+      if (!placed) {
+        buildBtn.disabled = true;
+        buildBtn.innerHTML = "🛒 Mua trong Cửa Hàng rồi đặt xuống bản đồ (Giai đoạn 0)";
+        buildBtn.className = "wonder-build-btn disabled";
+      } else if (isCompleted) {
         buildBtn.disabled = true;
         buildBtn.innerHTML = "👑 KỲ QUAN HOÀN TẤT & ĐANG PHÁT HUY HÀO QUANG!";
         buildBtn.className = "wonder-build-btn completed";
@@ -526,6 +702,10 @@ export class KingdomWondersManager {
   upgradeCurrentWonder() {
     const wonder = WONDERS_CONFIG[this.selectedWonderId];
     if (!wonder) return;
+    if (!this.isWonderPlaced(wonder.id)) {
+      if (this.ctx.showToast) this.ctx.showToast("⚠️ Hãy mua và đặt kỳ quan xuống bản đồ trước khi thi công!", "warning");
+      return;
+    }
     const curStage = this.wondersState[wonder.id] || 0;
     if (curStage >= 4) return;
 
@@ -576,6 +756,7 @@ export class KingdomWondersManager {
    */
   checkWorldClick(worldX, worldY, cell, originX, originY, halfW, quarterW) {
     for (const site of Object.values(this.wonderSites)) {
+      if (!site || !site.placed) continue;
       if (cell && cell.row === site.row && cell.col === site.col) {
         this.selectedWonderId = site.id;
         this.openModal(site.id);
@@ -598,6 +779,7 @@ export class KingdomWondersManager {
    */
   renderWorldWonder(ctx, originX, originY, halfW, quarterW, animTime = 0) {
     for (const site of Object.values(this.wonderSites)) {
+      if (!site || !site.placed) continue;
       this.renderSite(ctx, site, originX, originY, halfW, quarterW, animTime);
     }
   }
@@ -640,8 +822,23 @@ export class KingdomWondersManager {
     const imgReady = wonderImg && wonderImg.complete && wonderImg.naturalWidth > 0;
     const isFlipped = !!site.flipped;
 
+    // Giai đoạn có ảnh riêng: dùng đúng ảnh đó (ảnh đã gồm giàn giáo/cần cẩu), không vẽ mờ + giàn giáo giả
+    const stageImg = (WONDER_STAGE_SPRITES[site.id] || []).includes(curStage)
+      ? getWonderStageImage(site.id, curStage, () => {
+          if (this.ctx && this.ctx.requestRender) this.ctx.requestRender();
+        })
+      : null;
+    if (stageImg && !stageImg.complete && !stageImg._rrBound) {
+      stageImg._rrBound = true;
+      stageImg.addEventListener("load", () => {
+        if (this.ctx && this.ctx.requestRender) this.ctx.requestRender();
+      }, { once: true });
+    }
+    const stageReady = !!(stageImg && stageImg.complete && stageImg.naturalWidth > 0);
+
     const renderWonderSprite = (alpha = 1.0) => {
-      if (!imgReady) {
+      const drawImg = stageReady ? stageImg : wonderImg;
+      if (!(stageReady || imgReady)) {
         // Fallback nhẹ nhàng trong tích tắc nếu ảnh đang tải từ mạng
         ctx.save();
         ctx.fillStyle = site.id === "poseidon_statue" ? "rgba(14, 165, 233, 0.45)" : (site.id === "ocean_library" ? "rgba(20, 184, 166, 0.45)" : "rgba(245, 158, 11, 0.45)");
@@ -660,14 +857,16 @@ export class KingdomWondersManager {
       if (isFlipped) {
         ctx.translate(ox + 128, spriteY);
         ctx.scale(-1, 1);
-        ctx.drawImage(wonderImg, 0, 0, spriteW, spriteH);
+        ctx.drawImage(drawImg, 0, 0, spriteW, spriteH);
       } else {
-        ctx.drawImage(wonderImg, spriteX, spriteY, spriteW, spriteH);
+        ctx.drawImage(drawImg, spriteX, spriteY, spriteW, spriteH);
       }
       ctx.restore();
     };
 
-    if (curStage === 0) {
+    if (stageReady) {
+      renderWonderSprite(1.0);
+    } else if (curStage === 0) {
       // Giai đoạn 0: Ảnh mờ 40% (xem trước bản vẽ/bóng dáng kỳ quan chưa khởi công) + Cọc cờ quy hoạch
       renderWonderSprite(0.40);
 
@@ -767,9 +966,9 @@ export class KingdomWondersManager {
     ctx.stroke();
 
     ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
+    ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillText(badgeText, cx, floatY);
+    ctx.fillText(badgeText, cx - textW / 2, floatY);
 
     ctx.restore();
   }

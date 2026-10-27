@@ -30,6 +30,12 @@ export const TILE_PRICE_OVERRIDES = {
   "d10_flower_orchard_hedge": 25,
   "d11_canal_straight": 15,
   "d13_farmland_plot": 15, // Luống đất trồng cây nông trang
+  // Rừng Pixel Art (cửa hàng Phong cảnh)
+  "d28_forest_dense_canopy": 40,
+  "d29_forest_oak_woodland": 50,
+  "d30_forest_oak_thicket": 45,
+  "d31_forest_pine_cliff": 55,
+  "d32_forest_pine_boulders": 45,
 
   // Starter residential and workshops
   "b01_cottage_red": 50,
@@ -43,8 +49,6 @@ export const TILE_PRICE_OVERRIDES = {
   "b09_chapel": 220,
   "b10_wizard_tower": 350,
   "b11_carpenter_sawmill": 140,
-  "b12_general_store": 120,
-  "b13_barn_silo": 90,
   "b14_town_hall": 450,
   "b15_library_scholar": 260,
   "b16_alchemist_workshop": 240,
@@ -68,9 +72,13 @@ export const TILE_REQUIRED_LEVELS = {
   "d12_meadow_wildflowers": 1,
   "d13_farmland_plot": 1,
   "b01_cottage_red": 1,
-  "r01_dirt_path": 1,
   "d04_oak_tree_park": 1,
   "d05_pine_grove": 1,
+  "d28_forest_dense_canopy": 1,
+  "d29_forest_oak_woodland": 2,
+  "d30_forest_oak_thicket": 1,
+  "d31_forest_pine_cliff": 2,
+  "d32_forest_pine_boulders": 1,
 
   // Cấp 2 (Mở khóa Chuồng Gà Đẻ Trứng)
   "b21_chicken_coop": 2,
@@ -86,14 +94,12 @@ export const TILE_REQUIRED_LEVELS = {
   "d01_plaza_fountain": 3,
   "b05_watermill": 3,
   "d03_market_stalls": 3,
-  "b13_barn_silo": 3,
   "d10_flower_orchard_hedge": 3,
 
   // Cấp 4
   "b03_blacksmith_forge": 4,
   "b08_watchtower": 4,
   "b11_carpenter_sawmill": 4,
-  "b12_general_store": 4,
   "b59_dairy_factory": 4,
   "d08_stone_statue_plaza": 4,
   "d09_merchant_cart_camp": 4,
@@ -205,7 +211,6 @@ export const TILE_REQUIRED_LEVELS = {
   "b43_nomad_yurt_sw": 21,
   "b44_nomad_yurt_se": 21,
   "l49_tibetan_yak_tuareg_camel": 21,
-  "m21_savanna_golden_grass": 21,
 
   // Cấp 22
   "b47_winery_press_barn_sw": 22,
@@ -381,14 +386,12 @@ export const DURATION_OVERRIDES = {
   "b57_sheep_pasture": 75,
   "b58_textile_mill": 105,
   "b59_dairy_factory": 80,
-  "b13_barn_silo": 90,
   // Crafting & processing workshops
   "b04_windmill": 75,
   "b06_bakery": 90,
   "b05_watermill": 75,
   "b03_blacksmith_forge": 120,
   "b11_carpenter_sawmill": 120,
-  "b12_general_store": 90,
   "b07_apothecary": 120,
   // Advanced civic, villas & culture
   "b02_tudor_inn": 150,
@@ -612,7 +615,6 @@ export const BUILDING_POPULATION = {
   "b44_nomad_yurt_se": 5,
   "b09_chapel": 4,
   "b10_wizard_tower": 2,
-  "b12_general_store": 3,
   "b06_bakery": 3,
   "b04_windmill": 2,
   "b03_blacksmith_forge": 3,

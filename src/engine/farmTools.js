@@ -1,24 +1,21 @@
 /**
- * farmTools.js - Quản Lý Nông Cụ & Cơ Chế Thu Hoạch Nông Trại
- * 
+ * farmTools.js - Gieo Hạt & Thu Hoạch Hàng Loạt Nông Trại
+ *
  * Chức năng:
- * - 🌾 Liềm Thu Hoạch (Sickle): Quét chuột liên tục qua các luống đất chín để gặt hàng loạt
- * - ⛏️ Xẻng Dỡ Bỏ (Shovel): Dỡ bỏ cây trồng đang lớn trên luống đất
- * - 🌱 Gieo Hạt Nhanh (Bulk Seed Sowing): Quét chuột liên tục qua các ô đất cày trống
- * - 📋 Popup Chọn Nông Cụ (Farm Tool Popup) và Thanh Trạng Thái Nông Cụ Đang Dùng (Active HUD)
- * - Tương tác với bong bóng thu hoạch và hỗ trợ sự kiện Ngày Hội Mùa Vàng (x2 Sản Lượng)
+ * - 🌱 Gieo Hạt Nhanh (Bulk Seed Sowing): Đặt ngón/chuột lên luống đất trống rồi trượt để gieo hàng loạt
+ * - 🌾 Thu hoạch hàng loạt: giữ vào cây chín rồi trượt sang các cây chín khác
+ *   (inputHandler điều khiển cử chỉ, gọi tryHarvestCrop cho từng ô)
+ * - Thanh trạng thái gieo hạt (Active HUD) và sự kiện Ngày Hội Mùa Vàng (x2 Sản Lượng)
  */
 
-import { CROPS_CONFIG } from "../data/cropsConfig.js";
-import { RESOURCE_MAX_CAPACITY, getSiloUsed } from "../data/resourcesConfig.js";
+import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
+import { RESOURCE_MAX_CAPACITY, getWarehouseUsed } from "../data/resourcesConfig.js";
 import { ROWS, COLS, ORIGIN_X, HALF_W, ORIGIN_Y, QUARTER_W } from "./isoMath.js";
+import { isCellUnlocked } from "../data/landConfig.js";
 import {
-  playTileSelectSound,
   playPlantSeedSound,
   playSickleSlashSound,
-  playHarvestPlopSound,
-  playDemolishSound,
-  playModalOpenSound
+  playHarvestPlopSound
 } from "./audioEngine.js";
 
 /**
@@ -27,92 +24,26 @@ import {
  * @returns {Object}
  */
 export function createFarmToolsManager(ctx) {
-  let activeFarmTool = null; // 'sickle' | 'shovel' | null
   let activeSeedBrush = null; // crop.id | null
-  let pendingFarmCell = null; // { row, col } | null
 
   const abortController = new AbortController();
   const { signal } = abortController;
 
   // DOM Elements
-  const farmToolPopup = document.getElementById("farm-tool-popup");
-  const farmToolPopupClose = document.getElementById("farm-tool-popup-close");
-  const farmToolSickleChoice = document.getElementById("farm-tool-sickle-choice");
-  const farmToolShovelChoice = document.getElementById("farm-tool-shovel-choice");
-  const farmToolSeedChoice = document.getElementById("farm-tool-seed-choice");
   const farmToolActiveHud = document.getElementById("farm-tool-active-hud");
   const farmToolActiveIcon = document.getElementById("farm-tool-active-icon");
   const farmToolActiveTitle = document.getElementById("farm-tool-active-title");
-  const farmToolActiveDesc = document.getElementById("farm-tool-active-desc");
   const farmToolFinishBtn = document.getElementById("farm-tool-finish-btn");
-  const btnOpenFarmTools = document.getElementById("btn-open-farm-tools");
 
   /**
-   * Mở popup chọn nông cụ
-   * @param {number|null} cellRow
-   * @param {number|null} cellCol
-   */
-  function openFarmToolPopup(cellRow = null, cellCol = null) {
-    pendingFarmCell = (cellRow !== null && cellCol !== null) ? { row: cellRow, col: cellCol } : null;
-    if (farmToolPopup) {
-      farmToolPopup.classList.remove("hidden");
-      playModalOpenSound();
-    }
-  }
-
-  /**
-   * Đóng popup chọn nông cụ
-   */
-  function closeFarmToolPopup() {
-    if (farmToolPopup) {
-      farmToolPopup.classList.add("hidden");
-    }
-  }
-
-  /**
-   * Kích hoạt nông cụ ('sickle' hoặc 'shovel')
-   * @param {"sickle"|"shovel"} toolType
-   */
-  function activateFarmTool(toolType) {
-    activeFarmTool = toolType;
-    activeSeedBrush = null;
-    closeFarmToolPopup();
-
-    if (ctx.setActiveBrush) ctx.setActiveBrush(null);
-    if (ctx.clearMovingBuilding) ctx.clearMovingBuilding();
-
-    if (farmToolActiveHud) farmToolActiveHud.classList.remove("hidden");
-
-    if (toolType === "sickle") {
-      if (farmToolActiveIcon) farmToolActiveIcon.textContent = "🌾";
-      if (farmToolActiveTitle) farmToolActiveTitle.textContent = "Đang dùng: Liềm Thu Hoạch";
-      if (farmToolActiveDesc) farmToolActiveDesc.textContent = "Di chuột quét qua các luống đất chín để gặt hàng loạt tức thì!";
-      playTileSelectSound();
-      ctx.showToast("🌾 Đã trang bị Liềm: Di chuột quét qua các luống đất chín để gặt tức thì!", "info");
-    } else if (toolType === "shovel") {
-      if (farmToolActiveIcon) farmToolActiveIcon.textContent = "⛏️";
-      if (farmToolActiveTitle) farmToolActiveTitle.textContent = "Đang dùng: Xẻng Dỡ Bỏ";
-      if (farmToolActiveDesc) farmToolActiveDesc.textContent = "Nhấp hoặc kéo chuột qua luống đất để dỡ bỏ cây trồng!";
-      playTileSelectSound();
-      ctx.showToast("⛏️ Đã trang bị Xẻng: Kéo chuột qua luống đất để dỡ bỏ cây trồng!", "info");
-    }
-
-    if (pendingFarmCell) {
-      tryApplyFarmTool(pendingFarmCell.row, pendingFarmCell.col);
-      pendingFarmCell = null;
-    }
-  }
-
-  /**
-   * Tắt chế độ nông cụ hoặc gieo hạt, cất công cụ
+   * Cất hạt giống, quay về con trỏ tự do
    */
   function deactivateFarmTool() {
     const hudVisible = farmToolActiveHud && !farmToolActiveHud.classList.contains("hidden");
-    if (!activeFarmTool && !activeSeedBrush && !hudVisible) return;
-    activeFarmTool = null;
+    if (!activeSeedBrush && !hudVisible) return;
     activeSeedBrush = null;
     if (farmToolActiveHud) farmToolActiveHud.classList.add("hidden");
-    ctx.showToast("Đã cất nông cụ, quay về con trỏ tự do", "info");
+    ctx.showToast("Đã cất hạt giống, quay về con trỏ tự do", "info");
     if (ctx.requestRender) ctx.requestRender();
   }
 
@@ -122,16 +53,13 @@ export function createFarmToolsManager(ctx) {
    */
   function activateBulkSeedBrush(crop) {
     activeSeedBrush = crop.id;
-    activeFarmTool = null;
 
     if (ctx.setActiveBrush) ctx.setActiveBrush(null);
     if (ctx.clearMovingBuilding) ctx.clearMovingBuilding();
 
     if (farmToolActiveHud) farmToolActiveHud.classList.remove("hidden");
     if (farmToolActiveIcon) farmToolActiveIcon.textContent = crop.icon;
-    if (farmToolActiveTitle) farmToolActiveTitle.textContent = `Đang gieo: ${crop.name} (${crop.seedCost}🪙/ô)`;
-    if (farmToolActiveDesc) farmToolActiveDesc.textContent = "Di hoặc quét chuột qua các luống đất trống để gieo hàng loạt!";
-    ctx.showToast(`🌱 Đang gieo ${crop.name}: Quét chuột qua các ô đất trống để gieo hàng loạt!`, "success");
+    if (farmToolActiveTitle) farmToolActiveTitle.textContent = (crop.shortName || crop.name);
   }
 
   /**
@@ -145,6 +73,10 @@ export function createFarmToolsManager(ctx) {
 
     const currentGrid = ctx.getCurrentGrid();
     if (currentGrid[r][c] !== "d13_farmland_plot") return;
+
+    const chunks = ctx.getLandUnlockedChunks ? ctx.getLandUnlockedChunks() : null;
+    const mode = ctx.getGameMode ? ctx.getGameMode() : "game";
+    if (!isCellUnlocked(r, c, chunks, mode)) return;
 
     const farmlandState = ctx.getFarmlandState();
     const pKey = `${r}_${c}`;
@@ -198,7 +130,7 @@ export function createFarmToolsManager(ctx) {
     const farmData = farmlandState[pKey];
     if (!farmData) return false;
     const elapsed = Date.now() - farmData.plantTime;
-    if (elapsed < farmData.growDurationMs) return false;
+    if (elapsed < getCropGrowDurationMs(farmData)) return false;
 
     const cropCfg = CROPS_CONFIG[farmData.seedId];
     if (!cropCfg) return false;
@@ -206,15 +138,15 @@ export function createFarmToolsManager(ctx) {
     const yieldMult = ctx.getCropYieldMultiplier ? ctx.getCropYieldMultiplier() : 1;
     const yieldCount = (cropCfg.harvestYield || 3) * yieldMult;
     const playerResources = ctx.getPlayerResources();
-    const siloCap = ctx.getSiloCapacity ? ctx.getSiloCapacity() : 100;
-    const currentSiloUsed = getSiloUsed(playerResources);
+    const warehouseCap = ctx.getWarehouseCapacity ? ctx.getWarehouseCapacity() : 300;
+    const currentWarehouseUsed = getWarehouseUsed(playerResources);
 
-    if (currentSiloUsed + yieldCount > siloCap) {
+    if (currentWarehouseUsed + yieldCount > warehouseCap) {
       if (!silent) {
         if (ctx.showStorageFullModal) {
-          ctx.showStorageFullModal("silo");
+          ctx.showStorageFullModal();
         } else if (ctx.showToast) {
-          ctx.showToast(`⚠️ Kho Nông Sản (Silo) đã đầy (${currentSiloUsed}/${siloCap})! Hãy giao đơn hàng hoặc nâng cấp kho.`, "warning");
+          ctx.showToast(`⚠️ Kho Tổng Hợp đã đầy (${currentWarehouseUsed}/${warehouseCap})! Hãy giao đơn hàng hoặc nâng cấp kho.`, "warning");
         }
       }
       return false;
@@ -260,88 +192,46 @@ export function createFarmToolsManager(ctx) {
   }
 
   /**
-   * Áp dụng nông cụ (Liềm hoặc Xẻng) lên ô đất
+   * Thu hoạch 1 ô luống đất nếu cây đã chín (dùng cho thu hoạch hàng loạt)
+   * @param {number} r - Tọa độ hàng
+   * @param {number} c - Tọa độ cột
+   * @returns {boolean}
+   */
+  function tryHarvestCrop(r, c) {
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return false;
+    const currentGrid = ctx.getCurrentGrid();
+    if (!currentGrid[r] || currentGrid[r][c] !== "d13_farmland_plot") return false;
+    return harvestFarmlandCrop(r, c, false);
+  }
+
+  /**
+   * Cây đang lớn: báo thời gian còn lại
    * @param {number} r - Tọa độ hàng
    * @param {number} c - Tọa độ cột
    */
-  function tryApplyFarmTool(r, c) {
-    if (!activeFarmTool) return;
-    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
-
-    const currentGrid = ctx.getCurrentGrid();
-    const tid = currentGrid[r][c];
-    if (tid !== "d13_farmland_plot") return;
-
-    const farmlandState = ctx.getFarmlandState();
-    const pKey = `${r}_${c}`;
-
-    if (activeFarmTool === "sickle") {
-      harvestFarmlandCrop(r, c, false);
-    } else if (activeFarmTool === "shovel") {
-      if (farmlandState[pKey]) {
-        delete farmlandState[pKey];
-        playDemolishSound();
-        const ox = ORIGIN_X + (c - r) * HALF_W;
-        const oy = ORIGIN_Y + (r + c) * QUARTER_W;
-        ctx.addFloatingText({
-          x: ox + 64,
-          y: oy + 26,
-          text: `Đã dọn ⛏️`,
-          startTime: performance.now(),
-          duration: 1200
-        });
-        ctx.persistGameState();
-        if (ctx.requestRender) ctx.requestRender();
-      }
-    }
+  function inspectGrowingCrop(r, c) {
+    const farmData = ctx.getFarmlandState()[`${r}_${c}`];
+    if (!farmData) return;
+    const crop = CROPS_CONFIG[farmData.seedId];
+    const leftSec = Math.max(0, Math.ceil((getCropGrowDurationMs(farmData) - (Date.now() - farmData.plantTime)) / 1000));
+    ctx.showToast(`🌱 ${crop ? crop.name : "Cây trồng"} đang lớn, còn khoảng ${leftSec}s`, "info");
   }
 
-  // Gắn các sự kiện click cho các nút giao diện nông cụ
-  if (btnOpenFarmTools) {
-    btnOpenFarmTools.addEventListener("click", () => openFarmToolPopup(), { signal });
-  }
-  if (farmToolPopupClose) {
-    farmToolPopupClose.addEventListener("click", closeFarmToolPopup, { signal });
-  }
   if (farmToolFinishBtn) {
     farmToolFinishBtn.addEventListener("click", deactivateFarmTool, { signal });
   }
-  if (farmToolSickleChoice) {
-    farmToolSickleChoice.addEventListener("click", () => activateFarmTool("sickle"), { signal });
-  }
-  if (farmToolShovelChoice) {
-    farmToolShovelChoice.addEventListener("click", () => activateFarmTool("shovel"), { signal });
-  }
-  if (farmToolSeedChoice) {
-    farmToolSeedChoice.addEventListener("click", () => {
-      const cell = pendingFarmCell;
-      closeFarmToolPopup();
-      if (ctx.openSeedModal) {
-        ctx.openSeedModal(cell ? cell.row : 0, cell ? cell.col : 0);
-      }
-    }, { signal });
-  }
 
   return {
-    openFarmToolPopup,
-    closeFarmToolPopup,
-    activateFarmTool,
     deactivateFarmTool,
     activateBulkSeedBrush,
     tryApplySeedBrush,
-    tryApplyFarmTool,
+    tryHarvestCrop,
+    inspectGrowingCrop,
     harvestCropCell: (r, c, silent = false) => harvestFarmlandCrop(r, c, silent),
-    getActiveFarmTool: () => activeFarmTool,
-    setActiveFarmTool: (val) => {
-      activeFarmTool = val;
-      if (!val && !activeSeedBrush && farmToolActiveHud) {
-        farmToolActiveHud.classList.add("hidden");
-      }
-    },
     getActiveSeedBrush: () => activeSeedBrush,
     setActiveSeedBrush: (val) => {
       activeSeedBrush = val;
-      if (!val && !activeFarmTool && farmToolActiveHud) {
+      if (!val && farmToolActiveHud) {
         farmToolActiveHud.classList.add("hidden");
       }
     },

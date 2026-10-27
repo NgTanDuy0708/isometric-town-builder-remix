@@ -392,6 +392,13 @@ export function createTutorialManager(ctx) {
     const target = document.querySelector(selector);
     if (target) {
       target.classList.add("tutorial-target-pulse");
+      // Nút nằm trong cụm nút tròn đang gom (điện thoại): tự sổ ra để người chơi thấy nút cần bấm
+      const deckEl = target.closest ? target.closest("#bottom-left-deck") : null;
+      if (deckEl) {
+        deckEl.classList.add("open");
+        const deckToggle = document.getElementById("deck-toggle-btn");
+        if (deckToggle) deckToggle.setAttribute("aria-expanded", "true");
+      }
     }
   }
 
@@ -547,8 +554,9 @@ export function createTutorialManager(ctx) {
     const shown = getShownLevelTutorials();
     if (!force && shown.includes(level)) return;
 
-    // Nếu đang trong chuỗi 5 bước tân thủ thì đưa vào hàng đợi chờ xong
-    if (currentMode === "beginner" && isActive) {
+    // Đang có bất kỳ thẻ hướng dẫn nào mở (tân thủ hoặc thẻ cấp độ trước đó) thì xếp hàng chờ,
+    // tránh việc thẻ Cấp 2 bị thẻ Cấp 3 render đè và mất vĩnh viễn.
+    if (isActive) {
       if (!pendingLevelTutorials.includes(level)) {
         pendingLevelTutorials.push(level);
       }
@@ -644,7 +652,7 @@ export function createTutorialManager(ctx) {
       }
 
       if (ctx.showToast) {
-        ctx.showToast("🎉 Chúc mừng bạn đã hoàn thành Khóa Học Khởi Nghiệp! Nhận thưởng +200🪙 và +50⭐", "success");
+        ctx.showToast("🎉 Chúc mừng bạn đã hoàn thành Khóa Học Khởi Nghiệp! Nhận thưởng +200🪙 và +20⭐", "success");
       }
     } else {
       if (ctx.showToast) {
@@ -731,7 +739,8 @@ export function createTutorialManager(ctx) {
 
     try {
       localStorage.removeItem(STORAGE_KEY_COMPLETED);
-      localStorage.removeItem(STORAGE_KEY_REWARDED);
+      // KHÔNG xoá STORAGE_KEY_REWARDED: phần thưởng khởi nghiệp chỉ được trao 1 lần duy nhất.
+      // (Trước đây xoá cờ này khiến "Mở lại hướng dẫn" farm được +200🪙 vô hạn.)
       localStorage.removeItem(STORAGE_KEY_STEP);
       localStorage.removeItem(STORAGE_KEY_LEVEL_TUTORIALS_SHOWN);
     } catch (e) {}

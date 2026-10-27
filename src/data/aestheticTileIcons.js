@@ -4,6 +4,14 @@
  */
 
 export const AESTHETIC_TILE_URIS = {
+  // Sprite toàn cảnh: ảnh được căn giữa tại ô neo và phủ theo footprint 3x3.
+  d01_plaza_fountain: "/assets/buildings/royal_plaza.png",
+  // Sprite toàn cảnh tòa thị chính, căn giữa tại ô neo với footprint 2x3.
+  b14_town_hall: "/assets/buildings/town_hall_royal.png",
+
+  // Kho Tổng Hợp: sprite duy nhất phủ footprint 2x2.
+  b60_combined_warehouse: "/assets/buildings/combined_warehouse.png",
+
   // 1. Lối đi cẩm thạch hoàng gia có lan can
   r03_royal_marble_pavement: "/assets/aistudio/l_i__i_c_m_th_ch_c__lan_can_f9166eb6.png",
 
@@ -38,5 +46,12 @@ export const AESTHETIC_TILE_URIS = {
   b57_sheep_pasture: "/assets/aistudio/chu_ng_c_u_229da336.png",
 
   // Farmland plot
-  d13_farmland_plot: "/assets/decorations/farmland_plot.png"
+  d13_farmland_plot: "/assets/decorations/farmland_plot.png",
+
+  // Rừng Pixel Art (5 mẫu) - dùng cho cửa hàng Phong cảnh & rừng ngoại vi
+  d28_forest_dense_canopy: "/assets/decorations/forest_1.png",
+  d29_forest_oak_woodland: "/assets/decorations/forest_2.png",
+  d30_forest_oak_thicket: "/assets/decorations/forest_3.png",
+  d31_forest_pine_cliff: "/assets/decorations/forest_4.png",
+  d32_forest_pine_boulders: "/assets/decorations/forest_5.png"
 };

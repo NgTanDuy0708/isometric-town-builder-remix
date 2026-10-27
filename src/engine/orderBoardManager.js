@@ -35,10 +35,10 @@ export function createOrderBoardManager(ctx) {
     tripDurationMs: 28000, // 28 giây khứ hồi (chạy chậm rãi, ngắm cảnh làng quê thanh bình)
     startedAt: 0,
     returnsAt: 0,
-    // Tọa độ đậu xe và bảng đơn hàng đặt trực tiếp trên ô Đài Phun Nước (Row 15, Col 15) trước thềm Tòa Thị Chính
-    homeRow: 15.5,
+    // Xe/bảng đứng ngoài footprint quảng trường, ở đầu đường giao hàng (Row 18, Col 15)
+    homeRow: 18.5,
     homeCol: 15.3,
-    boardRow: 15.25,
+    boardRow: 18.25,
     boardCol: 15.15
   };
 
@@ -54,6 +54,32 @@ export function createOrderBoardManager(ctx) {
   const deckBtn = document.getElementById("btn-open-order-board");
   const quickStorageBtn = document.getElementById("hud-quick-order-btn");
 
+  /**
+   * Khôi phục chuyến xe đang giao từ save.
+   * - Nếu xe chưa về: giữ nguyên giờ về.
+   * - Nếu đã quá giờ trở về trong lúc offline: vẫn giữ chuyến và đặt returnsAt = now
+   *   để update() gọi completeTruckDelivery() trao thưởng, thay vì xoá mất hàng + thưởng.
+   * - Save cũ có thể còn lưu đơn vừa giao trong ô: thay bằng đơn mới để tránh giao trùng.
+   */
+  function restorePendingTruck(savedData) {
+    const savedTruck = savedData && savedData.truckState;
+    if (savedTruck && savedTruck.isDelivering && savedTruck.order) {
+      truckState.isDelivering = true;
+      truckState.order = savedTruck.order;
+      truckState.startedAt = typeof savedTruck.startedAt === "number" ? savedTruck.startedAt : Date.now();
+      const savedReturnsAt = typeof savedTruck.returnsAt === "number" ? savedTruck.returnsAt : Date.now();
+      truckState.returnsAt = savedReturnsAt > Date.now() ? savedReturnsAt : Date.now();
+
+      const dupIdx = orders.findIndex(o => o && savedTruck.order && o.id === savedTruck.order.id);
+      if (dupIdx >= 0) {
+        orders[dupIdx] = generateRandomOrder(ctx.getPlayerLevel(), orders.filter(o => o && o.items));
+      }
+      return;
+    }
+    truckState.isDelivering = false;
+    truckState.order = null;
+  }
+
   function init(savedData = null) {
     if (savedData && Array.isArray(savedData.orders) && savedData.orders.length > 0) {
       orders = savedData.orders.slice(0, ORDER_BOARD_SLOTS_COUNT);
@@ -63,15 +89,7 @@ export function createOrderBoardManager(ctx) {
       totalOrdersDelivered = 0;
     }
 
-    if (savedData && savedData.truckState && savedData.truckState.isDelivering && savedData.truckState.returnsAt > Date.now()) {
-      truckState.isDelivering = true;
-      truckState.order = savedData.truckState.order;
-      truckState.startedAt = savedData.truckState.startedAt;
-      truckState.returnsAt = savedData.truckState.returnsAt;
-    } else {
-      truckState.isDelivering = false;
-      truckState.order = null;
-    }
+    restorePendingTruck(savedData);
 
     // Đảm bảo luôn có đủ 6 slots
     while (orders.length < ORDER_BOARD_SLOTS_COUNT) {
@@ -190,12 +208,14 @@ export function createOrderBoardManager(ctx) {
     truckState.returnsAt = Date.now() + truckState.tripDurationMs;
 
     playCoinSound();
-    ctx.updateResourcesUI();
-    ctx.persistGameState();
     ctx.showToast(`🚚 Xe tải bắt đầu khởi hành giao hàng cho ${order.npc.name}!`, "info");
 
-    // Tạo sẵn đơn hàng mới vào ô này cho lần tiếp theo
+    // Tạo sẵn đơn hàng mới vào ô này TRƯỚC khi lưu, để save không còn chứa đơn vừa giao
+    // (nếu lưu trước sẽ khiến reload hiện lại đơn cũ và có thể giao trùng).
     orders[slotIdx] = generateRandomOrder(ctx.getPlayerLevel(), orders.filter(o => o && o.items));
+
+    ctx.updateResourcesUI();
+    ctx.persistGameState();
 
     renderBoard();
     updateBadge();
@@ -517,9 +537,8 @@ export function createOrderBoardManager(ctx) {
       cell = p7;
     }
 
-    // Chỉ nhận nhấp vào đúng ô 15, 15 (Đài Phun Nước / Bảng Đơn Hàng / Xe Tải)
-    // Tuyệt đối không nhận ô đường (16, 15) hay các ô xung quanh (16, 14...)
-    if (cell && cell.row === 15 && cell.col === 15) {
+    // Bảng đơn hàng và xe giao hàng đứng ở đầu tuyến, ngoài footprint quảng trường.
+    if (cell && cell.row === 18 && cell.col === 15) {
       return true;
     }
 
@@ -766,15 +785,7 @@ export function createOrderBoardManager(ctx) {
         orders = data.orders.slice(0, ORDER_BOARD_SLOTS_COUNT);
         totalOrdersDelivered = typeof data.totalOrdersDelivered === "number" ? data.totalOrdersDelivered : 0;
       }
-      if (data && data.truckState && data.truckState.isDelivering && data.truckState.returnsAt > Date.now()) {
-        truckState.isDelivering = true;
-        truckState.order = data.truckState.order;
-        truckState.startedAt = data.truckState.startedAt;
-        truckState.returnsAt = data.truckState.returnsAt;
-      } else {
-        truckState.isDelivering = false;
-        truckState.order = null;
-      }
+      restorePendingTruck(data);
       while (orders.length < ORDER_BOARD_SLOTS_COUNT) {
         orders.push(generateRandomOrder(ctx.getPlayerLevel(), orders.filter(o => o && o.items)));
       }

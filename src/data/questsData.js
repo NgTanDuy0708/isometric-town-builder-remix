@@ -106,7 +106,7 @@ export const QUESTS_CONFIG = [
     chapter: 2,
     requires: "q7_windmill",
     title: "Đôi tay thoăn thoắt",
-    desc: "Sử dụng Liềm Thu Hoạch quét nhanh mùa vụ, hoàn thành tổng cộng 10 lượt thu hoạch.",
+    desc: "Giữ vào cây chín rồi trượt qua các luống để thu hoạch hàng loạt, hoàn thành tổng cộng 10 lượt thu hoạch.",
     icon: "🌾",
     target: 10,
     rewardGold: 200,

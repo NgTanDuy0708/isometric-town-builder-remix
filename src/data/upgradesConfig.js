@@ -165,25 +165,6 @@ export const UPGRADES_CONFIG = {
     }
   },
 
-  // Thương xá bách hóa
-  "b12_general_store": {
-    maxLevel: 3,
-    2: {
-      costGold: 150,
-      costResources: { ironTools: 1 },
-      durationSec: 10,
-      population: 6,
-      desc: "Mở rộng gian hàng tơ lụa & hương liệu: Thu hút 6 👥 tiểu thương."
-    },
-    3: {
-      costGold: 280,
-      costResources: { ironTools: 3, bread: 4 },
-      durationSec: 18,
-      population: 12,
-      desc: "Đại thương xá liên lục địa: Sức chứa 12 👥 thương gia sầm uất."
-    }
-  },
-
   // Dinh thự quý tộc
   "b20_noble_manor": {
     maxLevel: 3,
@@ -280,27 +261,6 @@ export const UPGRADES_CONFIG = {
       resourceYield: 4,
       goldBonus: 55,
       desc: "Đồng cỏ tươi hữu cơ & dây chuyền thanh trùng: Vắt được 4 Bình sữa tươi 🥛 + 100 🪙 / 22s."
-    }
-  },
-
-  // Trang trại bò sữa lớn (Nhà kho & Silo)
-  "b13_barn_silo": {
-    maxLevel: 3,
-    2: {
-      costGold: 120,
-      costResources: { ironTools: 1 },
-      durationSec: 10,
-      resourceYield: 3,
-      goldBonus: 25,
-      desc: "Hệ thống tháp silo ủ men & máy hút sữa tự động: Cho 3 Bình sữa tươi 🥛 + 70 🪙 / 25s."
-    },
-    3: {
-      costGold: 240,
-      costResources: { ironTools: 3, corn: 6 },
-      durationSec: 18,
-      resourceYield: 4,
-      goldBonus: 55,
-      desc: "Khu liên hợp trang trại bò sữa hoàng gia khép kín: Cho 4 Bình sữa tươi 🥛 + 100 🪙 / 25s."
     }
   },
 

@@ -8,7 +8,7 @@ import {
   PRODUCTION_BUILDINGS, getTileCost, getTileBuildDuration
 } from "../data/gameEconomy.js";
 import { UPGRADES_CONFIG } from "../data/upgradesConfig.js";
-import { CROPS_CONFIG } from "../data/cropsConfig.js";
+import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
 import { FRUIT_TREES_CONFIG } from "../data/resourcesConfig.js";
 import { isProtectedTile, isIndestructibleTile } from "../data/starterMap.js";
 import {
@@ -43,7 +43,7 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
     if (!currentGrid[r] || currentGrid[r][c] !== "d13_farmland_plot") continue;
 
     const elapsed = Date.now() - farmData.plantTime;
-    if (elapsed >= farmData.growDurationMs) {
+    if (elapsed >= getCropGrowDurationMs(farmData)) {
       const ox = ORIGIN_X + (c - r) * HALF_W;
       const oy = ORIGIN_Y + (r + c) * QUARTER_W;
       const bubbleX = ox + 64;
@@ -65,21 +65,16 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
       const tid = currentGrid[r][c];
       if (tid !== "b21_chicken_coop" && tid !== "b22_cow_pasture" && tid !== "b57_sheep_pasture") continue;
 
-      if (ls.state === "producing") {
-        const dur = ls.durationMs || 45000;
-        if (Date.now() - (ls.feedTime || 0) >= dur) {
-          ls.state = "ready";
-        }
-      }
-
-      if (ls.animalCount > 0 && (ls.state === "ready" || ls.state === "hungry")) {
+      const dur = ls.durationMs || 45000;
+      const isReady = ls.state === "ready" || (ls.state === "producing" && Date.now() - (ls.feedTime || 0) >= dur);
+      if (ls.animalCount > 0 && (isReady || ls.state === "hungry")) {
         const ox = ORIGIN_X + (c - r) * HALF_W;
         const oy = ORIGIN_Y + (r + c) * QUARTER_W;
         const bubbleX = ox + 64;
         const bubbleY = oy + 6;
         // Bắt trúng cả bong bóng nổi lẫn chuồng trại (bán kính rộng 38px)
-        if (Math.hypot(wx - bubbleX, wy - bubbleY) <= 38 || (ls.state === "ready" && Math.hypot(wx - (ox + 64), wy - (oy + 50)) <= 38)) {
-          return { type: "livestock", row: r, col: c, state: ls.state };
+        if (Math.hypot(wx - bubbleX, wy - bubbleY) <= 38 || (isReady && Math.hypot(wx - (ox + 64), wy - (oy + 50)) <= 38)) {
+          return { type: "livestock", row: r, col: c, state: isReady ? "ready" : ls.state };
         }
       }
     }
@@ -90,11 +85,11 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
     for (let r = 0; r < currentGrid.length; r++) {
       if (!currentGrid[r]) continue;
       for (let c = 0; c < currentGrid[r].length; c++) {
-        if (currentGrid[r][c] === "b14_town_hall") {
+        if (currentGrid[r][c] === "b14_town_hall" && r === 14 && c === 15) {
           const ox = ORIGIN_X + (c - r) * HALF_W;
           const oy = ORIGIN_Y + (r + c) * QUARTER_W;
-          const bubbleX = ox + 64;
-          const bubbleY = oy + 2;
+          const bubbleX = ox + 99;
+          const bubbleY = oy - 205;
           if (Math.hypot(wx - bubbleX, wy - bubbleY) <= 38) {
             return { type: "achievements", row: r, col: c };
           }
@@ -189,34 +184,71 @@ export function initInputHandler(container, ctx) {
   let activeActionTarget = null; // { row, col, tid, level, flipped }
 
   function hideObjectActionOverlay() {
+
     if (objectActionOverlay) {
+
       objectActionOverlay.classList.add("hidden");
+
       objectActionOverlay.style.display = "none";
+
     }
+
+    const hadTarget = !!activeActionTarget;
+
     activeActionTarget = null;
+
+    if (hadTarget && ctx.setSelectedObjectCell) ctx.setSelectedObjectCell(null);
+
   }
 
+
+
+  function refreshObjectActionTitle() {
+
+    const titleEl = document.getElementById("obj-action-title");
+
+    if (!titleEl || !activeActionTarget) return;
+
+    const tt = ctx.getTileMap()[activeActionTarget.tid];
+
+    titleEl.textContent = tt ? tt.label : "Công trình";
+
+  }
+
+
+
   function showObjectActionOverlay(row, col, tid, level, flipped) {
+
     if (!objectActionOverlay) return;
+
     activeActionTarget = { row, col, tid, level, flipped };
-    const camera = ctx.getCamera();
-    const ox = ORIGIN_X + (col - row) * HALF_W + 64;
-    const oy = ORIGIN_Y + (row + col) * QUARTER_W + 30;
-    const screenX = camera.x + ox * camera.zoom;
-    const screenY = camera.y + oy * camera.zoom;
 
-    objectActionOverlay.style.left = `${screenX}px`;
-    objectActionOverlay.style.top = `${screenY}px`;
+    // Làm mờ công trình đang được chọn + hiện thanh Xoay / Di chuyển / Gỡ ở dưới màn hình
 
-    // 2 Nhà Kho (b13_barn_silo & b48_winery_press_barn_se): Cho phép di chuyển, KHÔNG cho phép gỡ bỏ
-    if (isIndestructibleTile(tid)) {
+    if (ctx.setSelectedObjectCell) ctx.setSelectedObjectCell({ row, col });
+
+    refreshObjectActionTitle();
+
+
+
+    // Kho Tổng Hợp là công trình 2×2 cố định, nên không cho phép kéo vỡ footprint.
+    if (tid === "b60_combined_warehouse") {
+      if (objActionMoveBtn) objActionMoveBtn.style.display = "none";
+      if (objActionDemolishBtn) objActionDemolishBtn.style.display = "none";
+    } else if (isIndestructibleTile(tid)) {
+      if (objActionMoveBtn) objActionMoveBtn.style.display = "flex";
       if (objActionDemolishBtn) objActionDemolishBtn.style.display = "none";
     } else {
+      if (objActionMoveBtn) objActionMoveBtn.style.display = "flex";
       if (objActionDemolishBtn) objActionDemolishBtn.style.display = "flex";
     }
 
+
+
     objectActionOverlay.classList.remove("hidden");
+
     objectActionOverlay.style.display = "flex";
+
   }
 
   if (objActionMoveBtn) {
@@ -234,7 +266,7 @@ export function initInputHandler(container, ctx) {
       });
       playBuildSound();
       const t = ctx.getTileMap()[tid];
-      ctx.showToast(`🚚 Đang di chuyển ${t ? t.label : "vật phẩm"}! Bấm vào ô đất trống để đặt lại.`, "info");
+      ctx.showToast(`🚚 Đang di chuyển ${t ? t.label : "vật phẩm"}! Kéo bóng mờ tới vị trí mới rồi bấm ✓ Tích.`, "info");
       ctx.requestRender();
     });
   }
@@ -247,6 +279,391 @@ export function initInputHandler(container, ctx) {
       hideObjectActionOverlay();
       ctx.eraseCell(row, col);
     });
+  }
+
+  // =========================================================================
+
+  // PLACEMENT MODE: bóng mờ kéo thả + thanh Tích / Xoay / Hủy
+
+  // =========================================================================
+
+  const GHOST_GRAB_RADIUS = 100; // px: chạm trong vùng này quanh bóng mờ -> kéo bóng mờ; ngoài vùng -> kéo bản đồ
+
+
+
+  function isPlacementMode() {
+
+    const wm = ctx.getKingdomWondersManager ? ctx.getKingdomWondersManager() : null;
+
+    const brush = ctx.getActiveBrush();
+
+    return !!((brush && brush !== "erase") || ctx.getMovingBuilding() || (wm && wm.movingWonderId));
+
+  }
+
+
+
+  function getCellScreenCenter(cell) {
+
+    const cam = ctx.getCamera();
+
+    const wx = ORIGIN_X + (cell.col - cell.row) * HALF_W + 64;
+
+    const wy = ORIGIN_Y + (cell.row + cell.col) * QUARTER_W + 96;
+
+    return { x: cam.x + wx * cam.zoom, y: cam.y + wy * cam.zoom };
+
+  }
+
+
+
+  function setGhostCell(cell) {
+
+    hoverCell = cell;
+
+    if (ctx.setHoverCell) ctx.setHoverCell(cell);
+
+    ctx.requestRender();
+
+  }
+
+
+
+  // Đặt vật phẩm từ brush đang chọn xuống ô cell. Brush KHÔNG tự tắt -> đặt liên tục, thoát bằng nút Hủy.
+
+  function placeBrushAt(cell) {
+
+    const activeBrush = ctx.getActiveBrush();
+
+    if (!cell || !activeBrush || activeBrush === "erase") return false;
+
+    const constructions = ctx.getConstructions();
+
+    const currentGrid = ctx.getCurrentGrid();
+
+    const flippedGrid = ctx.getFlippedGrid();
+
+    const tileMap = ctx.getTileMap();
+
+    const gameMode = ctx.getGameMode();
+
+    const productionState = ctx.getProductionState();
+
+    const key = `${cell.row}_${cell.col}`;
+
+
+
+    if (!isCellUnlocked(cell.row, cell.col, ctx.getLandUnlockedChunks(), gameMode)) {
+
+      playErrorSound();
+
+      ctx.showToast("🔒 Không thể đặt vào lãnh thổ chưa mở khóa!", "warning");
+
+      return false;
+
+    }
+
+    if (isProtectedTile(cell.row, cell.col, currentGrid[cell.row]?.[cell.col])) {
+      playErrorSound();
+      ctx.showToast("🏛️ Ô này thuộc footprint cố định của khu trung tâm.", "warning");
+      return false;
+    }
+
+    // Không cho xây đè lên Đại Kỳ Quan (kỳ quan chỉ lưu ở wonderSites, không ghi vào grid).
+    const wonderManager = ctx.getKingdomWondersManager ? ctx.getKingdomWondersManager() : null;
+    if (wonderManager && typeof wonderManager.getWonderAt === "function" &&
+        wonderManager.getWonderAt(cell.row, cell.col)) {
+      playErrorSound();
+      ctx.showToast("🏛️ Ô này đang có Đại Kỳ Quan, không thể xây đè!", "warning");
+      return false;
+    }
+
+
+
+    if (constructions[key]) {
+
+      ctx.showToast("🏗️ Ô này đang được thi công!", "info");
+
+      return false;
+
+    }
+
+
+
+    if (ctx.checkCanPlaceTile) {
+
+      const penCheck = ctx.checkCanPlaceTile(activeBrush);
+
+      if (!penCheck.allowed) {
+
+        playErrorSound();
+
+        if (penCheck.nextInfo) {
+
+          ctx.showToast(`⚠️ Bạn đã xây tối đa ${penCheck.maxPens} chuồng ở cấp hiện tại! Lên Cấp ${penCheck.nextInfo.nextLevel} để mở thêm chuồng tiếp theo.`, "warning");
+
+        } else {
+
+          ctx.showToast(`⚠️ Bạn đã xây tối đa ${penCheck.maxPens} chuồng (giới hạn tối đa của vương quốc)!`, "warning");
+
+        }
+
+        return false;
+
+      }
+
+    }
+
+
+
+    const curCellTid = currentGrid[cell.row][cell.col];
+
+    const isEmptyGrass = curCellTid === "d12_meadow_wildflowers" || curCellTid === "g01_grass_flat";
+
+    if (!isEmptyGrass) {
+
+      playErrorSound();
+
+      ctx.showToast("🚫 Không thể đặt tại đây! Vị trí đã có công trình, đường đi hoặc cây cối. Hãy kéo bóng mờ sang ô cỏ trống.", "error");
+
+      return false;
+
+    }
+
+
+
+    if (curCellTid === activeBrush) return false;
+
+
+
+    const t = tileMap[activeBrush];
+
+    const cost = (gameMode === "game" && t) ? getTileCost(activeBrush, t.category) : 0;
+
+    const durSec = (gameMode === "game" && t) ? getTileBuildDuration(activeBrush, t.category) : 0;
+
+
+
+    const playerGold = ctx.getPlayerGold();
+
+    if (cost > playerGold) {
+
+      playErrorSound();
+
+      ctx.showToast(`⚠️ Không đủ vàng! Cần ${cost} 🪙`, "error");
+
+      return false;
+
+    }
+
+
+
+    if (cost > 0) {
+
+      ctx.deductGold(cost);
+
+      ctx.updateGoldDisplay();
+
+      ctx.saveGameEconomyState();
+
+    }
+
+
+
+    const brushFlipped = ctx.getBrushFlipped();
+
+    if (navigator.vibrate) navigator.vibrate(15);
+
+
+
+    if (durSec > 0 && gameMode === "game") {
+
+      constructions[key] = {
+
+        row: cell.row,
+
+        col: cell.col,
+
+        targetTileId: activeBrush,
+
+        flipped: brushFlipped,
+
+        startTime: Date.now(),
+
+        durationMs: durSec * 1000
+
+      };
+
+      ctx.saveConstructionsState();
+
+      playBuildSound();
+
+      if (ctx.onTutorialAction) ctx.onTutorialAction("build_tile", { tileId: activeBrush });
+
+      ctx.showToast(`🏗️ Bắt đầu xây dựng: ${t ? t.label : activeBrush} (${durSec}s)...`, "info");
+
+      ctx.requestRender();
+
+      return true;
+
+    }
+
+
+
+    ctx.pushUndo();
+
+    playBuildSound();
+
+    currentGrid[cell.row][cell.col] = activeBrush;
+
+    if (brushFlipped) {
+
+      flippedGrid[key] = true;
+
+    } else {
+
+      delete flippedGrid[key];
+
+    }
+
+    ctx.saveFlippedGrid();
+
+    if (ctx.onTutorialAction) ctx.onTutorialAction("build_tile", { tileId: activeBrush });
+
+
+
+    // Cây ăn quả: khởi tạo quả chín ngay đợt đầu
+
+    if (FRUIT_TREES_CONFIG[activeBrush]) {
+
+      const fruitTreesState = ctx.getFruitTreesState ? ctx.getFruitTreesState() : null;
+
+      if (fruitTreesState) {
+
+        fruitTreesState[key] = { lastHarvest: 0 };
+
+      }
+
+      if (productionState) {
+
+        productionState[key] = { lastHarvest: 0, ready: true };
+
+      }
+
+      ctx.showToast(`🌱 Đã trồng ${t ? t.label : "Cây ăn quả"}! Hãy nhấp rung cây thu hoạch quả chín nhé.`, "success");
+
+    }
+
+    ctx.updateVillageStatsUI();
+
+    ctx.checkQuestsProgress();
+
+    ctx.requestRender();
+
+    ctx.triggerAutoSave();
+
+    return true;
+
+  }
+
+
+
+  // Nút ✓ Tích: đặt vật phẩm / công trình đang di chuyển / kỳ quan xuống vị trí của bóng mờ
+
+  function confirmPlacement() {
+
+    if (!isPlacementMode()) return false;
+
+    const cell = ctx.getHoverCell ? ctx.getHoverCell() : hoverCell;
+
+    if (!cell) {
+
+      ctx.showToast("👆 Chạm vào bản đồ để chọn vị trí đặt.", "info");
+
+      return false;
+
+    }
+
+    const wm = ctx.getKingdomWondersManager ? ctx.getKingdomWondersManager() : null;
+
+    if (wm && wm.movingWonderId) {
+
+      if (!isCellUnlocked(cell.row, cell.col, ctx.getLandUnlockedChunks(), ctx.getGameMode())) {
+
+        playErrorSound();
+
+        ctx.showToast("🔒 Không thể đặt vào lãnh thổ chưa mở khóa!", "warning");
+
+        return false;
+
+      }
+
+      const okW = wm.placeWonderAt(cell.row, cell.col);
+
+      if (ctx.updateFloatingBrushHUD) ctx.updateFloatingBrushHUD();
+
+      ctx.requestRender();
+
+      return okW;
+
+    }
+
+    if (ctx.getMovingBuilding()) {
+
+      return placeMovingItemAt(cell.row, cell.col);
+
+    }
+
+    return placeBrushAt(cell);
+
+  }
+
+
+
+  const hudConfirmBtn = document.getElementById("floating-brush-confirm");
+
+  if (hudConfirmBtn) {
+
+    hudConfirmBtn.addEventListener("click", function(e) {
+
+      e.stopPropagation();
+
+      initAudio();
+
+      confirmPlacement();
+
+    }, { signal });
+
+  }
+
+
+
+  const objActionRotateBtn = document.getElementById("obj-action-rotate-btn");
+
+  if (objActionRotateBtn) {
+
+    objActionRotateBtn.addEventListener("click", function(e) {
+
+      e.stopPropagation();
+
+      if (!activeActionTarget) return;
+
+      const { row, col } = activeActionTarget;
+
+      ctx.rotateCellAt(row, col);
+
+      const g = ctx.getCurrentGrid();
+
+      activeActionTarget.tid = g[row][col];
+
+      activeActionTarget.flipped = !!ctx.getFlippedGrid()[`${row}_${col}`];
+
+      refreshObjectActionTitle();
+
+      ctx.requestRender();
+
+    }, { signal });
+
   }
 
   function placeMovingItemAt(targetRow, targetCol) {
@@ -278,6 +695,11 @@ export function initInputHandler(container, ctx) {
 
     if (!isCellUnlocked(targetRow, targetCol, landUnlockedChunks, gameMode)) {
       ctx.showToast("🔒 Không thể đặt vật phẩm vào lãnh thổ chưa mở khóa!", "warning");
+      return false;
+    }
+
+    if (isProtectedTile(targetRow, targetCol, currentGrid[targetRow]?.[targetCol])) {
+      ctx.showToast("🏛️ Không thể đặt vật phẩm lên footprint cố định của khu trung tâm.", "warning");
       return false;
     }
 
@@ -358,10 +780,11 @@ export function initInputHandler(container, ctx) {
     pendingDecorationClick = null;
     if (isSweepHarvesting) {
       isSweepHarvesting = false;
-      ctx.deactivateFarmTool();
     }
-    hoverCell = null;
-    if (ctx.setHoverCell) ctx.setHoverCell(null);
+    if (!isPlacementMode()) {
+      hoverCell = null;
+      if (ctx.setHoverCell) ctx.setHoverCell(null);
+    }
   }
 
   function getPinchMetrics() {
@@ -485,7 +908,6 @@ export function initInputHandler(container, ctx) {
     const cell = ctx.worldToCell(world.x, world.y);
 
     const activeSeedBrush = ctx.getActiveSeedBrush();
-    const activeFarmTool = ctx.getActiveFarmTool();
     const activeBrush = ctx.getActiveBrush();
     const movingBuilding = ctx.getMovingBuilding();
     const currentGrid = ctx.getCurrentGrid();
@@ -504,12 +926,6 @@ export function initInputHandler(container, ctx) {
       return;
     }
 
-    // Active Farm Tool Direct Action
-    if (e.button === 0 && activeFarmTool && cell) {
-      ctx.tryApplyFarmTool(cell.row, cell.col);
-      return;
-    }
-
     // Hide long-press action overlay if clicking anywhere else
     hideObjectActionOverlay();
 
@@ -525,8 +941,7 @@ export function initInputHandler(container, ctx) {
         }
         if (bubbleHit.type === "farmland") {
           isSweepHarvesting = true;
-          ctx.setActiveFarmTool("sickle");
-          ctx.tryApplyFarmTool(bubbleHit.row, bubbleHit.col);
+          ctx.tryHarvestCrop(bubbleHit.row, bubbleHit.col);
           ctx.requestRender();
           return;
         } else if (bubbleHit.type === "achievements") {
@@ -704,107 +1119,17 @@ export function initInputHandler(container, ctx) {
         return;
       }
 
-      // 3. Placing tile with active brush
+      // 3. Đặt vật phẩm bằng brush đang chọn (đặt liên tục, thoát bằng nút Hủy)
+
       if (activeBrush) {
-        const key = `${cell.row}_${cell.col}`;
-        if (constructions[key]) {
-          ctx.showToast("🏗️ Ô này đang được thi công!", "info");
-          return;
-        }
 
-        if (ctx.checkCanPlaceTile) {
-          const penCheck = ctx.checkCanPlaceTile(activeBrush);
-          if (!penCheck.allowed) {
-            playErrorSound();
-            if (penCheck.nextInfo) {
-              ctx.showToast(`⚠️ Bạn đã xây tối đa ${penCheck.maxPens} chuồng ở cấp hiện tại! Lên Cấp ${penCheck.nextInfo.nextLevel} để mở thêm chuồng tiếp theo.`, "warning");
-            } else {
-              ctx.showToast(`⚠️ Bạn đã xây tối đa ${penCheck.maxPens} chuồng (giới hạn tối đa của vương quốc)!`, "warning");
-            }
-            return;
-          }
-        }
+        placeBrushAt(cell);
 
-        const curCellTid = currentGrid[cell.row][cell.col];
-        const isEmptyGrass = curCellTid === "d12_meadow_wildflowers" || curCellTid === "g01_grass_flat";
-        if (!isEmptyGrass) {
-          playErrorSound();
-          ctx.showToast("🚫 Không thể đặt tại đây! Vị trí đã có công trình, đường đi hoặc cây cối. Hãy dùng công cụ Phá Dỡ (phím D) trước.", "error");
-          return;
-        }
-
-        if (currentGrid[cell.row][cell.col] !== activeBrush) {
-          const t = tileMap[activeBrush];
-          const cost = (gameMode === "game" && t) ? getTileCost(activeBrush, t.category) : 0;
-          const durSec = (gameMode === "game" && t) ? getTileBuildDuration(activeBrush, t.category) : 0;
-
-          const playerGold = ctx.getPlayerGold();
-          if (cost > playerGold) {
-            ctx.showToast(`⚠️ Không đủ vàng! Cần ${cost} 🪙`, "error");
-            return;
-          }
-
-          if (cost > 0) {
-            ctx.deductGold(cost);
-            ctx.updateGoldDisplay();
-            ctx.saveGameEconomyState();
-          }
-
-          const brushFlipped = ctx.getBrushFlipped();
-          if (durSec > 0 && gameMode === "game") {
-            constructions[key] = {
-              row: cell.row,
-              col: cell.col,
-              targetTileId: activeBrush,
-              flipped: brushFlipped,
-              startTime: Date.now(),
-              durationMs: durSec * 1000
-            };
-            ctx.saveConstructionsState();
-            playBuildSound();
-            if (ctx.onTutorialAction) ctx.onTutorialAction("build_tile", { tileId: activeBrush });
-            ctx.showToast(`🏗️ Bắt đầu xây dựng: ${t ? t.label : activeBrush} (${durSec}s)...`, "info");
-            ctx.setActiveBrush(null);
-            return;
-          } else {
-            ctx.pushUndo();
-            playBuildSound();
-            currentGrid[cell.row][cell.col] = activeBrush;
-            if (brushFlipped) {
-              flippedGrid[key] = true;
-            } else {
-              delete flippedGrid[key];
-            }
-            ctx.saveFlippedGrid();
-            if (ctx.onTutorialAction) ctx.onTutorialAction("build_tile", { tileId: activeBrush });
-
-            // Nếu là cây ăn quả: Khởi tạo quả chín ngay đợt đầu và cất cọ ngay
-            const isFruitTree = !!FRUIT_TREES_CONFIG[activeBrush];
-            if (isFruitTree) {
-              const fruitTreesState = ctx.getFruitTreesState ? ctx.getFruitTreesState() : null;
-              if (fruitTreesState) {
-                fruitTreesState[key] = { lastHarvest: 0 };
-              }
-              if (productionState) {
-                productionState[key] = { lastHarvest: 0, ready: true };
-              }
-              ctx.setActiveBrush(null);
-              ctx.showToast(`🌱 Đã trồng ${t ? t.label : 'Cây ăn quả'}! Hãy nhấp rung cây thu hoạch quả chín nhé.`, "success");
-            } else {
-              const isContinuousTile = activeBrush === "d13_farmland_plot" || activeBrush.startsWith("r") || activeBrush.startsWith("d");
-              if (gameMode === "game" && !isContinuousTile) {
-                ctx.setActiveBrush(null);
-              }
-            }
-            ctx.updateVillageStatsUI();
-            ctx.checkQuestsProgress();
-            ctx.requestRender();
-            ctx.triggerAutoSave();
-            return;
-          }
-        }
         return;
+
       }
+
+
 
       // 4. Free cursor mode on an unlocked cell
       // A. Ripe crop sweep-harvest
@@ -812,10 +1137,9 @@ export function initInputHandler(container, ctx) {
         const farmData = farmlandState[pKey];
         if (farmData) {
           const elapsed = Date.now() - farmData.plantTime;
-          if (elapsed >= farmData.growDurationMs) {
+          if (elapsed >= getCropGrowDurationMs(farmData)) {
             isSweepHarvesting = true;
-            ctx.setActiveFarmTool("sickle");
-            ctx.tryApplyFarmTool(cell.row, cell.col);
+            ctx.tryHarvestCrop(cell.row, cell.col);
             ctx.requestRender();
             return;
           }
@@ -859,7 +1183,9 @@ export function initInputHandler(container, ctx) {
         longPressOrigin = { x: mouseX, y: mouseY, row: cell.row, col: cell.col };
         isLongPressPicked = false;
 
-        if (curTid === "b13_barn_silo") {
+        if (curTid === "b60_combined_warehouse") {
+          pendingSpecialClick = { type: "warehouse", row: cell.row, col: cell.col };
+        } else if (curTid === "b13_barn_silo") {
           pendingSpecialClick = { type: "silo", row: cell.row, col: cell.col };
         } else if (curTid === "b48_winery_press_barn_se" || curTid === "b12_general_store") {
           pendingSpecialClick = { type: "barn", row: cell.row, col: cell.col };
@@ -941,74 +1267,238 @@ export function initInputHandler(container, ctx) {
     }
   };
 
-  // ===== TOUCH: hoãn hành động khi đang có công cụ (brush/hạt giống/dụng cụ/di chuyển) =====
-  // Chạm -> ô sáng lên + xem trước; nhả tay -> mới thực hiện; kéo > 10px -> chỉ di chuyển bản đồ.
+  // ===== TOUCH: chế độ đặt (bóng mờ) + hoãn thao tác khi xóa/gieo hạt =====
+
+  // Đang đặt vật phẩm: chạm vào bóng mờ rồi kéo -> di chuyển bóng mờ; kéo chỗ khác -> di chuyển bản đồ;
+
+  // chạm nhanh vào ô -> chuyển bóng mờ tới ô đó. Việc đặt thật sự do nút ✓ Tích đảm nhiệm.
+
   container.addEventListener("pointerdown", function(e) {
+
     if (!e.isPrimary) return;
+
     if (e.pointerType !== "mouse" && e.button === 0) {
-      const toolActive = ctx.getActiveBrush() || ctx.getActiveSeedBrush() ||
-                         ctx.getActiveFarmTool() || ctx.getMovingBuilding();
-      if (toolActive) {
+
+      const rect = container.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+
+      const y = e.clientY - rect.top;
+
+
+
+      if (isPlacementMode()) {
+
         initAudio();
+
         if (!getAudioState().isMuted) startBGM();
-        const rect = container.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        touchDeferred = { id: e.pointerId, clientX: e.clientX, clientY: e.clientY, x: x, y: y, pointerType: e.pointerType, moved: false };
-        const world = ctx.screenToWorldCoords(x, y);
-        const cell = ctx.worldToCell(world.x, world.y);
-        hoverCell = cell;
-        if (ctx.setHoverCell) ctx.setHoverCell(cell);
+
+        hideObjectActionOverlay();
+
+        const cam = ctx.getCamera();
+
+        const ghost = ctx.getHoverCell ? ctx.getHoverCell() : hoverCell;
+
+        const g = ghost ? getCellScreenCenter(ghost) : null;
+
+        const grab = !!g && Math.hypot(x - g.x, y - (g.y - 30 * cam.zoom)) <= GHOST_GRAB_RADIUS;
+
+        touchDeferred = {
+
+          id: e.pointerId, kind: grab ? "ghost" : "pan", x: x, y: y,
+
+          clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType, moved: false, ghostStart: g
+
+        };
+
         ctx.requestRender();
+
         return;
+
       }
+
+
+
+      // Công cụ Phá dỡ / Gieo hạt ngoài luống đất: chạm = thực hiện khi nhả tay, kéo = di chuyển bản đồ
+
+      const seedBrush = ctx.getActiveSeedBrush();
+
+      let defer = ctx.getActiveBrush() === "erase";
+
+      let c0 = null;
+
+      if (seedBrush) {
+
+        const w0 = ctx.screenToWorldCoords(x, y);
+
+        c0 = ctx.worldToCell(w0.x, w0.y);
+
+        const g0 = ctx.getCurrentGrid();
+
+        const sowNow = !!(c0 && g0[c0.row] && g0[c0.row][c0.col] === "d13_farmland_plot");
+
+        if (!sowNow) defer = true;
+
+      }
+
+      if (defer) {
+
+        initAudio();
+
+        if (!getAudioState().isMuted) startBGM();
+
+        if (!c0) {
+
+          const w1 = ctx.screenToWorldCoords(x, y);
+
+          c0 = ctx.worldToCell(w1.x, w1.y);
+
+        }
+
+        touchDeferred = {
+
+          id: e.pointerId, kind: "tap", x: x, y: y,
+
+          clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType, moved: false
+
+        };
+
+        setGhostCell(c0);
+
+        return;
+
+      }
+
     }
+
     handlePointerDown(e);
+
   }, { signal });
+
+
 
   window.addEventListener("pointermove", function(e) {
+
     const d = touchDeferred;
+
     if (!d || e.pointerId !== d.id) return;
+
     const rect = container.getBoundingClientRect();
+
     const x = e.clientX - rect.left;
+
     const y = e.clientY - rect.top;
+
     if (!d.moved) {
-      if (Math.hypot(x - d.x, y - d.y) > 10) {
-        d.moved = true;
-        const camera = ctx.getCamera();
-        isPanning = true;
-        panStartX = d.x - camera.x;
-        panStartY = d.y - camera.y;
-        hoverCell = null;
-        if (ctx.setHoverCell) ctx.setHoverCell(null);
-      } else {
+
+      if (Math.hypot(x - d.x, y - d.y) <= 8) {
+
         d.clientX = e.clientX;
+
         d.clientY = e.clientY;
+
+        return;
+
       }
+
+      d.moved = true;
+
+      if (d.kind !== "ghost") {
+
+        const camera = ctx.getCamera();
+
+        isPanning = true;
+
+        panStartX = d.x - camera.x;
+
+        panStartY = d.y - camera.y;
+
+        if (d.kind === "tap") setGhostCell(null);
+
+      }
+
     }
+
+    if (d.kind === "ghost" && d.ghostStart) {
+
+      const w = ctx.screenToWorldCoords(d.ghostStart.x + (x - d.x), d.ghostStart.y + (y - d.y));
+
+      const c = ctx.worldToCell(w.x, w.y);
+
+      const cur = ctx.getHoverCell ? ctx.getHoverCell() : hoverCell;
+
+      if (c && (!cur || c.row !== cur.row || c.col !== cur.col)) {
+
+        setGhostCell(c);
+
+      }
+
+    }
+
   }, { signal });
+
+
 
   window.addEventListener("pointerup", function(e) {
+
     const d = touchDeferred;
+
     if (!d || e.pointerId !== d.id) return;
+
     touchDeferred = null;
-    if (d.moved) return; // đã kéo bản đồ: handler chính tự kết thúc
-    handlePointerDown({
-      clientX: d.clientX, clientY: d.clientY, button: 0, isPrimary: true,
-      pointerType: d.pointerType, preventDefault() {}, stopPropagation() {}
-    });
-    hoverCell = null;
-    if (ctx.setHoverCell) ctx.setHoverCell(null);
-    ctx.requestRender();
+
+    if (d.moved) return; // đã kéo bóng mờ / bản đồ: handler chính tự kết thúc
+
+
+
+    if (d.kind === "tap") {
+
+      handlePointerDown({
+
+        clientX: d.clientX, clientY: d.clientY, button: 0, isPrimary: true,
+
+        pointerType: d.pointerType, preventDefault() {}, stopPropagation() {}
+
+      });
+
+      setGhostCell(null);
+
+      return;
+
+    }
+
+
+
+    if (d.kind === "pan") {
+
+      // Chạm nhanh vào ô trống: chuyển bóng mờ tới ô đó
+
+      const w = ctx.screenToWorldCoords(d.x, d.y);
+
+      const c = ctx.worldToCell(w.x, w.y);
+
+      if (c) setGhostCell(c);
+
+    }
+
   }, { signal });
 
+
+
   window.addEventListener("pointercancel", function(e) {
+
     if (touchDeferred && e.pointerId === touchDeferred.id) {
+
+      const wasTap = touchDeferred.kind === "tap";
+
       touchDeferred = null;
-      hoverCell = null;
-      if (ctx.setHoverCell) ctx.setHoverCell(null);
-      ctx.requestRender();
+
+      if (wasTap) setGhostCell(null);
+
+      else ctx.requestRender();
+
     }
+
   }, { signal });
 
   // MOUSE MOVE
@@ -1041,6 +1531,9 @@ export function initInputHandler(container, ctx) {
       return;
     }
 
+    // Cảm ứng + đang đặt vật phẩm: bóng mờ do handler kéo thả điều khiển, không bị đè bởi vị trí ngón tay
+    if (e.pointerType !== "mouse" && (touchDeferred || isPlacementMode())) return;
+
     const world = ctx.screenToWorldCoords(mouseX, mouseY);
     const cell = ctx.worldToCell(world.x, world.y);
     hoverCell = cell;
@@ -1049,12 +1542,11 @@ export function initInputHandler(container, ctx) {
     if (cell) {
       const activeBrush = ctx.getActiveBrush();
       const activeSeedBrush = ctx.getActiveSeedBrush();
-      const activeFarmTool = ctx.getActiveFarmTool();
 
       // Continuous brush placement while holding mouse down
       if (isMouseDown && activeBrush) {
         const isFruitTree = !!FRUIT_TREES_CONFIG[activeBrush];
-        const isContinuousTile = !isFruitTree && (activeBrush === "d13_farmland_plot" || activeBrush.startsWith("r") || activeBrush.startsWith("d"));
+        const isContinuousTile = !isFruitTree && (activeBrush === "d13_farmland_plot" || activeBrush.startsWith("r"));
         if (isContinuousTile) {
           ctx.tryPlaceContinuousBrush(cell.row, cell.col);
         }
@@ -1065,10 +1557,10 @@ export function initInputHandler(container, ctx) {
         ctx.tryApplySeedBrush(cell.row, cell.col);
       }
 
-      // Sickle/Shovel harvests when sweeping over plots (requires mouse held down)
-      if ((isSweepHarvesting || activeFarmTool === "sickle" || activeFarmTool === "shovel") && isMouseDown) {
+      // Thu hoạch hàng loạt khi trượt qua các luống chín (đang giữ chuột/ngón)
+      if (isSweepHarvesting && isMouseDown) {
         if (cell) {
-          ctx.tryApplyFarmTool(cell.row, cell.col);
+          ctx.tryHarvestCrop(cell.row, cell.col);
         }
         const farmlandState = ctx.getFarmlandState();
         const productionState = ctx.getProductionState();
@@ -1079,7 +1571,7 @@ export function initInputHandler(container, ctx) {
         const bubbleHit = findHitBubble(world.x, world.y, farmlandState, productionState, currentGrid, fruitTreesState, livestockState, hasClaimable);
         if (bubbleHit) {
           if (bubbleHit.type === "farmland") {
-            ctx.tryApplyFarmTool(bubbleHit.row, bubbleHit.col);
+            ctx.tryHarvestCrop(bubbleHit.row, bubbleHit.col);
           } else if (bubbleHit.type === "livestock") {
             if (bubbleHit.state === "ready") {
               ctx.harvestProductionBuilding(bubbleHit.row, bubbleHit.col);
@@ -1127,7 +1619,7 @@ export function initInputHandler(container, ctx) {
         if (fData) {
           const crop = CROPS_CONFIG[fData.seedId];
           const elapsed = Date.now() - fData.plantTime;
-          const remaining = Math.max(0, Math.ceil((fData.growDurationMs - elapsed) / 1000));
+          const remaining = Math.max(0, Math.ceil((getCropGrowDurationMs(fData) - elapsed) / 1000));
           if (remaining > 0) {
             statusStr += ` (${crop ? crop.name : 'Cây trồng'}: Lớn sau ${formatTimeCountdown(remaining)})`;
           } else {
@@ -1166,7 +1658,6 @@ export function initInputHandler(container, ctx) {
     isMouseDown = false;
     if (isSweepHarvesting) {
       isSweepHarvesting = false;
-      ctx.deactivateFarmTool();
       ctx.requestRender();
     }
 
@@ -1195,6 +1686,8 @@ export function initInputHandler(container, ctx) {
         ctx.openMarketModal();
       } else if (pendingSpecialClick.type === "achievements") {
         if (ctx.openAchievementsModal) ctx.openAchievementsModal();
+      } else if (pendingSpecialClick.type === "warehouse") {
+        if (ctx.openStorageModal) ctx.openStorageModal();
       } else if (pendingSpecialClick.type === "silo") {
         if (ctx.openStorageModal) ctx.openStorageModal("silo");
       } else if (pendingSpecialClick.type === "barn") {
@@ -1225,7 +1718,7 @@ export function initInputHandler(container, ctx) {
       if (!fData) {
         ctx.openSeedModal(pendingFarmlandClick.row, pendingFarmlandClick.col);
       } else {
-        ctx.openFarmToolPopup(pendingFarmlandClick.row, pendingFarmlandClick.col);
+        ctx.inspectGrowingCrop(pendingFarmlandClick.row, pendingFarmlandClick.col);
       }
       pendingFarmlandClick = null;
     } else if (pendingBuildingClick) {
@@ -1238,7 +1731,7 @@ export function initInputHandler(container, ctx) {
       }
       pendingBuildingClick = null;
     } else if (pendingDecorationClick) {
-      ctx.showToast(`💡 ${pendingDecorationClick.label}: Nhấn nút ❌ Phá Dỡ (hoặc phím D) rồi nhấp để xóa hoàn tiền, hoặc nhấn giữ chuột 0.4s để di dời!`, "info");
+      ctx.showToast(`💡 ${pendingDecorationClick.label}: Nhấn giữ để Xoay, Di chuyển hoặc Gỡ bỏ!`, "info");
       pendingDecorationClick = null;
     }
 
@@ -1266,7 +1759,6 @@ export function initInputHandler(container, ctx) {
     pendingDecorationClick = null;
     if (isSweepHarvesting) {
       isSweepHarvesting = false;
-      ctx.deactivateFarmTool();
     }
     ctx.requestRender();
   }, { signal });
@@ -1284,7 +1776,6 @@ export function initInputHandler(container, ctx) {
     pendingDecorationClick = null;
     if (isSweepHarvesting) {
       isSweepHarvesting = false;
-      ctx.deactivateFarmTool();
       ctx.requestRender();
     }
   }, { signal });
@@ -1355,7 +1846,7 @@ export function initInputHandler(container, ctx) {
       hideObjectActionOverlay();
       const activeHud = document.getElementById("farm-tool-active-hud");
       const isHudVisible = activeHud && !activeHud.classList.contains("hidden");
-      if (ctx.getActiveFarmTool() || ctx.getActiveSeedBrush() || isHudVisible) {
+      if (ctx.getActiveSeedBrush() || isHudVisible) {
         e.preventDefault();
         ctx.deactivateFarmTool();
         return;
@@ -1388,7 +1879,9 @@ export function initInputHandler(container, ctx) {
     }
   }, { signal });
 
-  container.addEventListener("pointerleave", function() {
+  container.addEventListener("pointerleave", function(e) {
+    if (e && e.pointerType !== "mouse") return;
+    if (isPlacementMode()) return;
     hoverCell = null;
     if (ctx.setHoverCell) ctx.setHoverCell(null);
     ctx.requestRender();
@@ -1400,6 +1893,7 @@ export function initInputHandler(container, ctx) {
     getHoverCell: () => hoverCell,
     isPanning: () => isPanning,
     isMouseDown: () => isMouseDown,
+    confirmPlacement,
     destroy: () => abortController.abort()
   };
 }

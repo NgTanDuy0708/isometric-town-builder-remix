@@ -26,7 +26,7 @@ import {
   PRODUCTION_BUILDINGS, getBuildingYield, getBuildingInputReq
 } from "../data/gameEconomy.js";
 import { UPGRADES_CONFIG } from "../data/upgradesConfig.js";
-import { CROPS_CONFIG } from "../data/cropsConfig.js";
+import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
 import { CROP_PIXEL_SPRITES } from "../data/cropSprites.js";
 import { FRUIT_TREES_CONFIG, RESOURCES_CONFIG } from "../data/resourcesConfig.js";
 import { TILES_DATA } from "../data/tilesData.js";
@@ -176,20 +176,20 @@ export function getSurroundingForestTile(row, col) {
 
   const flipped = ((row * 7 + col * 13) % 2 === 0);
 
-  // Tỉ lệ cây rừng rậm rạp:
-  // - 52% Rừng thông đại ngàn (d05_pine_grove)
-  // - 24% Rừng sồi cổ thụ râm mát (d04_oak_tree_park)
-  // - 12% Hoa anh đào rừng nở rộ (d06_cherry_garden)
-  // - 8% Bụi cây hoa dại (d10_flower_orchard_hedge)
-  // - 4% Bãi cỏ hoa đồng nội xen kẽ (d12_meadow_wildflowers)
-  if (hash < 0.52) {
-    return { tid: "d05_pine_grove", flipped };
-  } else if (hash < 0.76) {
-    return { tid: "d04_oak_tree_park", flipped };
-  } else if (hash < 0.88) {
-    return { tid: "d06_cherry_garden", flipped };
+  // Rừng ngoại vi dùng 5 ô rừng mới đã có trong cửa hàng Phong Cảnh.
+  // - 26% thông vách đá (d31), 26% thông đá tảng (d32)
+  // - 14% tán sồi dày (d28), 14% sồi đại ngàn (d29), 16% sồi bụi xanh (d30)
+  // - 4% đồng cỏ xen kẽ (d12)
+  if (hash < 0.26) {
+    return { tid: "d31_forest_pine_cliff", flipped };
+  } else if (hash < 0.52) {
+    return { tid: "d32_forest_pine_boulders", flipped };
+  } else if (hash < 0.66) {
+    return { tid: "d28_forest_dense_canopy", flipped };
+  } else if (hash < 0.80) {
+    return { tid: "d29_forest_oak_woodland", flipped };
   } else if (hash < 0.96) {
-    return { tid: "d10_flower_orchard_hedge", flipped };
+    return { tid: "d30_forest_oak_thicket", flipped };
   } else {
     return { tid: "d12_meadow_wildflowers", flipped: false };
   }
@@ -329,6 +329,16 @@ export function createCanvasRenderer(ctx) {
     imageCache[t.id] = img;
   });
 
+  // Đảm bảo tất cả các sprite trong AESTHETIC_TILE_URIS được nạp đầy đủ vào imageCache
+  for (const [tid, uri] of Object.entries(AESTHETIC_TILE_URIS)) {
+    if (!imageCache[tid]) {
+      const img = new Image();
+      img.src = uri;
+      img.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+      imageCache[tid] = img;
+    }
+  }
+
   // 2. Khởi tạo Image Cache cho Cây trồng (Crops)
   const farmSproutImg = new Image();
   farmSproutImg.src = "/assets/decorations/farmland_sprout.png";
@@ -347,6 +357,7 @@ export function createCanvasRenderer(ctx) {
     carrot: ["grow", "ripe"],
     tomato: ["sprout", "grow", "ripe"],
     strawberry: ["grow", "ripe"],
+    corn:   ["grow", "ripe"],
   };
   const cropStageImages = {};
   for (const [seedId, stages] of Object.entries(CROP_STAGE_SPRITES)) {
@@ -1162,6 +1173,12 @@ export function createCanvasRenderer(ctx) {
   // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
   // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
   const TILE_RENDER_ADJUSTMENTS = {
+    // Tòa thị chính 2x3 ô: ảnh 512px được thu về 415px và neo vào ô (14, 15).
+    b14_town_hall: { dx: -60, dy: -176, dw: 360, dh: 360 },
+    // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
+    d01_plaza_fountain: { dx: -134, dy: -70, dw: 392, dh: 305 },
+    // Kho Tổng Hợp 2x2: neo tại ô dưới-phải, phần chân chạm đúng footprint 256×128px.
+    b60_combined_warehouse: { dx: -123, dy: -198, dw: 360, dh: 360 },
     // Cột cờ hiệu hoàng triều: đặt vào tâm của ô đất (dy = -16 căn chân đế đá vào đúng tâm ô)
     d27_royal_banner_flag: { dx: 0, dy: -16, dw: 128, dh: 128 },
     // Luống hoa tulip nở rộ: hạ sát mặt đất phẳng (dy = +22)
@@ -1169,7 +1186,7 @@ export function createCanvasRenderer(ctx) {
     // Hàng rào gỗ nông trang: hai cọc gỗ cắm chắc chắn xuống mặt đất (dy = +18)
     d24_rustic_wooden_fence: { dx: 0, dy: 18, dw: 128, dh: 128 },
     // Lối đi cẩm thạch hoàng gia: hạ xuống khớp khít với ô đất kim cương (dy = +22)
-    r03_royal_marble_pavement: { dx: 0, dy: 22, dw: 128, dh: 128 },
+    r03_royal_marble_pavement: { dx: 0, dy: 24, dw: 128, dh: 128 },
     // Chuồng Gà Đẻ Trứng: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
     b21_chicken_coop: { dx: 0, dy: 22, dw: 128, dh: 128 },
     // Chuồng Bò Sữa: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
@@ -1454,9 +1471,9 @@ export function createCanvasRenderer(ctx) {
     const hoverCell = ctx.getHoverCell();
     const activeBrush = ctx.getActiveBrush();
     const brushFlipped = ctx.getBrushFlipped();
-    const activeFarmTool = ctx.getActiveFarmTool();
     const activeSeedBrush = ctx.getActiveSeedBrush();
     const movingBuilding = ctx.getMovingBuilding();
+    const selectedObj = ctx.getSelectedObjectCell ? ctx.getSelectedObjectCell() : null;
     const animTime = ctx.getAnimTime();
 
     c2d.save();
@@ -1480,6 +1497,8 @@ export function createCanvasRenderer(ctx) {
       const maxJ = COLS - 1 + FOREST_BORDER;
       const minDepth = minI + minJ;
       const maxDepth = maxI + maxJ;
+
+      const townCenterSprites = [];
 
       for (let depth = minDepth; depth <= maxDepth; depth++) {
         const startI = Math.max(minI, depth - maxJ);
@@ -1611,7 +1630,7 @@ export function createCanvasRenderer(ctx) {
                 const cropCfg = CROPS_CONFIG[farmData.seedId];
                 if (cropCfg) {
                   const elapsed = Date.now() - farmData.plantTime;
-                  const progress = Math.min(1.0, elapsed / farmData.growDurationMs);
+                  const progress = Math.min(1.0, elapsed / getCropGrowDurationMs(farmData));
                   const isRipe = progress >= 1.0;
                   const cropCenterX = ox + 64;
                   const cropCenterY = oy + 90;
@@ -1775,32 +1794,56 @@ export function createCanvasRenderer(ctx) {
                 }
               }
 
+              const isTownHallCell = (i >= 13 && i <= 14 && j >= 14 && j <= 16);
+              const isPlazaCell = (i >= 15 && i <= 17 && j >= 14 && j <= 16);
+              const isTownCenterCovered = isTownHallCell || isPlazaCell;
+              const isCombinedWarehouseCell = tid === "b60_combined_warehouse";
+              const isCombinedWarehouseAnchor = isCombinedWarehouseCell &&
+                currentGrid[i - 1]?.[j] === "b60_combined_warehouse" &&
+                currentGrid[i]?.[j - 1] === "b60_combined_warehouse" &&
+                currentGrid[i - 1]?.[j - 1] === "b60_combined_warehouse";
+
               const baseMeadow = imageCache["d12_meadow_wildflowers"];
+              // Luôn vẽ thảm cỏ xanh mướt bên dưới tất cả các ô (kể cả 6 ô Tòa Thị Chính & 9 ô Quảng Trường)
+              // đảm bảo tuyệt đối không có lỗ hổng nền đất, không lộ void đen
               if (isImageReady(baseMeadow) && tid !== "d12_meadow_wildflowers") {
                 c2d.drawImage(baseMeadow, ox, oy);
               }
+              const isTownCenterSprite = tid === "b14_town_hall" || tid === "d01_plaza_fountain";
+              const isTownCenterImageReady = isTownCenterSprite && isImageReady(img);
               if (!isImageReady(img)) {
                 img = baseMeadow;
               }
-              const isCellBeingMoved = movingBuilding && movingBuilding.fromRow === i && movingBuilding.fromCol === j;
+              const isCellBeingMoved = (movingBuilding && movingBuilding.fromRow === i && movingBuilding.fromCol === j) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
 
               if (isImageReady(img)) {
-                const tileAdj = TILE_RENDER_ADJUSTMENTS[tid] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+                const tileAdj = (isTownCenterSprite && !isTownCenterImageReady)
+                  ? { dx: 0, dy: 0, dw: 128, dh: 128 }
+                  : (TILE_RENDER_ADJUSTMENTS[tid] || { dx: 0, dy: 0, dw: 128, dh: 128 });
                 const tDx = tileAdj.dx || 0;
                 const tDy = (tileAdj.dy || 0) + drawOffsetY;
                 const tDw = tileAdj.dw || 128;
                 const tDh = tileAdj.dh || 128;
-                c2d.save();
-                if (isCellBeingMoved) c2d.globalAlpha = 0.35;
-                if (flippedGrid[key]) {
-                  c2d.translate(ox + 128 - tDx, oy + tDy);
-                  c2d.scale(-1, 1);
-                  c2d.drawImage(img, 0, 0, tDw, tDh);
-                } else {
-                  c2d.drawImage(img, ox + tDx, oy + tDy, tDw, tDh);
+
+                if (isTownCenterImageReady) {
+                  const isAnchor = (tid === "b14_town_hall" && i === 14 && j === 15) ||
+                                   (tid === "d01_plaza_fountain" && i === 16 && j === 15);
+                  if (isAnchor) {
+                    townCenterSprites.push({ tid, img, x: ox + tDx, y: oy + tDy, w: tDw, h: tDh });
+                  }
+                } else if (!isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
+                  c2d.save();
+                  if (isCellBeingMoved) c2d.globalAlpha = 0.35;
+                  if (flippedGrid[key]) {
+                    c2d.translate(ox + 128 - tDx, oy + tDy);
+                    c2d.scale(-1, 1);
+                    c2d.drawImage(img, 0, 0, tDw, tDh);
+                  } else {
+                    c2d.drawImage(img, ox + tDx, oy + tDy, tDw, tDh);
+                  }
+                  c2d.restore();
                 }
-                c2d.restore();
-              } else {
+              } else if (!isTownCenterCovered) {
                 // Procedural fallback: đảm bảo luôn hiện thảm cỏ xanh mướt ngay cả khi ảnh chưa kịp decode
                 c2d.save();
                 c2d.beginPath();
@@ -1843,6 +1886,51 @@ export function createCanvasRenderer(ctx) {
               // Cây ăn quả độc lập trên cỏ (Táo 🍎, Dừa 🥥, Me 🍈)
               if (FRUIT_TREES_CONFIG[tid]) {
                 renderFruitTreeDetails(c2d, ox, oy, animTime, tid, productionState[key] || (fruitTreesState ? fruitTreesState[key] : null), i, j);
+              }
+
+              // Bong bóng danh vọng Thành Tựu trên nóc Tòa Thị Chính
+              if (tid === "b14_town_hall" && i === 14 && j === 15) {
+                const hasClaimable = ctx.hasClaimableAchievements ? ctx.hasClaimableAchievements() : false;
+                if (hasClaimable) {
+                  c2d.save();
+                  const bounceY = Math.sin(animTime * 4.0) * 5;
+                  const bx = ox + 99;
+                  const by = oy - 205 + bounceY;
+
+                  // Sparkles
+                  c2d.font = "14px sans-serif";
+                  c2d.textAlign = "center";
+                  c2d.textBaseline = "middle";
+                  c2d.fillText("✨", bx - 22, by - 12);
+                  c2d.fillText("✨", bx + 22, by - 10);
+
+                  // Bubble outer shadow & border
+                  c2d.fillStyle = "#ffffff";
+                  c2d.shadowColor = "#f59e0b";
+                  c2d.shadowBlur = 14;
+                  c2d.beginPath();
+                  c2d.arc(bx, by, 18, 0, Math.PI * 2);
+                  c2d.fill();
+
+                  c2d.lineWidth = 2.5;
+                  c2d.strokeStyle = "#f59e0b";
+                  c2d.stroke();
+                  c2d.shadowBlur = 0;
+
+                  // Trophy Icon
+                  c2d.font = "20px sans-serif";
+                  c2d.fillText("🏆", bx, by + 1);
+
+                  // Ribbon Tag
+                  c2d.fillStyle = "#d97706";
+                  c2d.beginPath();
+                  c2d.roundRect(bx - 32, by + 14, 64, 15, 4);
+                  c2d.fill();
+                  c2d.font = "800 9px sans-serif";
+                  c2d.fillStyle = "#ffffff";
+                  c2d.fillText("THÀNH TỰU ⭐", bx, by + 21.5);
+                  c2d.restore();
+                }
               }
 
               // Bong bóng danh vọng Thành Tựu trên nóc Tòa Thị Chính
@@ -2258,6 +2346,12 @@ export function createCanvasRenderer(ctx) {
         }
       }
 
+      // Vẽ các sprite trung tâm lớn (Tòa Thị Chính ở sau, Quảng Trường ở trước theo thứ tự chiều sâu isometric)
+      townCenterSprites.sort((a, b) => (a.tid === "b14_town_hall" ? -1 : 1) - (b.tid === "b14_town_hall" ? -1 : 1));
+      for (const sprite of townCenterSprites) {
+        c2d.drawImage(sprite.img, sprite.x, sprite.y, sprite.w, sprite.h);
+      }
+
       // Render Villagers
       if (villagerManager) {
         villagerManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, camera.zoom);
@@ -2353,16 +2447,6 @@ export function createCanvasRenderer(ctx) {
             }
             c2d.restore();
           }
-        } else if (activeFarmTool === "sickle") {
-          c2d.strokeStyle = "#84cc16";
-          c2d.fillStyle = "rgba(132, 204, 22, 0.32)";
-          c2d.lineWidth = 2.5;
-          c2d.fill();
-        } else if (activeFarmTool === "shovel") {
-          c2d.strokeStyle = "#f97316";
-          c2d.fillStyle = "rgba(249, 115, 22, 0.32)";
-          c2d.lineWidth = 2.5;
-          c2d.fill();
         } else if (activeSeedBrush) {
           c2d.strokeStyle = "#22c55e";
           c2d.fillStyle = "rgba(34, 197, 94, 0.30)";
@@ -2398,12 +2482,7 @@ export function createCanvasRenderer(ctx) {
         }
         c2d.stroke();
 
-        if (activeFarmTool) {
-          c2d.font = "24px sans-serif";
-          c2d.textAlign = "center";
-          c2d.textBaseline = "middle";
-          c2d.fillText(activeFarmTool === "sickle" ? "🌾" : "⛏️", hOx + 64, hOy + 82);
-        } else if (activeSeedBrush) {
+        if (activeSeedBrush) {
           const crop = CROPS_CONFIG[activeSeedBrush];
           c2d.font = "24px sans-serif";
           c2d.textAlign = "center";
@@ -2513,7 +2592,7 @@ export function createCanvasRenderer(ctx) {
         }
 
         // Crop Growth Floating Tooltip
-        if (!activeBrush && !activeFarmTool && !activeSeedBrush && !movingBuilding) {
+        if (!activeBrush && !activeSeedBrush && !movingBuilding) {
           const tid = currentGrid[hoverCell.row][hoverCell.col];
           if (tid === "d13_farmland_plot") {
             const farmKey = `${hoverCell.row}_${hoverCell.col}`;
@@ -2521,7 +2600,7 @@ export function createCanvasRenderer(ctx) {
             if (fData) {
               const crop = CROPS_CONFIG[fData.seedId];
               const elapsed = Date.now() - fData.plantTime;
-              const remaining = Math.max(0, Math.ceil((fData.growDurationMs - elapsed) / 1000));
+              const remaining = Math.max(0, Math.ceil((getCropGrowDurationMs(fData) - elapsed) / 1000));
               const isRipe = remaining === 0;
 
               const tooltipX = hOx + 64;

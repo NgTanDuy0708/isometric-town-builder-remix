@@ -706,9 +706,8 @@ export function createUIModalController(ctx) {
 
     const summaryEl = document.getElementById("market-storage-summary");
     if (summaryEl) {
-      const siloCap = ctx.getSiloCapacity ? ctx.getSiloCapacity() : 100;
-      const barnCap = ctx.getBarnCapacity ? ctx.getBarnCapacity() : 100;
-      summaryEl.textContent = `Kho Silo: ${siloCap} • Kho Barn: ${barnCap} (Hạn mức: ${RESOURCE_MAX_CAPACITY}/loại)`;
+      const warehouseCap = ctx.getWarehouseCapacity ? ctx.getWarehouseCapacity() : 300;
+      summaryEl.textContent = `Kho Tổng Hợp: ${warehouseCap} (Hạn mức: ${RESOURCE_MAX_CAPACITY}/loại)`;
     }
 
     const categories = [

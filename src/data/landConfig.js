@@ -85,7 +85,8 @@ export function getChunkBounds(chunkId) {
 /**
  * Check if a cell belongs to an unlocked chunk
  */
-export function isCellUnlocked(row, col, unlockedChunks) {
+export function isCellUnlocked(row, col, unlockedChunks, gameMode) {
+  if (gameMode === "sandbox") return true;
   if (!unlockedChunks || !Array.isArray(unlockedChunks)) return true;
   const chunkId = getChunkId(row, col);
   return chunkId !== -1 && unlockedChunks.includes(chunkId);

@@ -95,7 +95,8 @@ export function getDefaultSaveState(defaultGrid) {
     },
     storage: {
       siloCapacity: 100,
-      barnCapacity: 100
+      barnCapacity: 100,
+      warehouseCapacity: 300
     },
     livestockState: {},
     quests: {
@@ -301,7 +302,8 @@ export function loadGameSave(fallbackGrid) {
           },
           storage: {
             siloCapacity: typeof parsed.storage?.siloCapacity === 'number' ? parsed.storage.siloCapacity : 100,
-            barnCapacity: typeof parsed.storage?.barnCapacity === 'number' ? parsed.storage.barnCapacity : 100
+            barnCapacity: typeof parsed.storage?.barnCapacity === 'number' ? parsed.storage.barnCapacity : 100,
+            warehouseCapacity: typeof parsed.storage?.warehouseCapacity === 'number' ? parsed.storage.warehouseCapacity : undefined
           },
           livestockState: (parsed.livestockState && typeof parsed.livestockState === 'object') ? parsed.livestockState : {},
           quests: {
@@ -350,6 +352,7 @@ export function loadGameSave(fallbackGrid) {
           activeSeason: typeof parsed.activeSeason === 'string'
             ? parsed.activeSeason
             : 'summer',
+          achievements: (parsed.achievements && typeof parsed.achievements === 'object') ? parsed.achievements : null,
           resources: (parsed.resources && typeof parsed.resources === 'object')
             ? { ...parsed.resources }
             : { wheat: 0, bread: 0, ironTools: 0 }
@@ -388,7 +391,9 @@ export function saveGameSave(state) {
       },
       storage: {
         siloCapacity: typeof state.storage?.siloCapacity === 'number' ? state.storage.siloCapacity : 100,
-        barnCapacity: typeof state.storage?.barnCapacity === 'number' ? state.storage.barnCapacity : 100
+        barnCapacity: typeof state.storage?.barnCapacity === 'number' ? state.storage.barnCapacity : 100,
+        // Sức chứa Kho Tổng Hợp: bắt buộc phải lưu, nếu không mọi nâng cấp kho sẽ mất khi reload.
+        warehouseCapacity: typeof state.storage?.warehouseCapacity === 'number' ? state.storage.warehouseCapacity : undefined
       },
       livestockState: state.livestockState || {},
       quests: {
@@ -417,6 +422,7 @@ export function saveGameSave(state) {
       wonderSites: state.wonderSites || null,
       dailyWheel: state.dailyWheel || null,
       activeSeason: state.activeSeason || 'summer',
+      achievements: (state.achievements && typeof state.achievements === 'object') ? state.achievements : null,
       resources: (state.resources && typeof state.resources === 'object')
         ? { ...state.resources }
         : { wheat: 0, bread: 0, ironTools: 0 }
@@ -489,6 +495,7 @@ export function exportGameToJSON(state, filename = 'isometric-town-progress.json
     wonderSites: state.wonderSites || null,
     dailyWheel: state.dailyWheel || null,
     activeSeason: state.activeSeason || 'summer',
+    achievements: (state.achievements && typeof state.achievements === 'object') ? state.achievements : null,
     resources: (state.resources && typeof state.resources === 'object')
       ? { ...state.resources }
       : { wheat: 0, bread: 0, ironTools: 0 }
@@ -566,7 +573,8 @@ export function importGameFromJSON(file, currentFallbackGrid) {
             },
             storage: {
               siloCapacity: typeof data.storage?.siloCapacity === 'number' ? data.storage.siloCapacity : 100,
-              barnCapacity: typeof data.storage?.barnCapacity === 'number' ? data.storage.barnCapacity : 100
+              barnCapacity: typeof data.storage?.barnCapacity === 'number' ? data.storage.barnCapacity : 100,
+              warehouseCapacity: typeof data.storage?.warehouseCapacity === 'number' ? data.storage.warehouseCapacity : undefined
             },
             livestockState: (data.livestockState && typeof data.livestockState === 'object') ? data.livestockState : {},
             quests: {
@@ -593,6 +601,7 @@ export function importGameFromJSON(file, currentFallbackGrid) {
             wonderSites: (data.wonderSites && typeof data.wonderSites === 'object') ? data.wonderSites : null,
             dailyWheel: (data.dailyWheel && typeof data.dailyWheel === 'object') ? data.dailyWheel : null,
             activeSeason: typeof data.activeSeason === 'string' ? data.activeSeason : 'summer',
+            achievements: (data.achievements && typeof data.achievements === 'object') ? data.achievements : null,
             resources: (data.resources && typeof data.resources === 'object')
               ? { ...data.resources }
               : { wheat: 0, bread: 0, ironTools: 0 }
