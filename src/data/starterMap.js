@@ -66,8 +66,14 @@ export function createStarterTownMap32() {
 export function applyTownCenterLayout(grid) {
   if (!grid) return grid;
 
-  // Tòa thị chính chiếm 2 hàng x 3 cột (Rows 13..14, Cols 14..16); ảnh chính neo ở ô (14, 15).
-  for (let r = 13; r <= 14; r++) {
+  // Sân đá 1x3 phía trước tòa thị chính (hàng 14) — trước đây là hàng dưới của tòa nhà.
+  for (let c = 14; c <= 16; c++) {
+    if (grid[14]?.[c] !== undefined) grid[14][c] = "r03_royal_marble_pavement";
+  }
+
+  // Tòa thị chính chiếm 2 hàng x 3 cột (Rows 12..13, Cols 14..16); ảnh chính neo ở ô (13, 15).
+  // Đã lùi lại 1 hàng để cây liễu của khuôn viên không che mặt tiền.
+  for (let r = 12; r <= 13; r++) {
     for (let c = 14; c <= 16; c++) {
       if (grid[r]?.[c] !== undefined) grid[r][c] = "b14_town_hall";
     }
@@ -90,13 +96,15 @@ export function applyTownCenterLayout(grid) {
 /**
  * Kiểm tra xem một ô gạch có phải là công trình/đường mặc định của vương quốc không.
  * Các vị trí mặc định không thể bị nhấc di chuyển hoặc phá dỡ:
- * - Tòa thị chính 2x3 ô (Rows 13..14, Cols 14..16)
+ * - Tòa thị chính 2x3 ô (Rows 12..13, Cols 14..16)
+ * - Sân đá trước tòa thị chính (Row 14, Cols 14..16)
  * - Quảng trường 3x3 ô (Rows 15..17, Cols 14..16; neo ở 16, 15)
  * - Trục đường đá cẩm thạch hoàng gia ra khỏi thị trấn (Col 15, Row từ 18 đến 31)
  */
 export function isProtectedTile(row, col, tid) {
   // Các ô footprint và neo của tòa thị chính/quảng trường.
-  if ((row >= 13 && row <= 14 && col >= 14 && col <= 16) ||
+  if ((row >= 12 && row <= 13 && col >= 14 && col <= 16) ||
+      (row === 14 && col >= 14 && col <= 16) ||
       (row >= 15 && row <= 17 && col >= 14 && col <= 16)) return true;
   if (tid === "b14_town_hall" || tid === "d01_plaza_fountain") return true;
 

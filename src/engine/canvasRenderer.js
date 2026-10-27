@@ -1173,7 +1173,7 @@ export function createCanvasRenderer(ctx) {
   // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
   // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
   const TILE_RENDER_ADJUSTMENTS = {
-    // Tòa thị chính 2x3 ô: chốt theo nudge thực tế (dx 47, dy -18 so với bản trước).
+    // Tòa thị chính 2x3 ô (neo mới ở 13,15 — đã lùi 1 hàng): giữ offset đã căn.
     b14_town_hall: { dx: -39, dy: -261, dw: 300, dh: 403 },
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
     // Khuôn viên 3x3: chỉ còn cây/giếng/ghế/hoa, không vẽ nền riêng —
@@ -1972,7 +1972,7 @@ export function createCanvasRenderer(ctx) {
                 }
               }
 
-              const isTownHallCell = (i >= 13 && i <= 14 && j >= 14 && j <= 16);
+              const isTownHallCell = (i >= 12 && i <= 13 && j >= 14 && j <= 16);
               const isPlazaCell = (i >= 15 && i <= 17 && j >= 14 && j <= 16);
               const isTownCenterCovered = isTownHallCell || isPlazaCell;
               const isCombinedWarehouseCell = tid === "b60_combined_warehouse";
@@ -2011,7 +2011,7 @@ export function createCanvasRenderer(ctx) {
                 }
 
                 if (isTownCenterImageReady) {
-                  const isAnchor = (tid === "b14_town_hall" && i === 14 && j === 15) ||
+                  const isAnchor = (tid === "b14_town_hall" && i === 13 && j === 15) ||
                                    (tid === "d01_plaza_fountain" && i === 16 && j === 15);
                   if (isAnchor) {
                     townCenterSprites.push({ tid, img, x: ox + advDx, y: oy + advDy, w: tDw, h: tDh });
@@ -2074,7 +2074,7 @@ export function createCanvasRenderer(ctx) {
               }
 
               // Bong bóng Thành Tựu: chỉ 1 chiếc, vẽ ở lớp overlay sau công trình lớn.
-              if (tid === "b14_town_hall" && i === 14 && j === 15) {
+              if (tid === "b14_town_hall" && i === 13 && j === 15) {
                 const hasClaimable = ctx.hasClaimableAchievements ? ctx.hasClaimableAchievements() : false;
                 if (hasClaimable) {
                   bubbleOverlays.push({ kind: "achievement", depth: i + j, ox, oy });
