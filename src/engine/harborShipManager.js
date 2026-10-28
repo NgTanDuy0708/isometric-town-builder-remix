@@ -566,8 +566,10 @@ export class HarborShipManager {
     if (!this.ctx || !this.ctx.getCurrentGrid) return;
     const grid = this.ctx.getCurrentGrid();
     if (!grid || !grid[14]) return;
+    // Nếu bản đồ không có cầu cảng thì không tự thêm vịnh biển/đảo trang trí.
+    if (grid[14][4] !== 'm04_stone_harbor_pier') return;
     // Đảm bảo dải đại dương trải dài toàn bộ 32 hàng dọc theo sườn Tây
-    if (grid[14][4] !== 'm04_stone_harbor_pier' || grid[0][0] !== 'm30_sea_var2_coral_reef' || grid[31][0] !== 'm30_sea_var2_coral_reef') {
+    if (grid[0][0] !== 'm30_sea_var2_coral_reef' || grid[31][0] !== 'm30_sea_var2_coral_reef') {
       for (const item of OCEAN_BAY_TILES) {
         if (grid[item.r] && grid[item.r][item.c] !== undefined) {
           const curTid = grid[item.r][item.c];

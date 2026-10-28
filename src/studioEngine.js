@@ -42,7 +42,7 @@ import {
 } from "./engine/audioEngine.js";
 import { dayNightWeather, TIME_PERIODS, WEATHER_TYPES } from "./engine/dayNightWeather.js";
 import { CROP_PIXEL_SPRITES } from "./data/cropSprites.js";
-import { createUpgradeManager, calculateDemolishRefund, getRotatedTileIdAndFlip } from "./engine/upgradeManager.js";
+import { createUpgradeManager, calculateDemolishRefund, getRotatedTileIdAndFlip, isRotationVisible } from "./engine/upgradeManager.js";
 import { createUIModalController, showToast } from "./engine/uiModalController.js";
 import { initInputHandler, findHitBubble } from "./engine/inputHandler.js";
 import { createCanvasRenderer, isImageReady } from "./engine/canvasRenderer.js";
@@ -156,6 +156,11 @@ export function initIsometricStudio() {
 
     function rotateActiveBrush() {
       if (!activeBrush || activeBrush === "erase") return;
+      if (!isRotationVisible(activeBrush)) {
+        const lb = tileMap[activeBrush];
+        showToast(`ℹ️ ${lb ? lb.label : "Vật phẩm này"} có hình đối xứng, xoay sẽ không thay đổi gì.`, "info");
+        return;
+      }
       const res = getRotatedTileIdAndFlip(activeBrush, brushFlipped);
       if (tileMap[res.nextId]) {
         activeBrush = res.nextId;
@@ -191,6 +196,14 @@ export function initIsometricStudio() {
 
     // 2. Đặt lại khu trung tâm theo footprint tòa thị chính 2x3 và quảng trường 3x3.
     applyTownCenterLayout(currentGrid);
+
+    // Bản đồ trống một lần: xoá toàn bộ công trình cũ, chỉ giữ tòa thị chính,
+    // khuôn viên và trục đường đá.
+    const BLANK_MAP_MARKER = "isometric_town_builder_blank_map_v1";
+    if (!localStorage.getItem(BLANK_MAP_MARKER)) {
+      currentGrid = createStarterTownMap32();
+      localStorage.setItem(BLANK_MAP_MARKER, "1");
+    }
 
     // Dọn sạch hoàn toàn các ô r02_cobblestone không có hình ảnh từ các bản đồ save cũ
     for (let r = 0; r < ROWS; r++) {
@@ -1154,6 +1167,8 @@ export function initIsometricStudio() {
       const rotateBtnEl = document.getElementById("floating-brush-rotate");
       if (confirmBtnEl) confirmBtnEl.style.display = placingNow ? "" : "none";
       if (rotateBtnEl) rotateBtnEl.style.display = placingNow ? "" : "none";
+      const rotTid = movingBuilding ? movingBuilding.tileId : ((activeBrush && activeBrush !== "erase") ? activeBrush : null);
+      if (rotateBtnEl) rotateBtnEl.classList.toggle("is-disabled", !!rotTid && !isRotationVisible(rotTid));
 
       if (!activeBrush && !movingBuilding && !(kingdomWondersManager && kingdomWondersManager.movingWonderId)) {
         hud.classList.add("hidden");
@@ -1218,6 +1233,11 @@ export function initIsometricStudio() {
 
     function rotateMovingBuilding() {
       if (!movingBuilding) return;
+      if (!isRotationVisible(movingBuilding.tileId)) {
+        const lm = tileMap[movingBuilding.tileId];
+        showToast(`ℹ️ ${lm ? lm.label : "Vật phẩm này"} có hình đối xứng, xoay sẽ không thay đổi gì.`, "info");
+        return;
+      }
       const res = getRotatedTileIdAndFlip(movingBuilding.tileId, !!movingBuilding.flipped);
       if (tileMap[res.nextId]) {
         movingBuilding.tileId = res.nextId;
@@ -1242,6 +1262,11 @@ export function initIsometricStudio() {
       }
       const curTid = currentGrid[row][col];
       if (!curTid || curTid === "d12_meadow_wildflowers") return;
+      if (!isRotationVisible(curTid)) {
+        const lc = tileMap[curTid];
+        showToast(`ℹ️ ${lc ? lc.label : "Vật phẩm này"} có hình đối xứng, xoay sẽ không thay đổi gì.`, "info");
+        return;
+      }
 
       // Kho Tổng Hợp 2×2: lật hướng cả khối (ảnh chỉ vẽ ở ô neo dưới-phải).
       if (curTid === "b60_combined_warehouse") {

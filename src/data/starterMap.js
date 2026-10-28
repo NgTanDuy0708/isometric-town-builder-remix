@@ -9,8 +9,6 @@
  * - Nông trại, luống đất, nhà dân, đài phun nước và cây cối bố trí hài hòa xung quanh.
  */
 
-import { OCEAN_BAY_TILES } from "./harborShipConfig.js";
-
 export function createStarterTownMap32() {
   const ROWS = 32;
   const COLS = 32;
@@ -23,42 +21,8 @@ export function createStarterTownMap32() {
     grid.push(row);
   }
 
+  // Bản đồ trống: chỉ giữ tòa thị chính, khuôn viên và trục đường đá.
   applyTownCenterLayout(grid);
-
-  // 4. Các công trình và tiện ích khởi đầu làng quê
-  grid[14][12] = "b01_cottage_red";          // Nhà ngói đỏ ấm áp
-  grid[16][12] = "d02_village_well";          // Giếng nước đầu làng
-  grid[14][18] = "b21_chicken_coop";         // Chuồng gà đẻ trứng
-  grid[19][18] = "d06_cherry_garden";        // Vườn hoa cạnh quảng trường
-
-  // 4b. Kho Tổng Hợp Hoàng Gia chiếm 2×2 ô, neo tại ô dưới-phải (12, 12).
-  for (let r = 11; r <= 12; r++) {
-    for (let c = 11; c <= 12; c++) {
-      grid[r][c] = "b60_combined_warehouse";
-    }
-  }
-
-  // 5. Luống đất nông trại cày sẵn bên trái trục đường
-  grid[17][12] = "d13_farmland_plot";
-  grid[17][13] = "d13_farmland_plot";
-  grid[18][12] = "d13_farmland_plot";
-  grid[18][13] = "d13_farmland_plot";
-
-  // 6. Cây xanh, hoa cỏ và cột đèn đường dọc tuyến phố
-  grid[14][10] = "d04_oak_tree_park";
-  grid[14][20] = "d05_pine_grove";
-  grid[19][17] = "d10_flower_orchard_hedge";
-  grid[20][16] = "d07_streetlamps_signpost";
-  grid[21][16] = "d07_streetlamps_signpost";
-  grid[25][16] = "d07_streetlamps_signpost";
-
-  // 7. Vịnh Biển & Bến Cảng Hoàng Gia (Royal Ocean Bay & Coast)
-  for (const item of OCEAN_BAY_TILES) {
-    if (grid[item.r] && grid[item.r][item.c] !== undefined) {
-      grid[item.r][item.c] = item.tid;
-    }
-  }
-
   return grid;
 }
 
@@ -93,11 +57,6 @@ export function applyTownCenterLayout(grid) {
   // Trục đường chính lát đá cẩm thạch hoàng gia chạy từ trước quảng trường ra khỏi thị trấn (Row 18 đến 31, Col 15)
   for (let r = 18; r <= 31; r++) {
     if (grid[r]?.[15] !== undefined) grid[r][15] = "r03_royal_marble_pavement";
-  }
-  // Dãy [x,4]: toàn bộ cột 4 (mọi hàng) dùng ô cát mịn.
-  for (let r = 0; r < grid.length; r++) {
-    if (grid[r] && grid[r].length > 4) grid[r][4] = "s13_sand_ground";
-          grid[r][3] = "m01_sandy_beach_s";
   }
 
   return grid;
