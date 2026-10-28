@@ -205,6 +205,17 @@ export function initIsometricStudio() {
       localStorage.setItem(BLANK_MAP_MARKER, "1");
     }
 
+    // Dải biển Tây [0,0] -> [31,3] cho save hiện tại (một lần).
+    const SEA_STRIP_MARKER = "isometric_sea_strip_cols_0_3_v1";
+    if (!localStorage.getItem(SEA_STRIP_MARKER)) {
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c <= 3; c++) {
+          if (currentGrid[r]) currentGrid[r][c] = "m30_sea_var2_coral_reef";
+        }
+      }
+      localStorage.setItem(SEA_STRIP_MARKER, "1");
+    }
+
     // Dọn sạch hoàn toàn các ô r02_cobblestone không có hình ảnh từ các bản đồ save cũ
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {

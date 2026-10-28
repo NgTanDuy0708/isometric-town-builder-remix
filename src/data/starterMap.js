@@ -21,6 +21,13 @@ export function createStarterTownMap32() {
     grid.push(row);
   }
 
+  // Dải biển phía Tây: cols 0..3, mọi hàng.
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c <= 3; c++) {
+      grid[r][c] = "m30_sea_var2_coral_reef";
+    }
+  }
+
   // Bản đồ trống: chỉ giữ tòa thị chính, khuôn viên và trục đường đá.
   applyTownCenterLayout(grid);
   return grid;
