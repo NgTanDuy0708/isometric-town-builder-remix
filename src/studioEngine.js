@@ -205,6 +205,17 @@ export function initIsometricStudio() {
       localStorage.setItem(BLANK_MAP_MARKER, "1");
     }
 
+    // Dải cát ven biển cols 4..5 cho save hiện tại (một lần).
+    const SAND_STRIP_MARKER = "isometric_sand_strip_cols_4_5_v1";
+    if (!localStorage.getItem(SAND_STRIP_MARKER)) {
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 4; c <= 5; c++) {
+          if (currentGrid[r]) currentGrid[r][c] = "s13_sand_ground";
+        }
+      }
+      localStorage.setItem(SAND_STRIP_MARKER, "1");
+    }
+
     // Dải biển Tây [0,0] -> [31,3] cho save hiện tại (một lần).
     const SEA_STRIP_MARKER = "isometric_sea_strip_cols_0_3_v1";
     if (!localStorage.getItem(SEA_STRIP_MARKER)) {

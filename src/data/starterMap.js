@@ -28,6 +28,13 @@ export function createStarterTownMap32() {
     }
   }
 
+  // Dải cát ven biển: cols 4..5, mọi hàng.
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 4; c <= 5; c++) {
+      grid[r][c] = "s13_sand_ground";
+    }
+  }
+
   // Bản đồ trống: chỉ giữ tòa thị chính, khuôn viên và trục đường đá.
   applyTownCenterLayout(grid);
   return grid;
