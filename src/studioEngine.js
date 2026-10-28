@@ -386,6 +386,11 @@ export function initIsometricStudio() {
         landUnlockedChunks.push(ch);
       }
     }
+    // Mở khóa miễn phí vùng Tây [0,0]-[31,7] (chunk cols 0-1, mọi hàng).
+    const WEST_FREE_CHUNKS = [0, 1, 8, 9, 16, 17, 24, 25, 32, 33, 40, 41, 48, 49, 56, 57];
+    for (const ch of WEST_FREE_CHUNKS) {
+      if (!landUnlockedChunks.includes(ch)) landUnlockedChunks.push(ch);
+    }
     let playerResources = initialSave.resources || { wheat: 0, egg: 0, milk: 0, bread: 0, ironTools: 5 };
     if ((playerResources.ironTools || 0) < 5) {
       playerResources.ironTools = 5;
@@ -855,6 +860,9 @@ export function initIsometricStudio() {
       productionManager.reset();
       flippedGrid = {};
       landUnlockedChunks = [...INITIAL_UNLOCKED_CHUNKS];
+      for (const ch of [0, 1, 8, 9, 16, 17, 24, 25, 32, 33, 40, 41, 48, 49, 56, 57]) {
+        if (!landUnlockedChunks.includes(ch)) landUnlockedChunks.push(ch);
+      }
       questsClaimed = {};
       totalHarvestsCount = 0;
       undoStack = [];
@@ -1145,7 +1153,7 @@ export function initIsometricStudio() {
         if (c0) {
           const isFree = (r, c) => {
             const g = currentGrid[r] ? currentGrid[r][c] : undefined;
-            return (g === "d12_meadow_wildflowers" || g === "g01_grass_flat") && !constructions[`${r}_${c}`] && isCellUnlocked(r, c, landUnlockedChunks, gameMode);
+            return (g === "d12_meadow_wildflowers" || g === "g01_grass_flat" || g === "s13_sand_ground") && !constructions[`${r}_${c}`] && isCellUnlocked(r, c, landUnlockedChunks, gameMode);
           };
           search: for (let d = 0; d <= 8; d++) {
             for (let dr = -d; dr <= d; dr++) {
@@ -3203,7 +3211,7 @@ export function initIsometricStudio() {
 
       // Collision Check: Chỉ cho phép vẽ đường / luống đất lên ô cỏ hoa trống
       const curTid = currentGrid[row][col];
-      const isEmptyGrass = curTid === "d12_meadow_wildflowers" || curTid === "g01_grass_flat";
+      const isEmptyGrass = curTid === "d12_meadow_wildflowers" || curTid === "g01_grass_flat" || curTid === "s13_sand_ground";
       if (!isEmptyGrass) return false;
 
       const t = tileMap[activeBrush];

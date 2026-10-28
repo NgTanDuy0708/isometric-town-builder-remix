@@ -92,7 +92,6 @@ export function isProtectedTile(row, col, tid) {
 
   // 3. Vùng Biển Đại Dương & Bến Cảng Hoàng Gia trải dài hết sườn Tây (không cho phép phá dỡ hay di dời)
   if (col <= 3 && row >= 0 && row <= 31) return true;
-  if (col === 4 && row >= 0 && row <= 31) return true;
   if (col === 5 && row >= 11 && row <= 17) return true;
 
   return false;
