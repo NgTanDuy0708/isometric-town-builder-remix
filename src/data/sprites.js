@@ -58,3 +58,8 @@ for (const __seaId of ["m29_sea_var1_kelp_forest","m30_sea_var2_coral_reef","m31
 for (const __id of ["m05_lighthouse_island","m06_tropical_palm_island","m07_sea_stacks_reef"]) TILE_DATA_URIS[__id] = "/assets/decorations/pack_water_128.png";
 for (const __id of ["m23_beach_var1_driftwood","m24_beach_var2_rowboat_nets","m25_beach_var3_tidepool","m26_beach_var4_parasol_castle","m27_beach_var5_dune_boardwalk","m28_beach_var6_treasure_chest"]) TILE_DATA_URIS[__id] = "/assets/decorations/pack_sand_128.png";
 
+
+// [THU NGHIEM] dong bo toan bo tile bien/dao ve mot anh nuoc moi
+const __allSeaIds = ["m05_lighthouse_island","m06_tropical_palm_island","m07_sea_stacks_reef","m29_sea_var1_kelp_forest","m30_sea_var2_coral_reef","m31_sea_var3_bell_buoy","m32_sea_var4_shipwreck_reef","m33_sea_var5_flying_fish","m34_sea_var6_bioluminescence","m53_sea_var1_bamboo_weir_cormorant","m54_sea_var2_sunken_temple_ruins","m55_sea_var3_basalt_stack_puffin_rookery","m56_sea_var4_floating_lantern_festival","m57_sea_var5_sargasso_kelp_manta_ray","m58_sea_var6_geothermal_vent_pumice_shoal","l01_harbor_estuary_seagate","l02_coastal_sea_arch_cliff","l09_wildlife_sea_turtles","l11_volcanic_caldera_island"];
+for (const __id of __allSeaIds) { if (TILE_DATA_URIS[__id]) TILE_DATA_URIS[__id] = "/assets/decorations/pack_water_128.png"; }
+
