@@ -214,3 +214,15 @@ Dự án đã hoàn thành tách **18 module chuyên biệt** trong thư mục `
    ```bash
    npm run build
    ```
+
+## Thư mục ảnh và file tạo tự động
+
+- `public/assets/`: ảnh game đang nạp và danh mục ảnh mở rộng có trang xem riêng.
+- `assets-source/`: kho ảnh gốc và dữ liệu phục vụ công cụ tạo ảnh, lưu riêng trên máy và không đưa lên Git. Game và các test chạy bằng ảnh trong `public/assets/`.
+- `docs/`: prompt, ghi chú và hướng dẫn chỉnh ảnh.
+- `scratch/`: ảnh xem thử, profile trình duyệt và bản sao lưu tạm; có thể dọn sau khi kiểm tra xong.
+- `dist/`: tạo lại bằng `npm run build`. `node_modules/` chứa thư viện cần để chạy và build; cài lại bằng `npm install` khi cần.
+
+Các test kiểm tra ảnh bằng SHA-256 trong `tests/fixtures/original-asset-sha256.json`, không cần tải kho ảnh gốc. Khi chủ động thay ảnh, đối chiếu bản gốc và cập nhật digest tương ứng.
+
+Kho ảnh gốc và ảnh xem thử ở thư mục gốc được bỏ qua bởi Git. Công cụ trong `tools/` và script tạo ảnh trong `scripts/` có thể cần khôi phục `assets-source/` từ nơi lưu riêng; chúng không phải bước bắt buộc để chạy, test hoặc build game. Có thể tạo lại ZIP cây trồng bằng `python tools/package_crop_lifecycle.py` khi có kho ảnh gốc.

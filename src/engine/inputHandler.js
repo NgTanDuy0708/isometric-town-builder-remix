@@ -1,5 +1,6 @@
+import { isLivestockTile } from "../data/livestockConfig.js";
 import { placeFenceOnEdges } from "./fencePlacement.js";
-import { isFenceTile, getFenceSegments } from "../data/fenceConfig.js";
+import { isFenceTile, getFenceSegments, FENCE_ITEM_BY_ID, canAddFence } from "../data/fenceConfig.js";
 import {
   ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W
 } from "./isoMath.js";
@@ -13,6 +14,7 @@ import { isRotationVisible } from "./upgradeManager.js";
 import { UPGRADES_CONFIG } from "../data/upgradesConfig.js";
 import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
 import { FRUIT_TREES_CONFIG } from "../data/resourcesConfig.js";
+import { canPlaceOnSurface, getClearedSurface, isPlacementProtected } from './placementSurface.js';
 import { isProtectedTile, isIndestructibleTile } from "../data/starterMap.js";
 import {
   initAudio, getAudioState, startBGM, playVillagerSpeakSound,
@@ -66,7 +68,7 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
       const c = parseInt(cStr, 10);
       if (!currentGrid[r]) continue;
       const tid = currentGrid[r][c];
-      if (tid !== "b21_chicken_coop" && tid !== "b22_cow_pasture" && tid !== "b57_sheep_pasture") continue;
+      if (!isLivestockTile(tid)) continue;
 
       const dur = ls.durationMs || 45000;
       const isReady = ls.state === "ready" || (ls.state === "producing" && Date.now() - (ls.feedTime || 0) >= dur);
@@ -178,6 +180,30 @@ export function initInputHandler(container, ctx) {
   let longPressOrigin = null;
   let isLongPressPicked = false;
 
+  function findFenceAtOrNear(worldX, worldY, cellRow, cellCol) {
+    const fences = ctx.getFences ? ctx.getFences() : [];
+    if (!fences || fences.length === 0) return null;
+    if (cellRow != null && cellCol != null) {
+      const cellMatch = fences.findLast(f => f.row === cellRow && f.col === cellCol);
+      if (cellMatch) return cellMatch;
+    }
+    const point = v => ({
+      x: ORIGIN_X + (v.col - v.row) * HALF_W + 64,
+      y: ORIGIN_Y + (v.row + v.col) * QUARTER_W + 64
+    });
+    const distance = (p, a, b) => {
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+      return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
+    };
+    return fences.findLast(f => getFenceSegments(f.tileId, f.row, f.col, f.flipped).some(([a, b]) => {
+      const pa = point(a); const pb = point(b);
+      return [0, 10, 20, 32].some(height => distance({ x: worldX, y: worldY }, { x: pa.x, y: pa.y - height }, { x: pb.x, y: pb.y - height }) < 28);
+    }));
+  }
+
   // =========================================================================
   // OBJECT ACTION OVERLAY (Long Press -> 2 Buttons: Move & Demolish)
   // =========================================================================
@@ -200,13 +226,14 @@ export function initInputHandler(container, ctx) {
     if (rotBtnEl && activeActionTarget) rotBtnEl.classList.toggle("is-disabled", !isRotationVisible(activeActionTarget.tid));
     const titleEl = document.getElementById("obj-action-title");
     if (!titleEl || !activeActionTarget) return;
-    const tt = ctx.getTileMap()[activeActionTarget.tid];
+    const fenceItem = FENCE_ITEM_BY_ID[activeActionTarget.tid];
+    const tt = fenceItem || ctx.getTileMap()[activeActionTarget.tid];
     titleEl.textContent = tt ? tt.label : "Công trình";
   }
 
-  function showObjectActionOverlay(row, col, tid, level, flipped) {
+  function showObjectActionOverlay(row, col, tid, level, flipped, isFence = false) {
     if (!objectActionOverlay) return;
-    activeActionTarget = { row, col, tid, level, flipped };
+    activeActionTarget = { row, col, tid, level, flipped, isFence };
     // Làm mờ công trình đang được chọn + hiện thanh Xoay / Di chuyển / Gỡ ở dưới màn hình
     if (ctx.setSelectedObjectCell) ctx.setSelectedObjectCell({ row, col });
     refreshObjectActionTitle();
@@ -232,8 +259,25 @@ export function initInputHandler(container, ctx) {
     objActionMoveBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if (!activeActionTarget) return;
-      const { row, col, tid, level, flipped } = activeActionTarget;
+      const { row, col, tid, level, flipped, isFence } = activeActionTarget;
       hideObjectActionOverlay();
+      if (isFence) {
+        ctx.setMovingBuilding({
+          fromRow: row,
+          fromCol: col,
+          fromTileId: tid,
+          tileId: tid,
+          level: 1,
+          flipped: !!flipped,
+          footprint: 1,
+          isFence: true
+        });
+        playBuildSound();
+        const item = FENCE_ITEM_BY_ID[tid];
+        ctx.showToast(`🚚 Đang di chuyển ${item ? item.label : "hàng rào"}! Kéo tới vị trí mới rồi bấm ✓ Đặt.`, "info");
+        ctx.requestRender();
+        return;
+      }
       // Kho Tổng Hợp 2×2: neo di chuyển là ô dưới-phải của khối.
       let fromRow = row, fromCol = col;
       let footprint = 1;
@@ -266,9 +310,13 @@ export function initInputHandler(container, ctx) {
     objActionDemolishBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if (!activeActionTarget) return;
-      const { row, col } = activeActionTarget;
+      const { row, col, isFence } = activeActionTarget;
       hideObjectActionOverlay();
-      ctx.eraseCell(row, col);
+      if (isFence && ctx.removeFenceAt) {
+        ctx.removeFenceAt(row, col);
+      } else {
+        ctx.eraseCell(row, col);
+      }
     });
   }
 
@@ -327,7 +375,7 @@ export function initInputHandler(container, ctx) {
     if (isFenceTile(activeBrush)) {
       return placeFenceOnEdges(ctx, activeBrush, cell.row, cell.col, ctx.getBrushFlipped());
     }
-    if (isProtectedTile(cell.row, cell.col, currentGrid[cell.row]?.[cell.col])) {
+    if (isPlacementProtected(activeBrush, cell.row, cell.col, currentGrid[cell.row]?.[cell.col])) {
       playErrorSound();
       ctx.showToast("🏛️ Ô này thuộc footprint cố định của khu trung tâm.", "warning");
       return false;
@@ -368,10 +416,10 @@ export function initInputHandler(container, ctx) {
     }
 
     const curCellTid = currentGrid[cell.row][cell.col];
-    const isEmptyGrass = curCellTid === "d12_meadow_wildflowers" || curCellTid === "g01_grass_flat" || curCellTid === "s13_sand_ground";
+    const isEmptyGrass = canPlaceOnSurface(activeBrush, curCellTid);
     if (!isEmptyGrass) {
       playErrorSound();
-      ctx.showToast("🚫 Không thể đặt tại đây! Vị trí đã có công trình, đường đi hoặc cây cối. Hãy kéo bóng mờ sang ô cỏ trống.", "error");
+      ctx.showToast(activeBrush === 'a01_whale' ? '🐋 Hãy đặt cá voi vào ô biển trống.' : activeBrush === 'a02_flamingo_flock' ? '🦩 Hãy đặt hồng hạc vào ô nước hoặc bờ cát trống.' : "🚫 Vị trí này không còn trống hoặc không phù hợp với vật phẩm.", "error");
       return false;
     }
 
@@ -483,7 +531,18 @@ export function initInputHandler(container, ctx) {
     objActionRotateBtn.addEventListener("click", function(e) {
       e.stopPropagation();
       if (!activeActionTarget) return;
-      const { row, col } = activeActionTarget;
+      const { row, col, isFence } = activeActionTarget;
+      if (isFence) {
+        if (ctx.rotateFenceAt) ctx.rotateFenceAt(row, col);
+        const fences = ctx.getFences ? ctx.getFences() : [];
+        const f = fences.find(x => x.row === row && x.col === col);
+        if (f) {
+          activeActionTarget.tid = f.tileId;
+          activeActionTarget.flipped = f.flipped;
+        }
+        refreshObjectActionTitle();
+        return;
+      }
       ctx.rotateCellAt(row, col);
       const g = ctx.getCurrentGrid();
       activeActionTarget.tid = g[row][col];
@@ -528,6 +587,56 @@ export function initInputHandler(container, ctx) {
     if (targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol) {
       ctx.setMovingBuilding(null);
       ctx.showToast("Đã giữ nguyên vị trí vật phẩm.", "info");
+      ctx.requestRender();
+      return true;
+    }
+
+    if (isFenceTile(movingBuilding.tileId)) {
+      const fences = ctx.getFences ? ctx.getFences() : [];
+      const oldIdx = fences.findIndex(f => f.row === movingBuilding.fromRow && f.col === movingBuilding.fromCol && (f.tileId === movingBuilding.fromTileId || f.tileId === movingBuilding.tileId));
+      const targetOldIdx = oldIdx >= 0 ? oldIdx : fences.findIndex(f => f.row === movingBuilding.fromRow && f.col === movingBuilding.fromCol);
+
+      // Check if placed back at same cell with NO rotation change
+      if (targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol &&
+          targetOldIdx >= 0 && fences[targetOldIdx].tileId === movingBuilding.tileId &&
+          !!fences[targetOldIdx].flipped === !!movingBuilding.flipped) {
+        ctx.setMovingBuilding(null);
+        ctx.showToast("Đã giữ nguyên vị trí hàng rào.", "info");
+        ctx.requestRender();
+        return true;
+      }
+
+      if (targetRow < 0 || targetRow >= 32 || targetCol < 0 || targetCol >= 32) {
+        ctx.showToast("⚠️ Vị trí ngoài bản đồ!", "warning");
+        return false;
+      }
+      if (!isCellUnlocked(targetRow, targetCol, landUnlockedChunks, gameMode)) {
+        ctx.showToast("🔒 Không thể đặt hàng rào vào lãnh thổ chưa mở khóa!", "warning");
+        return false;
+      }
+
+      const remainingFences = fences.filter((_, idx) => idx !== targetOldIdx);
+      if (!canAddFence(remainingFences, movingBuilding.tileId, targetRow, targetCol, !!movingBuilding.flipped)) {
+        ctx.showToast("⚠️ Vị trí này đã có hàng rào hoặc không thể ghép nối!", "warning");
+        return false;
+      }
+
+      if (targetOldIdx >= 0) {
+        fences.splice(targetOldIdx, 1);
+      }
+      fences.push({
+        tileId: movingBuilding.tileId,
+        row: targetRow,
+        col: targetCol,
+        flipped: !!movingBuilding.flipped
+      });
+      playBuildSound();
+      ctx.setMovingBuilding(null);
+      const item = FENCE_ITEM_BY_ID[movingBuilding.tileId];
+      const isSamePos = targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol;
+      ctx.showToast(isSamePos ? `🔄 Đã xoay ${item ? item.label : "hàng rào"} thành công!` : `🚚 Đã di chuyển ${item ? item.label : "hàng rào"} sang vị trí mới!`, "success");
+      ctx.updateVillageStatsUI();
+      ctx.persistGameState();
       ctx.requestRender();
       return true;
     }
@@ -597,12 +706,12 @@ export function initInputHandler(container, ctx) {
       return false;
     }
 
-    if (isProtectedTile(targetRow, targetCol, currentGrid[targetRow]?.[targetCol])) {
+    if (isPlacementProtected(movingBuilding.tileId, targetRow, targetCol, currentGrid[targetRow]?.[targetCol])) {
       ctx.showToast("🏛️ Không thể đặt vật phẩm lên footprint cố định của khu trung tâm.", "warning");
       return false;
     }
 
-    if (!["d12_meadow_wildflowers", "g01_grass_flat", "s13_sand_ground"].includes(currentGrid[targetRow][targetCol])) {
+    if (!canPlaceOnSurface(movingBuilding.tileId, currentGrid[targetRow][targetCol])) {
       ctx.showToast("⚠️ Ô này đã có công trình hoặc cây cối! Hãy chọn ô cỏ hoa trống.", "warning");
       return false;
     }
@@ -610,7 +719,7 @@ export function initInputHandler(container, ctx) {
     const oldKey = `${movingBuilding.fromRow}_${movingBuilding.fromCol}`;
     const newKey = `${targetRow}_${targetCol}`;
 
-    currentGrid[movingBuilding.fromRow][movingBuilding.fromCol] = "d12_meadow_wildflowers";
+    currentGrid[movingBuilding.fromRow][movingBuilding.fromCol] = getClearedSurface(movingBuilding.tileId, movingBuilding.fromRow, movingBuilding.fromCol, ctx.getTerrainMap?.());
     delete buildingLevels[oldKey];
     delete flippedGrid[oldKey];
 
@@ -825,15 +934,29 @@ export function initInputHandler(container, ctx) {
         y: ORIGIN_Y + (v.row + v.col) * QUARTER_W + 64 });
       const distance = (p, a, b) => {
         const dx = b.x - a.x, dy = b.y - a.y;
-        const t = Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy)/(dx*dx+dy*dy)));
-        return Math.hypot(p.x-a.x-t*dx, p.y-a.y-t*dy);
+        const lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+        const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+        return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
       };
-      const index = fences.findLastIndex(f => getFenceSegments(f.tileId, f.row, f.col, f.flipped).some(([a,b]) => {
-        a = point(a); b = point(b);
-        return [0, 12, 31].some(height => distance(world, { x:a.x, y:a.y-height }, { x:b.x, y:b.y-height }) < 8);
-      }));
+      const index = fences.findLastIndex(f => {
+        if (cell && f.row === cell.row && f.col === cell.col) return true;
+        return getFenceSegments(f.tileId, f.row, f.col, f.flipped).some(([a, b]) => {
+          const pa = point(a); const pb = point(b);
+          return [0, 10, 20, 32].some(height => distance(world, { x: pa.x, y: pa.y - height }, { x: pb.x, y: pb.y - height }) < 28);
+        });
+      });
       if (index >= 0) {
+        const removed = fences[index];
         fences.splice(index, 1);
+        const item = FENCE_ITEM_BY_ID[removed.tileId];
+        const refund = item ? Math.floor(item.price * 0.5) : 15;
+        if (ctx.getGameMode() === "game" && refund > 0 && ctx.getPlayerGold && ctx.deductGold) {
+          ctx.deductGold(-refund);
+          ctx.updateGoldDisplay();
+          ctx.saveGameEconomyState();
+        }
+        ctx.showToast(`♻️ Đã dỡ bỏ ${item ? item.label : "hàng rào"} (+${refund} 🪙 [50%])`, "success");
         ctx.triggerAutoSave(); ctx.requestRender(); return;
       }
     }
@@ -991,7 +1114,7 @@ export function initInputHandler(container, ctx) {
     if (e.button === 0 && !activeBrush && !movingBuilding && cell) {
       const curTid = currentGrid[cell.row]?.[cell.col];
       // Công trình có "water" trong ID (như cối xay nước) vẫn dùng thao tác chọn/nâng cấp.
-      if (curTid && tileMap[curTid]?.category !== "building" &&
+      if (curTid && !curTid.startsWith("b") && tileMap[curTid]?.category !== "building" &&
           (curTid.startsWith("w01_") || curTid.startsWith("w02_") || curTid.startsWith("w03_") || curTid.includes("water") || curTid.includes("pier"))) {
         if (ctx.openFishingModal) {
           ctx.openFishingModal();
@@ -1102,7 +1225,7 @@ export function initInputHandler(container, ctx) {
           pendingSpecialClick = { type: "silo", row: cell.row, col: cell.col };
         } else if (curTid === "b48_winery_press_barn_se" || curTid === "b12_general_store") {
           pendingSpecialClick = { type: "barn", row: cell.row, col: cell.col };
-        } else if (curTid === "b21_chicken_coop" || curTid === "b22_cow_pasture" || curTid === "b57_sheep_pasture") {
+        } else if (isLivestockTile(curTid)) {
           pendingSpecialClick = { type: "livestock", row: cell.row, col: cell.col };
         } else if (curTid === "d03_market_stalls") {
           pendingSpecialClick = { type: "market", row: cell.row, col: cell.col };
@@ -1142,6 +1265,29 @@ export function initInputHandler(container, ctx) {
           if (navigator.vibrate) navigator.vibrate(40);
           showObjectActionOverlay(cell.row, cell.col, curTid, tileLvl, tileFlip);
         }, 350);
+        return;
+      }
+
+      // Check if clicking on a fence on grass
+      const fenceTarget = findFenceAtOrNear(world.x, world.y, cell.row, cell.col);
+      if (fenceTarget && curTid === "d12_meadow_wildflowers") {
+        longPressOrigin = { x: mouseX, y: mouseY, row: fenceTarget.row, col: fenceTarget.col };
+        isLongPressPicked = false;
+        const item = FENCE_ITEM_BY_ID[fenceTarget.tileId];
+        pendingDecorationClick = {
+          row: fenceTarget.row,
+          col: fenceTarget.col,
+          label: item ? item.label : "Hàng rào",
+          isFence: true
+        };
+
+        longPressTimer = setTimeout(() => {
+          longPressTimer = null;
+          isLongPressPicked = true;
+          pendingDecorationClick = null;
+          if (navigator.vibrate) navigator.vibrate(40);
+          showObjectActionOverlay(fenceTarget.row, fenceTarget.col, fenceTarget.tileId, 1, !!fenceTarget.flipped, true);
+        }, 300);
         return;
       }
 
@@ -1468,7 +1614,7 @@ export function initInputHandler(container, ctx) {
         const pGrid = ctx.getCurrentGrid();
         const landUnlocked = ctx.getLandUnlockedChunks();
         const gMode = ctx.getGameMode();
-        if (["d12_meadow_wildflowers", "g01_grass_flat", "s13_sand_ground"].includes(pGrid[hoverCell.row][hoverCell.col]) &&
+        if (canPlaceOnSurface(moving.tileId, pGrid[hoverCell.row][hoverCell.col]) &&
             isCellUnlocked(hoverCell.row, hoverCell.col, landUnlocked, gMode)) {
           placeMovingItemAt(hoverCell.row, hoverCell.col);
         }
@@ -1601,7 +1747,12 @@ export function initInputHandler(container, ctx) {
           const wSite = kingdomWondersManager.getWonderAt(hoverCell.row, hoverCell.col);
           kingdomWondersManager.toggleWonderFlip(wSite.id);
         } else {
-          ctx.rotateCellAt(hoverCell.row, hoverCell.col);
+          const nearFence = findFenceAtOrNear(world.x, world.y, hoverCell.row, hoverCell.col);
+          if (nearFence && ctx.rotateFenceAt) {
+            ctx.rotateFenceAt(nearFence.row, nearFence.col);
+          } else {
+            ctx.rotateCellAt(hoverCell.row, hoverCell.col);
+          }
         }
       }
     }

@@ -1,0 +1,71 @@
+STYLE
+Create a polished, detailed pixel-art asset for the SAME medieval fantasy
+isometric farming town-builder game as the provided village references.
+Reference images, if supplied, establish STYLE ONLY unless a same-family
+level or lifecycle image is explicitly supplied for continuity.
+
+Crisp stepped outlines, clean clustered material detail, readable silhouettes
+and controlled discrete shading. Preserve fine native-resolution detail.
+No coarse 32px mosaic, artificially enlarged pixel blocks or palette reduction.
+No photographic textures, painterly strokes, blur or glossy 3D plastic.
+
+Use a strict 2:1 dimetric isometric camera: ground-aligned straight edges
+follow slopes of +0.5 and -0.5; vertical architectural posts stay upright.
+Plants, animal anatomy and organic curves remain natural.
+Consistent upper-left light, with darker right-facing surfaces.
+No perspective convergence, tilted camera or fisheye distortion.
+
+Buildings: dark oak, honey-brown timber, cream plaster, muted warm-grey stone
+and russet-red roofs unless the subject specifies another coherent material.
+Vegetation: muted olive and forest greens, warm-brown wood, cream blossoms;
+use species-specific blossom and fruit colours where requested.
+Water and ice: controlled turquoise, blue and pale cyan with stepped highlights.
+No neon colours, excessive noisy detail or giant glow effects.
+
+Output ONE 1024x1024 PNG with genuine transparent alpha.
+Only the selected subject or explicitly specified coherent grouping.
+Never draw other levels or lifecycle stages beside the chosen subject.
+Follow the selected category module for framing, ground and connectors.
+No captions, labels, lettering, numbers, watermark, logo or image frame.
+
+MODULE
+CATEGORY B — BUILDING / STRUCTURE / PROP
+Show the entire connected structure and all attached details.
+Use the working box x=112..912, y=80..896, with generous clear margins.
+Keep the frontmost structural ground-contact point near (512,896).
+Other feet recede naturally along the shared isometric ground plane;
+do not force every support onto one horizontal screen-space line.
+Architectural foundations, short attached stairs and requested structural
+plinths are allowed. No surrounding ground tile, grass disk, earth slab,
+large plaza, floating pedestal, unrelated scenery or external cast shadow.
+True openings through gates, arches, wheel spokes and open frames reveal alpha.
+Enclosed rooms and recesses retain their naturally dark interior surfaces.
+For three-level families, keep camera, root footprint, entrance direction,
+ground anchor and design identity fixed. Generate only the requested level.
+Keep the same canvas and world scale: level 1 is visibly simpler/smaller,
+level 2 intermediate, level 3 the most developed; never independently zoom
+each level to the same visible size. All levels fit the shared working box.
+
+IMAGE PROMPT
+SUBJECT FAMILY: ONE integrated medieval carpentry and sawmill workshop. Warm oak framing, cream plaster, russet-red tiled roofing, warm-grey stone feet and iron hand tools. Main working bay faces lower-left/front, with visible right side. Show timber processing clearly, without modern powered machinery, workers or a separate logging yard.
+
+REQUESTED IMAGE: LEVEL 3 ONLY.
+A substantial two-storey master carpentry hall with a storage loft and a wide integrated saw bay. Retain the SAME frame-saw mechanism and facade orientation. Add a roof-mounted timber hoist for planks, reinforced oak braces, orderly board racks and a carefully finished door panel leaning inside the bay. Larger storage volume, not a sprawling industrial compound.
+
+One isolated connected building/shelter, not a comparison sheet.
+Follow category B framing and ground rules. No people or animals.
+
+NEGATIVE
+multiple alternatives, level comparison, lifecycle comparison, sprite sheet,
+collage, unrelated subjects, background landscape, sky, horizon,
+floating island, thick display pedestal, external cast shadow,
+text, letters, numerals, labels, watermark, logo, border, coordinate marks,
+photorealism, glossy plastic 3D, painterly brushwork, photographic textures,
+smooth airbrush gradients, blurry edges, coarse mosaic, oversized pixel blocks,
+noisy dithering, neon colours, perspective distortion, fisheye,
+cropped subject, clipped roof, clipped branches, clipped feet, clipped tail,
+disconnected supports, impossible mechanics, extra limbs, fused animal bodies,
+extra heads, extra tails, opaque black backdrop, opaque white backdrop,
+painted transparency checkerboard
+
+REFERENCE ROLE: The reference is the previous level/stage of THIS same family (or the straight road for road junctions). Keep its material palette, camera, shared canvas, ground/root anchor and scale. Apply only the requested evolution. Do not copy the previous stage unchanged; do not zoom/recenter. Output only ONE requested asset.

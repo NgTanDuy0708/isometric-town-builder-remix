@@ -5,8 +5,11 @@
 
 import { getBuildingSpriteUri } from "./buildingSprites.js";
 import { FENCE_ITEMS } from "./fenceConfig.js";
+import { EXPANSION_TILE_URIS, EXPANSION_VARIANT_URIS } from "./expansionCatalog.js";
 
 export const AESTHETIC_TILE_URIS = {
+  ...EXPANSION_TILE_URIS,
+  ...EXPANSION_VARIANT_URIS,
   ...Object.fromEntries(FENCE_ITEMS.map(item => [item.id, item.uri])),
   b01_cottage_red: getBuildingSpriteUri("b01_cottage_red"),
   b02_tudor_inn: getBuildingSpriteUri("b02_tudor_inn"),
@@ -17,13 +20,14 @@ export const AESTHETIC_TILE_URIS = {
   b07_apothecary: getBuildingSpriteUri("b07_apothecary"),
   b08_watchtower: getBuildingSpriteUri("b08_watchtower"),
   b09_chapel: getBuildingSpriteUri("b09_chapel"),
+  b20_noble_manor: getBuildingSpriteUri("b20_noble_manor"),
   // Sprite toàn cảnh: ảnh được căn giữa tại ô neo và phủ theo footprint 3x3.
   d01_plaza_fountain: "/assets/buildings/royal_plaza.png",
   // Sprite toàn cảnh tòa thị chính, căn giữa tại ô neo với footprint 2x3.
   b14_town_hall: getBuildingSpriteUri("b14_town_hall"),
 
   // Kho Tổng Hợp: sprite duy nhất phủ footprint 2x2.
-  b60_combined_warehouse: "/assets/buildings/combined_warehouse.png",
+  b60_combined_warehouse: getBuildingSpriteUri("b60_combined_warehouse"),
 
   // 1. Lối đi lát đá xám (thay đá cẩm thạch trắng cũ)
   r03_royal_marble_pavement: "/assets/decorations/stone_pavement_128.png",
@@ -50,13 +54,15 @@ export const AESTHETIC_TILE_URIS = {
   d23_tamarind_tree: "/assets/trees/tamarind_tree_ripe.png",
 
   // 9. Chuồng Gà Đẻ Trứng
-  b21_chicken_coop: "/assets/aistudio/chu_ng_g__dc1f0a4a.png",
+  b21_chicken_coop: getBuildingSpriteUri("b21_chicken_coop"),
 
   // 10. Chuồng Bò Sữa
-  b22_cow_pasture: "/assets/aistudio/chu_ng_b__143f9f80.png",
+  b22_cow_pasture: getBuildingSpriteUri("b22_cow_pasture"),
 
   // 11. Chuồng Cừu Lấy Lông
-  b57_sheep_pasture: "/assets/aistudio/chu_ng_c_u_229da336.png",
+  b57_sheep_pasture: getBuildingSpriteUri("b57_sheep_pasture"),
+
+  d33_pig_pen_barn: getBuildingSpriteUri("d33_pig_pen_barn"),
 
   // Farmland plot
   d13_farmland_plot: "/assets/decorations/farmland_plot.png",

@@ -1,5 +1,7 @@
 // Configuration for resources, storage capacity, market trading, and production chains
 
+import { ADDITIONAL_CROPS } from "./additionalCrops.js";
+
 export const RESOURCE_MAX_CAPACITY = 999;
 export const INITIAL_STORAGE_CAPACITY = 300; // Sức chứa khởi đầu Kho Tổng Hợp
 
@@ -7,12 +9,12 @@ export const INITIAL_STORAGE_CAPACITY = 300; // Sức chứa khởi đầu Kho T
 export const SILO_RESOURCE_IDS = [
   "wheat", "carrot", "tomato", "strawberry", "corn",
   "cabbage", "pumpkin", "watermelon", "grapes", "sunflower",
-  "apple", "coconut", "tamarind"
+  "apple", "coconut", "tamarind", ...ADDITIONAL_CROPS.map(crop => crop.id)
 ];
 
 // Danh mục sản phẩm chăn nuôi & thành phẩm nhà máy chứa trong Kho Barn
 export const BARN_RESOURCE_IDS = [
-  "egg", "milk", "wool", "bread", "butter", "fabric", "ironTools", "wine"
+  "egg", "milk", "meat", "wool", "bread", "butter", "fabric", "ironTools", "wine"
 ];
 
 // Kho Tổng Hợp chứa toàn bộ tài nguyên mà Silo và Barn cũ từng tách riêng.
@@ -42,6 +44,11 @@ export function getWarehouseUsed(resources) {
 }
 
 export const RESOURCES_CONFIG = {
+  ...Object.fromEntries(ADDITIONAL_CROPS.map(crop => [crop.id, {
+    id: crop.id, name: crop.name, icon: crop.icon, category: "crop",
+    sellPrice: crop.sellPrice, unitName: crop.unitName, maxCapacity: RESOURCE_MAX_CAPACITY,
+    desc: `Thu hoạch ${crop.name.toLowerCase()} từ luống trồng, cất trong Kho Tổng Hợp hoặc bán tại Chợ.`
+  }])),
   // === Nông sản trồng trọt từ luống đất ===
   wheat: {
     id: "wheat",
@@ -177,6 +184,7 @@ export const RESOURCES_CONFIG = {
     unitName: "quả",
     desc: "Thu hoạch từ Chuồng gà (tiêu hao 1 Lúa mì). Nông sản đắt giá được dân làng ưa chuộng."
   },
+  meat: { id: "meat", name: "Thịt heo", category: "livestock", icon: "🥩", sellPrice: 35, maxCapacity: RESOURCE_MAX_CAPACITY, unitName: "phần", desc: "Thu hoạch từ Chuồng Heo sau khi cho ăn bắp ngô. Cất trong Kho Tổng Hợp hoặc bán tại Chợ." },
   milk: {
     id: "milk",
     name: "Bình sữa tươi",

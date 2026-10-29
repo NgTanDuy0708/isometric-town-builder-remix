@@ -377,35 +377,22 @@ export const QUESTS_CONFIG = [
     resourceId: "wool"
   },
   {
-    id: "q20c2_dairy_factory",
+    id: "q20c2_apothecary",
     chapter: 4,
     requires: "q20c_harvest_wool",
-    title: "Xưởng Bơ Sữa",
-    desc: "Xây 1 Xưởng Chế Biến Bơ Sữa để chế biến dòng sữa bò tươi thành bơ vàng béo ngậy.",
-    icon: "🧈",
+    title: "Vườn Ươm Thảo Dược",
+    desc: "Xây 1 Vườn Ươm Thảo Dược để nghiên cứu và ươm trồng các loài dược thảo quý cho vương quốc.",
+    icon: "🌿",
     target: 1,
     rewardGold: 340,
     rewardXP: 170,
     checkType: "specific_tile",
-    tileId: "b59_dairy_factory"
-  },
-  {
-    id: "q20c3_churn_butter",
-    chapter: 4,
-    requires: "q20c2_dairy_factory",
-    title: "Bơ vàng óng thơm ngon",
-    desc: "Khuấy bơ từ sữa bò và tích trữ đạt ít nhất 3 Khối Bơ sữa 🧈 trong kho hàng.",
-    icon: "🧈",
-    target: 3,
-    rewardGold: 380,
-    rewardXP: 190,
-    checkType: "resource_total",
-    resourceId: "butter"
+    tileId: "b07_apothecary"
   },
   {
     id: "q20d_coconut_grove",
     chapter: 4,
-    requires: "q20c3_churn_butter",
+    requires: "q20c2_apothecary",
     title: "Rặng Dừa Ven Biển",
     desc: "Trồng 1 Cây Dừa Xiêm soi bóng mát bên bờ kênh hoặc thảm cỏ để thu hoạch dừa ngọt mát lành.",
     icon: "🥥",
@@ -433,14 +420,14 @@ export const QUESTS_CONFIG = [
     id: "q22_streetlamps",
     chapter: 5,
     requires: "q21_level5",
-    title: "Phố đêm rực rỡ",
-    desc: "Đặt ít nhất 4 cột đèn đường tỏa sáng vàng ấm áp khi hoàng hôn và đêm buông xuống.",
-    icon: "🏮",
+    title: "Vườn hoa sắc màu",
+    desc: "Đặt ít nhất 4 luống hoa tulip đỏ rực để tô điểm cho vương quốc thêm phần rực rỡ và lãng mạn.",
+    icon: "🌷",
     target: 4,
     rewardGold: 250,
     rewardXP: 120,
     checkType: "specific_tile",
-    tileId: "d07_streetlamps_signpost"
+    tileId: "d25_tulip_flowerbed"
   },
   {
     id: "q23_super_harvest",
@@ -455,35 +442,22 @@ export const QUESTS_CONFIG = [
     checkType: "harvest_count"
   },
   {
-    id: "q23b_textile_mill",
+    id: "q23b_watchtower",
     chapter: 5,
     requires: "q23_super_harvest",
-    title: "Xưởng dệt vương quốc",
-    desc: "Xây 1 Xưởng Dệt Vải Vóc để lấy lông cừu dệt thành lụa là cao cấp.",
-    icon: "🧵",
+    title: "Tháp canh bảo an",
+    desc: "Xây 1 Tháp Canh Bảo An kiên cố để canh gác bờ cõi và bảo vệ an ninh cho vương quốc.",
+    icon: "🗼",
     target: 1,
     rewardGold: 420,
     rewardXP: 210,
     checkType: "specific_tile",
-    tileId: "b58_textile_mill"
-  },
-  {
-    id: "q23c_weave_fabric",
-    chapter: 5,
-    requires: "q23b_textile_mill",
-    title: "Gấm vóc hoàng gia",
-    desc: "Dệt vải từ lông cừu và tích trữ đạt ít nhất 3 xấp Vải dệt thượng hạng 🧵 trong kho hàng.",
-    icon: "🧵",
-    target: 3,
-    rewardGold: 450,
-    rewardXP: 230,
-    checkType: "resource_total",
-    resourceId: "fabric"
+    tileId: "b08_watchtower"
   },
   {
     id: "q24_population25",
     chapter: 5,
-    requires: "q23c_weave_fabric",
+    requires: "q23b_watchtower",
     title: "Kinh đô đông đúc",
     desc: "Phát triển làng quê đạt mốc 25 cư dân sinh sống và làm việc rộn ràng.",
     icon: "👥",
@@ -520,22 +494,22 @@ export const QUESTS_CONFIG = [
     tileId: "b20_noble_manor"
   },
   {
-    id: "q27_wizard_sanctum",
+    id: "q27_stone_chapel",
     chapter: 6,
     requires: "q26_noble_manor",
-    title: "Tháp pháp sư huyền bí",
-    desc: "Xây 1 Tháp pháp sư thạch anh tím để bảo hộ vương quốc bình an muôn đời.",
-    icon: "🔮",
+    title: "Nhà nguyện đá tôn nghiêm",
+    desc: "Xây 1 Nhà Nguyện Đá cổ kính để cầu nguyện phước lành và bình an muôn đời cho muôn dân.",
+    icon: "⛪",
     target: 1,
     rewardGold: 800,
     rewardXP: 400,
     checkType: "specific_tile",
-    tileId: "b10_wizard_tower"
+    tileId: "b09_chapel"
   },
   {
     id: "q28_legendary_empire",
     chapter: 6,
-    requires: "q27_wizard_sanctum",
+    requires: "q27_stone_chapel",
     title: "Đại Đế Quốc Bất Tử",
     desc: "Đạt đỉnh cao thịnh vượng: mở rộng ít nhất 24 mảnh đất và đạt 40 cư dân cư trú.",
     icon: "🏆",

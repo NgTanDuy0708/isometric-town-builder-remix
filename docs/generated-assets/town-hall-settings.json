@@ -1,0 +1,17 @@
+{
+  "version": 4,
+  "asset": "town_hall_redrawn_v2.png",
+  "anchorCell": [
+    15,
+    15
+  ],
+  "townHall": {
+    "size": 1,
+    "width": 1,
+    "height": 1,
+    "x": 0,
+    "y": 0,
+    "rotation": 0,
+    "groundShear": 0
+  }
+}

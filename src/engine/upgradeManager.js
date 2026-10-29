@@ -167,7 +167,8 @@ export function isRotationVisible(tileId) {
 }
 
 export function getRotatedTileIdAndFlip(tileId, currentFlipped) {
-  if (TILE_ROTATION_MAP[tileId]) {
+  const target = TILE_ROTATION_MAP[tileId];
+  if (target && (getBuildingSpriteUri(target) || AESTHETIC_TILE_URIS[target] || TILE_DATA_URIS[target])) {
     return {
       nextId: TILE_ROTATION_MAP[tileId],
       nextFlip: currentFlipped

@@ -1,0 +1,77 @@
+STYLE
+Create a polished, detailed pixel-art asset for the SAME medieval fantasy
+isometric farming town-builder game as the provided village references.
+Reference images, if supplied, establish STYLE ONLY unless a same-family
+level or lifecycle image is explicitly supplied for continuity.
+
+Crisp stepped outlines, clean clustered material detail, readable silhouettes
+and controlled discrete shading. Preserve fine native-resolution detail.
+No coarse 32px mosaic, artificially enlarged pixel blocks or palette reduction.
+No photographic textures, painterly strokes, blur or glossy 3D plastic.
+
+Use a strict 2:1 dimetric isometric camera: ground-aligned straight edges
+follow slopes of +0.5 and -0.5; vertical architectural posts stay upright.
+Plants, animal anatomy and organic curves remain natural.
+Consistent upper-left light, with darker right-facing surfaces.
+No perspective convergence, tilted camera or fisheye distortion.
+
+Buildings: dark oak, honey-brown timber, cream plaster, muted warm-grey stone
+and russet-red roofs unless the subject specifies another coherent material.
+Vegetation: muted olive and forest greens, warm-brown wood, cream blossoms;
+use species-specific blossom and fruit colours where requested.
+Water and ice: controlled turquoise, blue and pale cyan with stepped highlights.
+No neon colours, excessive noisy detail or giant glow effects.
+
+Output ONE 1024x1024 PNG with genuine transparent alpha.
+Only the selected subject or explicitly specified coherent grouping.
+Never draw other levels or lifecycle stages beside the chosen subject.
+Follow the selected category module for framing, ground and connectors.
+No captions, labels, lettering, numbers, watermark, logo or image frame.
+
+MODULE
+CATEGORY P — FIVE-STAGE FRUIT TREE / SHRUB
+Create only the requested species and lifecycle stage.
+Use ONE shared 1024x1024 canvas and root-crown anchor (512,896)
+throughout all five images of that species.
+Keep all visible content inside x=112..912, y=80..896.
+Grow upward from the same root point; never move, recenter or zoom the plant
+independently between stages. No visible underground roots, soil, planter,
+grass, ground diamond, detached fruit pile or external cast shadow.
+
+Lifecycle:
+SEEDLING: approximately 25% of mature height, a genuinely small plant.
+YOUNG: approximately 60% of mature height, developing woody structure.
+FLOWERING: mature trunk and canopy, recognizable species-specific flowers.
+FRUITING: SAME mature trunk scaffold and canopy position, harvestable fruits.
+WITHERED: SAME mature trunk and primary branches, sparse dry foliage and
+clear decline; do not turn it back into a small seedling or a cut stump.
+Flowering and fruiting are NOT different tree sizes.
+A withered plant may look visually narrower after leaf loss but retains
+its mature woody scaffold. Keep seedling/young images small in the canvas.
+Berry is a low blueberry shrub; do not turn it into a tall orchard tree.
+Use the previous stage of the SAME species as a continuity reference
+where available; one species must not inherit another species' leaves/fruit.
+
+IMAGE PROMPT
+SPECIES IDENTITY: ONE orchard apple tree with a short warm-brown branching trunk, a rounded spreading crown and oval serrated leaves in muted olive and fresh green. A recognizable trunk fork leans slightly to the right. Preserve that same fork and rounded canopy identity across the five stages.
+
+REQUESTED IMAGE: FRUITING STAGE ONLY.
+The SAME mature apple tree and branch structure, now carrying a moderate number of clearly attached round red apples with tiny stem dimples. Foliage remains healthy and green. Remove the prominent blossom clusters; fruit should be visible between leaf masses, not scattered on the ground.
+
+One isolated plant. Keep the shared root anchor and canvas scale.
+Follow category P; no other lifecycle stages in this image.
+
+NEGATIVE
+multiple alternatives, level comparison, lifecycle comparison, sprite sheet,
+collage, unrelated subjects, background landscape, sky, horizon,
+floating island, thick display pedestal, external cast shadow,
+text, letters, numerals, labels, watermark, logo, border, coordinate marks,
+photorealism, glossy plastic 3D, painterly brushwork, photographic textures,
+smooth airbrush gradients, blurry edges, coarse mosaic, oversized pixel blocks,
+noisy dithering, neon colours, perspective distortion, fisheye,
+cropped subject, clipped roof, clipped branches, clipped feet, clipped tail,
+disconnected supports, impossible mechanics, extra limbs, fused animal bodies,
+extra heads, extra tails, opaque black backdrop, opaque white backdrop,
+painted transparency checkerboard
+
+REFERENCE ROLE: The reference is the previous level/stage of THIS same family (or the straight road for road junctions). Keep its material palette, camera, shared canvas, ground/root anchor and scale. Apply only the requested evolution. Do not copy the previous stage unchanged; do not zoom/recenter. Output only ONE requested asset.

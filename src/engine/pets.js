@@ -1,3 +1,4 @@
+import { FARM_ANIMALS, getFarmAnimalRect, drawFarmAnimal } from "../data/farmSprites.js";
 // Pet Simulation & Interactive Living Companions for Isometric Island
 // Thú cưng đi dạo trên đảo: Chó 🐶, Mèo 🐱, Thỏ 🐰, Ngựa 🐴
 
@@ -24,7 +25,7 @@ export const PET_TYPES = {
   cat: {
     id: "cat",
     name: "Mèo Mướp Tom",
-    species: "Mèo Tam Thể",
+    species: "Mèo Mướp Cam",
     icon: "🐱",
     baseSpeed: 0.65,
     quotes: [
@@ -47,13 +48,13 @@ export const PET_TYPES = {
   },
   horse: {
     id: "horse",
-    name: "Bạch Mã Pegasus",
-    species: "Ngựa Trắng Hoàng Gia",
+    name: "Ngựa Pegasus",
+    species: "Ngựa Nâu Hạt Dẻ",
     icon: "🐴",
     baseSpeed: 1.1,
     quotes: [
-      "Híii~ (bạch mã dũng mãnh giậm móng cộp cộp chào mừng) ✨",
-      "Hí vang! (vẫy chiếc bờm bạch kim óng ả đầy kiêu hãnh) ❤️",
+      "Híii~ (ngựa nâu dũng mãnh giậm móng cộp cộp chào mừng) ✨",
+      "Hí vang! (vẫy chiếc bờm nâu sẫm óng ả đầy kiêu hãnh) ❤️",
       "Khịt khịt... (ngựa hiền lành cúi đầu để bạn xoa bờm)"
     ]
   }
@@ -87,7 +88,13 @@ export function isPetWalkableTile(tid) {
 }
 
 export class PetManager {
-  constructor() {
+  constructor({ onRequestRender } = {}) {
+    this.spriteImages = Object.fromEntries(['dog', 'cat', 'rabbit', 'horse'].map(type => {
+      const img = new Image();
+      img.onload = () => onRequestRender?.();
+      img.src = FARM_ANIMALS[type].uri;
+      return [type, img];
+    }));
     this.pets = [];
     this.speechBubble = null;
     this.hearts = []; // Trái tim bay lơ lửng { x, y, vy, alpha, life }
@@ -335,6 +342,15 @@ export class PetManager {
 
       // 3. Render chi tiết từng loài thú cưng
       ctx.translate(sx, cy);
+      const image = this.spriteImages[pet.type];
+      if (image?.complete && image.naturalWidth > 0) {
+        // Generated animals face left; mirror only when walking to the right.
+        ctx.scale(isLeft ? 1 : -1, 1);
+        const width = { dog: 24, cat: 20, rabbit: 16, horse: 36 }[pet.type];
+        drawFarmAnimal(ctx, image, getFarmAnimalRect(pet.type, 0, 0, width));
+        ctx.restore();
+        continue;
+      }
       ctx.scale(dirScale, 1);
 
       if (pet.type === "dog") {
@@ -557,7 +573,7 @@ export class PetManager {
   }
 
   renderHorse(ctx, pet, animTime) {
-    // Bạch Mã Pegasus 🐴: Oai phong, móng guốc, bờm vàng kim
+    // Ngựa Pegasus 🐴: Oai phong, móng guốc, bờm vàng kim
     const stride = pet.state === "walking" ? Math.sin(pet.walkPhase) * 3.5 : 0;
     const tailSway = Math.sin(animTime * 5) * 0.35;
 

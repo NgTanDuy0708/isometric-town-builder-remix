@@ -2,6 +2,7 @@
 // so the front is painted LAST and covers objects behind it.
 // Fractional coordinates are intentional: moving actors must not snap layers.
 import { getTerrainSprite } from '../data/terrainConfig.js';
+import { EXPANSION_GROUND_IDS } from '../data/expansionCatalog.js';
 
 export function compareWorldDepth(a, b) {
   return (a.row + a.col) - (b.row + b.col) ||
@@ -12,6 +13,7 @@ export function compareWorldDepth(a, b) {
 // Only flat surfaces belong in the ground pass. Bridges, gates, plazas and
 // trees stay in the world queue even when their catalog category is "road".
 const FLAT_GROUND_IDS = new Set([
+  ...EXPANSION_GROUND_IDS,
   "d12_meadow_wildflowers", "g01_grass_flat", "s13_sand_ground",
   "r03_royal_marble_pavement", "d11_canal_straight",
   "r01_road_straight_ns", "r02_road_straight_ew", "r03_road_cross",

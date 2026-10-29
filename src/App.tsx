@@ -756,41 +756,51 @@ const STUDIO_MARKUP = `
   <div class="shop-modal-backdrop" id="shop-modal" role="dialog" aria-modal="true" aria-labelledby="shop-modal-title">
     <div class="shop-modal-card">
       <div class="shop-modal-header">
-        <div>
-          <h2 class="shop-modal-title" id="shop-modal-title">🏗️ Cửa Hàng Kiến Trúc & Xây Dựng</h2>
-          <p class="shop-modal-subtitle">Chọn công trình, luống đất, đường sá hoặc cảnh quan để xây dựng vương quốc (Mở khóa theo Cấp người chơi)</p>
+        <div class="shop-modal-header-left">
+          <button type="button" class="shop-modal-back-btn" id="shop-modal-back-btn" title="Quay lại danh mục" style="display: none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h2 class="shop-modal-title" id="shop-modal-title">
+            <img class="shop-modal-header-icon" src="/assets/ui/icon_shop.png" alt="Cửa hàng" />
+            <span id="shop-modal-title-text">Cửa hàng</span>
+          </h2>
         </div>
         <button type="button" class="shop-modal-close" id="shop-modal-close" title="Đóng">&times;</button>
       </div>
 
-      <!-- Category Filter Tabs -->
-      <div class="shop-tab-bar" id="shop-category-tabs">
-        <button type="button" class="shop-tab-btn active" data-shop-cat="all">🌟 Tất cả</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="residential">🏠 Nhà ở</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="production">🏭 Cửa hàng & Sản xuất</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="farming">🌱 Nông trại & Đất</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="roads">🛣️ Đường & Cầu</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="fences"><img class="shop-tab-icon" src="${FENCE_ITEMS[0].uri}" alt="" />Hàng rào</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="decor">🌸 Phong cảnh & Hoa</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="nature">🏞️ Địa hình & Biomes</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="wonders">🏛️ Kỳ Quan</button>
-        <button type="button" class="shop-tab-btn" data-shop-cat="erase" style="color: #ef4444; font-weight: 700; border-color: #fca5a5; background: #fff5f5;">❌ Phá Dỡ (Xóa)</button>
-      </div>
-
-      <!-- Shop Items Grid -->
+      <!-- Shop Modal Body -->
       <div class="shop-modal-body">
-        <div class="shop-items-grid" id="shop-items-container">
+        <!-- 2-Column Categories Grid (Root View) -->
+        <div class="shop-categories-grid" id="shop-categories-grid">
+          <button type="button" class="shop-cat-card" data-shop-cat="residential" title="Nhà">
+            <img src="/assets/categories/cat_residential.png" alt="Nhà" />
+          </button>
+          <button type="button" class="shop-cat-card" data-shop-cat="production" title="Cửa hàng sản xuất">
+            <img src="/assets/categories/cat_production.png" alt="Cửa hàng sản xuất" />
+          </button>
+          <button type="button" class="shop-cat-card" data-shop-cat="farming" title="Nông trại">
+            <img src="/assets/categories/cat_farming.png" alt="Nông trại" />
+          </button>
+          <button type="button" class="shop-cat-card" data-shop-cat="fences" title="Hàng rào">
+            <img src="/assets/categories/cat_fences.png" alt="Hàng rào" />
+          </button>
+          <button type="button" class="shop-cat-card" data-shop-cat="roads" title="Đường & cầu">
+            <img src="/assets/categories/cat_roads.png" alt="Đường & cầu" />
+          </button>
+          <button type="button" class="shop-cat-card" data-shop-cat="decor" title="Phong cảnh">
+            <img src="/assets/categories/cat_decor.png" alt="Phong cảnh" />
+          </button>
+          <button type="button" class="shop-cat-card" data-shop-cat="wonders" title="Kỳ quan">
+            <img src="/assets/categories/cat_wonders.png" alt="Kỳ quan" />
+          </button>
+        </div>
+
+        <!-- Shop Items Grid (Category View) -->
+        <div class="shop-items-grid" id="shop-items-container" style="display: none;">
           <!-- Populated dynamically via JS -->
         </div>
-      </div>
-
-      <!-- Shop Footer -->
-      <div class="shop-modal-footer">
-        <button type="button" class="shop-btn-free-cursor" id="shop-btn-free-cursor">
-          <span>🖐️</span>
-          <span>Con trỏ tự do (Chỉ xem / Thu hoạch)</span>
-        </button>
-        <span style="font-size: 0.76rem; color: #78716c;">Phím tắt: [E/R] xoay nhà &bull; [D / Delete] gỡ công trình &bull; [Z/X] zoom &bull; Chuột phải: Hủy chọn</span>
       </div>
     </div>
   </div>

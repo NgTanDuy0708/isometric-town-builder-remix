@@ -1,6 +1,8 @@
 // Crop Seeds and Agricultural Farming Configuration
 // 10 diverse agricultural crops with detailed pixel art and market economy
 
+import { ADDITIONAL_CROPS } from "./additionalCrops.js";
+
 export const CROPS_CONFIG = {
   wheat: {
     id: "wheat",
@@ -131,7 +133,11 @@ export const CROPS_CONFIG = {
     requiredLevel: 6,
     harvestResources: { sunflower: 3 },
     desc: "Cấp 6 • Đóa hướng dương khổng lồ đón nắng (10p), thu 3 đóa hoa rực rỡ siêu giá trị."
-  }
+  },
+  ...Object.fromEntries(ADDITIONAL_CROPS.map(({ sellPrice, unitName, ...crop }) => [crop.id, {
+    ...crop, shortName: crop.name, harvestYield: 3, harvestResources: { [crop.id]: 3 },
+    desc: `Cấp ${crop.requiredLevel} • ${crop.name} (${crop.growTimeSec}s), thu hoạch 3 ${unitName}.`
+  }]))
 };
 
 export function getCropGrowDurationMs(farmData) {

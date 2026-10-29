@@ -4,13 +4,45 @@ Bộ prompt cho cây trồng trong game pixel art isometric, đồng bộ góc n
 
 ## Số ảnh cần tạo
 
-- **1 ảnh hạt vừa gieo dùng chung**, phủ lên lớp đất riêng: `seed_shared.png`.
-- **16 mục cây/biến thể × 3 ảnh**: **mầm → non → chín/thu hoạch**.
-- **Tổng cộng: 49 ảnh PNG riêng**, không ghép các giai đoạn vào một ảnh.
+- **16 ảnh hạt vừa gieo riêng**, phủ lên lớp đất riêng: `<tên_cây>_sown.png` — đã tạo đủ theo danh sách bên dưới.
+- **16 mục cây/biến thể × 3 ảnh**: **mầm → non → chín/thu hoạch** — đã tạo và tích hợp đủ 48 ảnh.
+- **Tổng cộng bộ chính: 64 sprite PNG riêng** = 16 ảnh vừa gieo + 48 ảnh mầm/non/chín — đã có đủ.
+- `seed_shared.png` là phương án dự phòng tuỳ chọn, ngoài bộ chính.
 - Tên file: `<tên_cây>_sprout.png`, `<tên_cây>_grow.png`, `<tên_cây>_ripe.png`.
 - “Dưa leo” và “dưa chuột” thường là hai tên gọi của cùng một cây. Tài liệu giữ cả hai mục theo yêu cầu, phân biệt thành **dưa leo quả dài leo giàn** và **dưa chuột quả ngắn mọc bụi**.
 - “Củ cải” được hiểu là **củ cải trắng**. “Lê” là **cây lê lùn**, không phải bụi rau. Với nấm, “mầm” là **nấm kim/primordia**, không phải chồi có lá.
-- Ảnh hạt giống dùng cho **giai đoạn vừa gieo trên luống**, chỉ vẽ hạt, nền trong suốt để ghép lên đất có sẵn. Không vẽ túi hạt giống hoặc biểu tượng cửa hàng. Mẫu riêng lúa mì ở phần duyệt bên dưới là ảnh bổ sung ngoài bộ 49 ảnh cơ sở.
+- Ảnh hạt giống dùng cho **giai đoạn vừa gieo trên luống**, chỉ vẽ hạt, nền trong suốt để ghép lên đất có sẵn. Không vẽ túi hạt giống hoặc biểu tượng cửa hàng.
+
+## Bộ sinh trưởng đã hoàn tất và tích hợp
+
+Đã tạo và ghép **48 ảnh mầm/non/chín riêng cho 16 loại cây** bằng công cụ **imagegen tích hợp**. Kết hợp với 16 ảnh hạt vừa gieo thành bộ **64 sprite PNG**.
+
+- [Xem bốn giai đoạn trên cùng luống đất](../assets-source/crops/growth-v1/index.html).
+- Khi cần xuất ZIP gồm 64 sprite và prompt, chạy `python tools/package_crop_lifecycle.py`. ZIP là sản phẩm tạo lại được và không đưa vào Git.
+- Giữ nguyên PNG nguồn **1254×1254 RGBA**, có alpha thật. Đất chỉ có trong trang xem thử, không nằm trong sprite.
+- Mầm hành và củ cải dùng bản v2 đã bỏ phần củ lớn xuất hiện quá sớm.
+- `src/data/cropGrowthSprites.js` ánh xạ bộ ảnh; `src/data/cropGrowthGeometry.js` căn điểm gốc và tỉ lệ từng giai đoạn.
+- Các điểm gốc đều về cùng vị trí trên mặt luống; mầm và cây non hiển thị nhỏ hơn cây chín, không phóng mọi ảnh lên cùng kích thước.
+
+| Cây | Mầm | Non | Chín |
+|---|---|---|---|
+| Lúa mì | [PNG](../assets-source/crops/growth-v1/wheat_sprout.png) · [prompt](generated-assets/crop-growth-v1/wheat_sprout.txt) | [PNG](../assets-source/crops/growth-v1/wheat_grow.png) · [prompt](generated-assets/crop-growth-v1/wheat_grow.txt) | [PNG](../assets-source/crops/growth-v1/wheat_ripe.png) · [prompt](generated-assets/crop-growth-v1/wheat_ripe.txt) |
+| Cà rốt | [PNG](../assets-source/crops/growth-v1/carrot_sprout.png) · [prompt](generated-assets/crop-growth-v1/carrot_sprout.txt) | [PNG](../assets-source/crops/growth-v1/carrot_grow.png) · [prompt](generated-assets/crop-growth-v1/carrot_grow.txt) | [PNG](../assets-source/crops/growth-v1/carrot_ripe.png) · [prompt](generated-assets/crop-growth-v1/carrot_ripe.txt) |
+| Củ cải trắng | [PNG](../assets-source/crops/growth-v1/radish_sprout_v2.png) · [prompt](generated-assets/crop-growth-v1/radish_sprout_v2.txt) | [PNG](../assets-source/crops/growth-v1/radish_grow.png) · [prompt](generated-assets/crop-growth-v1/radish_grow.txt) | [PNG](../assets-source/crops/growth-v1/radish_ripe.png) · [prompt](generated-assets/crop-growth-v1/radish_ripe.txt) |
+| Cà chua | [PNG](../assets-source/crops/growth-v1/tomato_sprout.png) · [prompt](generated-assets/crop-growth-v1/tomato_sprout.txt) | [PNG](../assets-source/crops/growth-v1/tomato_grow.png) · [prompt](generated-assets/crop-growth-v1/tomato_grow.txt) | [PNG](../assets-source/crops/growth-v1/tomato_ripe.png) · [prompt](generated-assets/crop-growth-v1/tomato_ripe.txt) |
+| Nấm | [PNG](../assets-source/crops/growth-v1/mushroom_sprout.png) · [prompt](generated-assets/crop-growth-v1/mushroom_sprout.txt) | [PNG](../assets-source/crops/growth-v1/mushroom_grow.png) · [prompt](generated-assets/crop-growth-v1/mushroom_grow.txt) | [PNG](../assets-source/crops/growth-v1/mushroom_ripe.png) · [prompt](generated-assets/crop-growth-v1/mushroom_ripe.txt) |
+| Hoa hướng dương | [PNG](../assets-source/crops/growth-v1/sunflower_sprout.png) · [prompt](generated-assets/crop-growth-v1/sunflower_sprout.txt) | [PNG](../assets-source/crops/growth-v1/sunflower_grow.png) · [prompt](generated-assets/crop-growth-v1/sunflower_grow.txt) | [PNG](../assets-source/crops/growth-v1/sunflower_ripe.png) · [prompt](generated-assets/crop-growth-v1/sunflower_ripe.txt) |
+| Củ hành | [PNG](../assets-source/crops/growth-v1/onion_sprout_v2.png) · [prompt](generated-assets/crop-growth-v1/onion_sprout_v2.txt) | [PNG](../assets-source/crops/growth-v1/onion_grow.png) · [prompt](generated-assets/crop-growth-v1/onion_grow.txt) | [PNG](../assets-source/crops/growth-v1/onion_ripe.png) · [prompt](generated-assets/crop-growth-v1/onion_ripe.txt) |
+| Ớt | [PNG](../assets-source/crops/growth-v1/chili_sprout.png) · [prompt](generated-assets/crop-growth-v1/chili_sprout.txt) | [PNG](../assets-source/crops/growth-v1/chili_grow.png) · [prompt](generated-assets/crop-growth-v1/chili_grow.txt) | [PNG](../assets-source/crops/growth-v1/chili_ripe.png) · [prompt](generated-assets/crop-growth-v1/chili_ripe.txt) |
+| Dưa leo quả dài | [PNG](../assets-source/crops/growth-v1/cucumber_sprout.png) · [prompt](generated-assets/crop-growth-v1/cucumber_sprout.txt) | [PNG](../assets-source/crops/growth-v1/cucumber_grow.png) · [prompt](generated-assets/crop-growth-v1/cucumber_grow.txt) | [PNG](../assets-source/crops/growth-v1/cucumber_ripe.png) · [prompt](generated-assets/crop-growth-v1/cucumber_ripe.txt) |
+| Dưa chuột quả ngắn | [PNG](../assets-source/crops/growth-v1/cucumber_pickling_sprout.png) · [prompt](generated-assets/crop-growth-v1/cucumber_pickling_sprout.txt) | [PNG](../assets-source/crops/growth-v1/cucumber_pickling_grow.png) · [prompt](generated-assets/crop-growth-v1/cucumber_pickling_grow.txt) | [PNG](../assets-source/crops/growth-v1/cucumber_pickling_ripe.png) · [prompt](generated-assets/crop-growth-v1/cucumber_pickling_ripe.txt) |
+| Bí ngô | [PNG](../assets-source/crops/growth-v1/pumpkin_sprout.png) · [prompt](generated-assets/crop-growth-v1/pumpkin_sprout.txt) | [PNG](../assets-source/crops/growth-v1/pumpkin_grow.png) · [prompt](generated-assets/crop-growth-v1/pumpkin_grow.txt) | [PNG](../assets-source/crops/growth-v1/pumpkin_ripe.png) · [prompt](generated-assets/crop-growth-v1/pumpkin_ripe.txt) |
+| Nho | [PNG](../assets-source/crops/growth-v1/grapes_sprout.png) · [prompt](generated-assets/crop-growth-v1/grapes_sprout.txt) | [PNG](../assets-source/crops/growth-v1/grapes_grow.png) · [prompt](generated-assets/crop-growth-v1/grapes_grow.txt) | [PNG](../assets-source/crops/growth-v1/grapes_ripe.png) · [prompt](generated-assets/crop-growth-v1/grapes_ripe.txt) |
+| Bắp / ngô | [PNG](../assets-source/crops/growth-v1/corn_sprout.png) · [prompt](generated-assets/crop-growth-v1/corn_sprout.txt) | [PNG](../assets-source/crops/growth-v1/corn_grow.png) · [prompt](generated-assets/crop-growth-v1/corn_grow.txt) | [PNG](../assets-source/crops/growth-v1/corn_ripe.png) · [prompt](generated-assets/crop-growth-v1/corn_ripe.txt) |
+| Xà lách | [PNG](../assets-source/crops/growth-v1/lettuce_sprout.png) · [prompt](generated-assets/crop-growth-v1/lettuce_sprout.txt) | [PNG](../assets-source/crops/growth-v1/lettuce_grow.png) · [prompt](generated-assets/crop-growth-v1/lettuce_grow.txt) | [PNG](../assets-source/crops/growth-v1/lettuce_ripe.png) · [prompt](generated-assets/crop-growth-v1/lettuce_ripe.txt) |
+| Dâu tây | [PNG](../assets-source/crops/growth-v1/strawberry_sprout.png) · [prompt](generated-assets/crop-growth-v1/strawberry_sprout.txt) | [PNG](../assets-source/crops/growth-v1/strawberry_grow.png) · [prompt](generated-assets/crop-growth-v1/strawberry_grow.txt) | [PNG](../assets-source/crops/growth-v1/strawberry_ripe.png) · [prompt](generated-assets/crop-growth-v1/strawberry_ripe.txt) |
+| Lê | [PNG](../assets-source/crops/growth-v1/pear_sprout.png) · [prompt](generated-assets/crop-growth-v1/pear_sprout.txt) | [PNG](../assets-source/crops/growth-v1/pear_grow.png) · [prompt](generated-assets/crop-growth-v1/pear_grow.txt) | [PNG](../assets-source/crops/growth-v1/pear_ripe.png) · [prompt](generated-assets/crop-growth-v1/pear_ripe.txt) |
+
 
 ## Cách dùng
 
@@ -22,7 +54,7 @@ Bộ prompt cho cây trồng trong game pixel art isometric, đồng bộ góc n
 
 ---
 
-## STYLE CHUNG — dùng cho toàn bộ 49 ảnh
+## STYLE CHUNG — cây trồng và lớp hạt vừa gieo
 
 ```text
 You are creating transparent pixel-art sprites for a medieval isometric
@@ -104,7 +136,7 @@ Use an elongated kernel with a small crease for wheat; other species may
 use their own seed shapes when individual seed overlays are added.
 ```
 
-## NEGATIVE PROMPT CHUNG — dùng cho toàn bộ 49 ảnh
+## NEGATIVE PROMPT CHUNG
 
 ```text
 photorealistic, photographic texture, glossy 3D render, plastic material,
@@ -148,11 +180,39 @@ all seeds. The existing soil layer will be composited separately in game.
 
 ---
 
-## Hạt giống riêng từng loại — mẫu đang duyệt
+## Hạt vừa gieo riêng — đã tạo đủ 16 loại
 
-Bộ 49 ảnh phía trên dùng một lớp hạt vừa gieo chung. Phần này bổ sung mẫu hạt gieo riêng cho lúa mì để duyệt phong cách trước khi tạo các loại còn lại.
+Bộ ảnh này dùng mẫu lúa mì đã duyệt làm tham chiếu bố cục, góc nhìn, ánh sáng và phong cách. Mỗi ảnh có bốn hàng hạt trên mặt phẳng isometric, nền trong suốt để ghép lên đất riêng.
 
-### Lúa mì vừa gieo — `wheat_sown_preview_v2.png`
+- [Mở danh mục xem toàn bộ ảnh](../assets-source/crop-seeds/sown-v1/index.html).
+- PNG và prompt được giữ trong danh mục trên; bản ZIP sao chép đã được dọn khỏi dự án.
+- Công cụ: **imagegen tích hợp**. Giữ nguyên các PNG gốc **1254×1254 RGBA**; bộ prompt hạt riêng yêu cầu khung này để khớp mẫu đã duyệt.
+- Nấm dùng **hạt meo cấy** để biểu diễn giai đoạn gieo trong game. Hai mục dưa dùng biến thể minh hoạ khác nhau để phân biệt trong danh sách.
+- Tên chuẩn cho giai đoạn này: `<tên_cây>_sown.png`.
+
+| # | Cây / biến thể | PNG | Prompt đầy đủ | Đặc điểm |
+|---|---|---|---|---|
+| 1 | Lúa mì | [`wheat_sown.png`](../assets-source/crop-seeds/sown-v1/wheat_sown.png) | [Prompt](generated-assets/sown-seeds-v1/wheat_sown.txt) | Mẫu đã được duyệt, giữ nguyên ảnh. |
+| 2 | Cà rốt | [`carrot_sown.png`](../assets-source/crop-seeds/sown-v1/carrot_sown.png) | [Prompt](generated-assets/sown-seeds-v1/carrot_sown.txt) | Hạt nhỏ, thuôn, nâu be, có gân. |
+| 3 | Củ cải trắng | [`radish_sown.png`](../assets-source/crop-seeds/sown-v1/radish_sown.png) | [Prompt](generated-assets/sown-seeds-v1/radish_sown.txt) | Hạt tròn hơi méo, nâu đỏ. |
+| 4 | Cà chua | [`tomato_sown.png`](../assets-source/crop-seeds/sown-v1/tomato_sown.png) | [Prompt](generated-assets/sown-seeds-v1/tomato_sown.txt) | Hạt dẹt màu be nhạt. |
+| 5 | Nấm | [`mushroom_sown.png`](../assets-source/crop-seeds/sown-v1/mushroom_sown.png) | [Prompt](generated-assets/sown-seeds-v1/mushroom_sown.txt) | Dùng hạt meo cấy màu kem để biểu diễn giai đoạn vừa gieo trong game. |
+| 6 | Hoa hướng dương | [`sunflower_sown.png`](../assets-source/crop-seeds/sown-v1/sunflower_sown.png) | [Prompt](generated-assets/sown-seeds-v1/sunflower_sown.txt) | Vỏ sẫm, vạch kem dọc. |
+| 7 | Củ hành | [`onion_sown.png`](../assets-source/crop-seeds/sown-v1/onion_sown.png) | [Prompt](generated-assets/sown-seeds-v1/onion_sown.txt) | Hạt đen góc cạnh. |
+| 8 | Ớt | [`chili_sown.png`](../assets-source/crop-seeds/sown-v1/chili_sown.png) | [Prompt](generated-assets/sown-seeds-v1/chili_sown.txt) | Hạt dẹt, tròn màu kem. |
+| 9 | Dưa leo quả dài | [`cucumber_sown.png`](../assets-source/crop-seeds/sown-v1/cucumber_sown.png) | [Prompt](generated-assets/sown-seeds-v1/cucumber_sown.txt) | Biến thể minh hoạ hạt thon dài màu ngà. |
+| 10 | Dưa chuột quả ngắn | [`cucumber_pickling_sown.png`](../assets-source/crop-seeds/sown-v1/cucumber_pickling_sown.png) | [Prompt](generated-assets/sown-seeds-v1/cucumber_pickling_sown.txt) | Biến thể minh hoạ hạt bầu hơn để phân biệt hai mục trong game. |
+| 11 | Bí ngô | [`pumpkin_sown.png`](../assets-source/crop-seeds/sown-v1/pumpkin_sown.png) | [Prompt](generated-assets/sown-seeds-v1/pumpkin_sown.txt) | Hạt dẹt rộng màu kem, có viền vỏ. |
+| 12 | Nho | [`grapes_sown.png`](../assets-source/crop-seeds/sown-v1/grapes_sown.png) | [Prompt](generated-assets/sown-seeds-v1/grapes_sown.txt) | Hạt nâu, đầu nhọn ngắn. |
+| 13 | Bắp / ngô | [`corn_sown.png`](../assets-source/crop-seeds/sown-v1/corn_sown.png) | [Prompt](generated-assets/sown-seeds-v1/corn_sown.txt) | Hạt vàng hơi vuông, điểm mầm màu kem. |
+| 14 | Xà lách | [`lettuce_sown.png`](../assets-source/crop-seeds/sown-v1/lettuce_sown.png) | [Prompt](generated-assets/sown-seeds-v1/lettuce_sown.txt) | Hạt thuôn nhọn, nâu xám. |
+| 15 | Dâu tây | [`strawberry_sown.png`](../assets-source/crop-seeds/sown-v1/strawberry_sown.png) | [Prompt](generated-assets/sown-seeds-v1/strawberry_sown.txt) | Hạt nhỏ màu vàng nâu, dáng giọt nước. |
+| 16 | Lê | [`pear_sown.png`](../assets-source/crop-seeds/sown-v1/pear_sown.png) | [Prompt](generated-assets/sown-seeds-v1/pear_sown.txt) | Hạt nâu sẫm hình giọt nước. |
+
+Các prompt trong cột “Prompt đầy đủ” dùng độc lập, với ảnh lúa mì đã duyệt làm ảnh tham chiếu. Mỗi lần tạo một loại hạt, giữ nguyên vị trí gieo, không thêm túi, đất, mầm hoặc cây chín.
+
+
+### Mẫu chuẩn lúa mì — `wheat_sown_preview_v2.png`
 
 Chỉ có các hạt lúa mì nhỏ, dài, màu vàng be, có rãnh giữa, nằm trên mặt phẳng đất vô hình. Xếp bốn hàng theo góc isometric 2:1, mỗi hàng ba hạt, để ghép lên luống có sẵn. Không có túi, bao, bông lúa, mầm, đất hoặc bóng đổ.
 
@@ -633,9 +693,17 @@ One compact mature dwarf pear tree on the same root anchor, with a short sturdy 
 
 ---
 
+## Đã tích hợp lớp hạt vào game
+
+- 16 PNG gốc đã được đưa vào `public/assets/crops/sown/`, giữ nguyên alpha và chất lượng ảnh nguồn.
+- `src/data/cropVisuals.js` ánh xạ ảnh theo loại cây và căn cùng một bố cục lên mặt luống đất riêng.
+- Sau khi gieo, lớp hạt xuất hiện trong 20% thời gian đầu, tối đa 8 giây; sau đó dùng các ảnh mầm/non/chín riêng của từng loại. Tổng thời gian thu hoạch giữ theo cấu hình từng cây.
+- Tám loại trước đây chưa có trong menu gieo đã được thêm vào danh sách cây, kho và chợ. Giá, thời gian, cấp mở khoá và giá bán đặt trong `src/data/additionalCrops.js`.
+- Bắp cải và dưa hấu ngoài danh sách 16 loại vẫn giữ ảnh sinh trưởng cũ, dùng tạm hình hạt xà lách và bí ngô tương ứng.
+
 ## Kiểm tra sau khi tạo ảnh
 
-- Có đủ **1 seed chung + 48 ảnh giai đoạn**, đúng tên file.
+- Bộ đầy đủ có **16 ảnh vừa gieo + 48 ảnh giai đoạn**, đúng tên file. Bộ 16 ảnh vừa gieo đã có trong `assets-source/crop-seeds/sown-v1/`.
 - Mầm nhỏ, cây non lớn hơn, cây chín đầy đủ; không bị phóng ba giai đoạn thành cùng kích thước.
 - Ba ảnh của mỗi cây giữ nguyên góc nhìn, ánh sáng và điểm tiếp đất.
 - Không có ô đất hoặc luống đất đi kèm: nền luống sẽ được ghép riêng trong game.
@@ -644,5 +712,5 @@ One compact mature dwarf pear tree on the same root anchor, with a short sturdy 
 - Hai biến thể dưa có dáng quả và tập tính mọc khác nhau như đã quy định.
 - Không crop sát từng giai đoạn rồi tự kéo tất cả về cùng chiều cao. Nếu cần hậu kỳ, giữ một khung chung và biến đổi đồng bộ theo điểm neo; ưu tiên giữ chất lượng PNG gốc.
 
-Tài liệu này chỉ soạn prompt và tên ảnh. Các cây mới ngoài danh sách hiện có cần được cấu hình riêng khi tích hợp vào game.
+Danh mục 16 loại đã có cấu hình gieo, kho, chợ và đủ bốn giai đoạn hiển thị trong game.
 

@@ -1,3 +1,4 @@
+import { isLivestockTile } from "../data/livestockConfig.js";
 /**
  * townCaretaker.js - Tổng Quản Gia Hoàng Gia (Hệ Thống Thuê NPC Thu Hoạch Tự Động)
  * 
@@ -307,7 +308,7 @@ export class TownCaretakerManager {
       for (let r = 0; r < grid.length; r++) {
         for (let c = 0; c < grid[r].length; c++) {
           const tid = grid[r][c];
-          if (tid === "b21_chicken_coop" || tid === "b22_cow_pasture" || tid === "b57_sheep_pasture") {
+          if (isLivestockTile(tid)) {
             // Thu hoạch nếu sẵn sàng
             if (this.ctx.harvestLivestockCell && this.ctx.harvestLivestockCell(r, c, true)) {
               animals++;

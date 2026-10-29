@@ -1,3 +1,8 @@
+import { LIVESTOCK_RULES, isLivestockTile } from "./data/livestockConfig.js";
+import { TOWN_HALL_TUNING_KEY } from "./engine/townHallTuning.js";
+import { getShopCategory } from './data/shopCatalog.js';
+import { isExpansionGround, paintExpansionGroundThumbnail } from './engine/expansionRenderer.js';
+import { canPlaceOnSurface, getClearedSurface, isPlacementProtected } from './engine/placementSurface.js';
 import { placeFenceOnEdges } from "./engine/fencePlacement.js";
 import {
   INITIAL_GOLD, INITIAL_GEMS, getGemSpeedupCost, getTileCost, getTileBuildDuration, PRODUCTION_BUILDINGS,
@@ -62,8 +67,9 @@ import { SeasonalThemeManager } from "./engine/seasonalThemes.js";
 import { AESTHETIC_TILE_URIS } from "./data/aestheticTileIcons.js";
 import { getBuildingSpriteUri } from "./data/buildingSprites.js";
 import { applyCoastTerrainLayout } from "./data/terrainConfig.js";
-import { TERRAIN_MAP_KEY, readTerrainMap, syncTerrainToGrid } from "./engine/terrainEditing.js";
-import { isFenceTile, migrateGridFences } from "./data/fenceConfig.js";
+import { TERRAIN_MAP_KEY, readTerrainMap, syncTerrainToGrid, createTerrainMap, writeTerrainMap, isValidTerrainMap } from "./engine/terrainEditing.js";
+import { WAREHOUSE_TUNING_KEY } from "./engine/warehouseTuning.js";
+import { isFenceTile, migrateGridFences, FENCE_ITEM_BY_ID } from "./data/fenceConfig.js";
 import { paintFenceThumbnail } from "./engine/fenceRenderer.js";
 import { createStarterTownMap32, applyTownCenterLayout, getStarterFarmlandState, isProtectedTile, isIndestructibleTile, migrateLegacyWarehouseLayout } from "./data/starterMap.js";
 import { DEV_FULL_VILLAGE_SAVE } from "./data/devSaveData.js";
@@ -213,6 +219,10 @@ export function initIsometricStudio() {
     // Đồng bộ bờ col 4 và cát cols 5..6 cho save cũ, giữ công trình.
     applyCoastTerrainLayout(currentGrid);
     let terrainMap = readTerrainMap(localStorage);
+    if (!terrainMap) {
+      terrainMap = isValidTerrainMap(initialSave.terrainMap) ? initialSave.terrainMap : createTerrainMap(currentGrid);
+      writeTerrainMap(localStorage, terrainMap);
+    }
     syncTerrainToGrid(currentGrid, terrainMap);
 
     // Dọn sạch hoàn toàn các ô r02_cobblestone không có hình ảnh từ các bản đồ save cũ
@@ -395,6 +405,7 @@ export function initIsometricStudio() {
         savedAt: Date.now(),
         presetName: 'custom',
         grid: currentGrid,
+        terrainMap,
         fences,
         flippedGrid,
         constructions,
@@ -498,7 +509,7 @@ export function initIsometricStudio() {
     var selectedObjectCell = null; // công trình đang được chọn (giữ lâu) -> vẽ mờ
     var wasPlacingGhost = false;   // đang ở chế độ đặt (bóng mờ) hay không
     const villagerManager = new VillagerManager();
-    const petManager = new PetManager();
+    const petManager = new PetManager({ onRequestRender: requestRender });
 
     const tileMap = {};
     TILES_DATA.forEach(t => { tileMap[t.id] = t; });
@@ -840,9 +851,11 @@ export function initIsometricStudio() {
       playerResources = {
         wheat: 0, carrot: 0, tomato: 0, strawberry: 0, corn: 0,
         cabbage: 0, pumpkin: 0, watermelon: 0, grapes: 0, sunflower: 0,
-        egg: 0, milk: 0, wool: 0, fabric: 0, butter: 0, bread: 0, ironTools: 0
+        egg: 0, milk: 0, meat: 0, wool: 0, fabric: 0, butter: 0, bread: 0, ironTools: 0
       };
       currentGrid = createStarterTownMap32();
+      terrainMap = createTerrainMap(currentGrid);
+      writeTerrainMap(localStorage, terrainMap);
       fences = [];
       constructions = {};
       buildingLevels = {};
@@ -1229,6 +1242,7 @@ export function initIsometricStudio() {
         if (metaEl) metaEl.textContent = "Nhấp ô cỏ trống để đặt • R: Xoay • Esc: Hủy";
         if (thumbEl) {
           thumbEl.src = getBuildingSpriteUri(movingBuilding.tileId, movingBuilding.level || 1) || AESTHETIC_TILE_URIS[movingBuilding.tileId] || TILE_DATA_URIS[movingBuilding.tileId] || TILE_DATA_URIS.d12_meadow_wildflowers;
+          thumbEl.style.transform = movingBuilding.flipped ? "scaleX(-1)" : "none";
         }
         return;
       }
@@ -1250,6 +1264,7 @@ export function initIsometricStudio() {
         if (metaEl) metaEl.textContent = ((gameMode === "sandbox" || cost === 0) ? "Miễn phí" : `Chi phí: ${cost} 🪙`) + (isFenceTile(activeBrush) ? " • Đặt trên cạnh, không chiếm ô đất • R: Xoay" : "");
         if (thumbEl) {
           thumbEl.src = AESTHETIC_TILE_URIS[t.id] || TILE_DATA_URIS[t.id] || TILE_DATA_URIS.d12_meadow_wildflowers;
+          thumbEl.style.transform = brushFlipped ? "scaleX(-1)" : "none";
         }
       }
     }
@@ -1262,12 +1277,13 @@ export function initIsometricStudio() {
         return;
       }
       const res = getRotatedTileIdAndFlip(movingBuilding.tileId, !!movingBuilding.flipped);
-      if (tileMap[res.nextId]) {
+      if (tileMap[res.nextId] || isFenceTile(res.nextId)) {
         movingBuilding.tileId = res.nextId;
       }
       movingBuilding.flipped = res.nextFlip;
       playRotateSound();
-      const t = tileMap[movingBuilding.tileId];
+      const fenceItem = FENCE_ITEM_BY_ID[movingBuilding.tileId];
+      const t = fenceItem || tileMap[movingBuilding.tileId];
       showToast(`🔄 Đã xoay: ${t ? t.label : movingBuilding.tileId}`, "info");
       updateFloatingBrushHUD();
       requestRender();
@@ -1284,7 +1300,10 @@ export function initIsometricStudio() {
         return;
       }
       const curTid = currentGrid[row][col];
-      if (!curTid || curTid === "d12_meadow_wildflowers") return;
+      if (!curTid || curTid === "d12_meadow_wildflowers") {
+        if (rotateFenceAt(row, col)) return;
+        return;
+      }
       if (!isRotationVisible(curTid)) {
         const lc = tileMap[curTid];
         showToast(`ℹ️ ${lc ? lc.label : "Vật phẩm này"} có hình đối xứng, xoay sẽ không thay đổi gì.`, "info");
@@ -1694,6 +1713,8 @@ export function initIsometricStudio() {
         currentGrid = imported.grid;
         migrateLegacyWarehouseLayout(currentGrid);
         applyCoastTerrainLayout(currentGrid);
+        terrainMap = isValidTerrainMap(imported.terrainMap) ? imported.terrainMap : createTerrainMap(currentGrid);
+        writeTerrainMap(localStorage, terrainMap);
         syncTerrainToGrid(currentGrid, terrainMap);
         flippedGrid = imported.flippedGrid || {};
         fences = migrateGridFences(currentGrid, flippedGrid, imported.fences || []);
@@ -1824,10 +1845,34 @@ export function initIsometricStudio() {
     // SHOP MODAL CATEGORIZED
     const shopModal = document.getElementById("shop-modal");
     const shopModalClose = document.getElementById("shop-modal-close");
+    const shopModalBackBtn = document.getElementById("shop-modal-back-btn");
     const btnOpenShop = document.getElementById("btn-open-shop");
+    const shopCategoriesGrid = document.getElementById("shop-categories-grid");
     const shopItemsContainer = document.getElementById("shop-items-container");
-    const shopBtnFreeCursor = document.getElementById("shop-btn-free-cursor");
-    let activeShopCategory = 'all';
+    let activeShopCategory = 'residential';
+
+    function showShopCategories() {
+      if (shopCategoriesGrid) shopCategoriesGrid.style.display = "grid";
+      if (shopItemsContainer) shopItemsContainer.style.display = "none";
+      if (shopModalBackBtn) shopModalBackBtn.style.display = "none";
+      const modalBody = shopModal ? shopModal.querySelector(".shop-modal-body") : null;
+      if (modalBody) modalBody.scrollTop = 0;
+      const card = shopModal ? shopModal.querySelector(".shop-modal-card") : null;
+      if (card) card.scrollTop = 0;
+    }
+
+    function openShopCategory(categoryKey) {
+      activeShopCategory = categoryKey;
+      if (shopCategoriesGrid) shopCategoriesGrid.style.display = "none";
+      if (shopItemsContainer) {
+        shopItemsContainer.style.display = "grid";
+        shopItemsContainer.scrollTop = 0;
+      }
+      if (shopModalBackBtn) shopModalBackBtn.style.display = "inline-flex";
+      renderShopItems();
+      const modalBody = shopModal ? shopModal.querySelector(".shop-modal-body") : null;
+      if (modalBody) modalBody.scrollTop = 0;
+    }
 
     function openShopModal() {
       if (!shopModal) return;
@@ -1836,25 +1881,19 @@ export function initIsometricStudio() {
       if (tutorialManager && tutorialManager.isActive()) {
         const step = tutorialManager.getCurrentStep();
         if (step === 1) {
-          activeShopCategory = 'farming';
+          openShopCategory('farming');
+          shopModal.classList.add("open");
+          return;
         } else if (step === 5) {
-          activeShopCategory = 'residential';
+          openShopCategory('residential');
+          shopModal.classList.add("open");
+          return;
         }
       }
 
-      // Đồng bộ trạng thái active của tab danh mục
-      document.querySelectorAll("#shop-category-tabs .shop-tab-btn").forEach(btn => {
-        if (btn.getAttribute("data-shop-cat") === activeShopCategory) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
-      });
-
-      renderShopItems();
+      showShopCategories();
       shopModal.classList.add("open");
 
-      if (shopItemsContainer) shopItemsContainer.scrollTop = 0;
       const modalBody = shopModal.querySelector(".shop-modal-body");
       if (modalBody) modalBody.scrollTop = 0;
       const card = shopModal.querySelector(".shop-modal-card");
@@ -1902,11 +1941,10 @@ export function initIsometricStudio() {
       });
     }
     if (shopModalClose) shopModalClose.addEventListener("click", closeShopModal);
-    if (shopBtnFreeCursor) {
-      shopBtnFreeCursor.addEventListener("click", () => {
-        setActiveBrush(null);
-        closeShopModal();
-        showToast("Đã chọn Con trỏ tự do", "info");
+    if (shopModalBackBtn) {
+      shopModalBackBtn.addEventListener("click", () => {
+        playUIClickSound();
+        showShopCategories();
       });
     }
 
@@ -1970,12 +2008,11 @@ export function initIsometricStudio() {
     if (landCancelBtn) landCancelBtn.addEventListener("click", closeLandExpansionModal);
     if (landConfirmBtn) landConfirmBtn.addEventListener("click", confirmLandExpansion);
 
-    document.querySelectorAll("[data-shop-cat]").forEach(catBtn => {
+    document.querySelectorAll(".shop-cat-card").forEach(catBtn => {
       catBtn.addEventListener("click", () => {
-        document.querySelectorAll("[data-shop-cat]").forEach(b => b.classList.remove("active"));
-        catBtn.classList.add("active");
-        activeShopCategory = catBtn.getAttribute("data-shop-cat");
-        renderShopItems();
+        playUIClickSound();
+        const cat = catBtn.getAttribute("data-shop-cat");
+        if (cat) openShopCategory(cat);
       });
     });
 
@@ -1993,7 +2030,6 @@ export function initIsometricStudio() {
           card.innerHTML = `
             <img class="shop-item-thumb" src="/assets/wonders/${wonder.id}.png" alt="${wonder.name}" onerror="this.onerror=null; this.src='tiles/d12_meadow_wildflowers_128.png';" />
             <div class="shop-item-name">${wonder.icon} ${wonder.name}</div>
-            <div class="shop-item-desc">${placed ? `Đã đặt • Giai đoạn ${stage}/4. Nhấp để thi công.` : `Mua và tự đặt (Giai đoạn 0), sau đó mới thi công. ${wonder.buffDescription}`}</div>
             <div class="shop-item-badges">
               <span class="shop-item-cost">${placed ? "Đã sở hữu" : (cost === 0 ? "Miễn phí" : `${cost} 🪙`)}</span>
             </div>
@@ -2010,93 +2046,43 @@ export function initIsometricStudio() {
           });
           shopItemsContainer.appendChild(card);
         });
-        return;
       }
 
-      if (activeShopCategory === 'erase') {
-        const card = document.createElement("div");
-        card.className = "shop-item-card" + (activeBrush === "erase" ? " selected" : "");
-        card.innerHTML = `
-          <div class="shop-item-thumb" style="font-size: 2.5rem; line-height: 1.2;">❌</div>
-          <div class="shop-item-name">Phá Dỡ & Dọn Dẹp</div>
-          <div class="shop-item-desc">Click vào công trình để phá dỡ và hoàn tiền 100%.</div>
-          <div class="shop-item-badges mt-2">
-            <span class="shop-item-cost" style="background:#fee2e2; border-color:#fca5a5; color:#b91c1c;">Miễn phí</span>
-          </div>
-        `;
-        card.addEventListener("click", () => {
-          setActiveBrush("erase");
-          closeShopModal();
-          showToast("❌ Đã bật Công cụ Phá dỡ! Nhấp vào ô công trình để xóa.", "info");
-        });
-        shopItemsContainer.appendChild(card);
-        return;
-      }
+      const EXCLUDED_SHOP_TILES = new Set([
+        'd12_meadow_wildflowers',
+        's13_sand_ground',
+        'm01_sandy_beach_s',
+        'm30_sea_var2_coral_reef',
+        'b51_waterworks_pump_house_sw',
+        'b52_waterworks_pump_house_se',
+        'm04_stone_harbor_pier',
+        'l06_savanna_acacia_waterhole',
+        'd24_rustic_wooden_fence'
+      ]);
 
       const filtered = TILES_DATA.filter(t => {
-        if (activeShopCategory === 'all') return true;
-        if (activeShopCategory === 'fences') return isFenceTile(t.id);
-        if (isFenceTile(t.id)) return false;
+        if (EXCLUDED_SHOP_TILES.has(t.id)) return false;
+        const hasRealImage = !!getBuildingSpriteUri(t.id, 1) || !!AESTHETIC_TILE_URIS[t.id] || !!TILE_DATA_URIS[t.id] || isFenceTile(t.id);
+        if (!hasRealImage) return false;
 
-        if (activeShopCategory === 'residential') {
-          return t.category === 'building' && (
-            t.id.includes('cottage') || t.id.includes('house') || t.id.includes('manor') ||
-            t.id.includes('inn') || t.id.includes('home') || t.id.includes('villa') ||
-            t.id.includes('chapel') || t.id.includes('pagoda') || t.id.includes('keep')
-          );
-        }
-
-        if (activeShopCategory === 'production') {
-          return t.category === 'building' && !(
-            t.id.includes('cottage') || t.id.includes('house') || t.id.includes('manor') ||
-            t.id.includes('inn') || t.id.includes('home') || t.id.includes('villa')
-          );
-        }
-
-        if (activeShopCategory === 'farming') {
-          return t.id.includes('farmland') || t.id.includes('field') || t.id.includes('wheat') ||
-                 t.id.includes('crop') || t.id.includes('hay') || t.id.includes('barn') ||
-                 t.id.includes('windmill') || t.id.includes('paddy') || t.id.includes('orchard') ||
-                 t.id.includes('picket') || t.id.includes('garden') || t.id.includes('apiary') ||
-                 t.id.includes('pasture') || t.id.includes('sheep') || t.id.includes('vineyard') ||
-                 t.id.includes('coop') || t.id.includes('chicken') || t.id.includes('cow');
-        }
-
-        if (activeShopCategory === 'roads') {
-          return t.category === 'road' || t.id.includes('bridge') || t.id.includes('cobble') ||
-                 t.id.includes('path') || t.id.includes('plaza') || t.id.includes('stair') ||
-                 t.id.includes('road') || t.id.includes('quay') || t.id.includes('ford');
-        }
-
-        if (activeShopCategory === 'decor') {
-          return t.category === 'decoration' || t.category === 'decor' || t.category === 'nature' ||
-                 t.id.startsWith('d') || t.id.includes('flower') || t.id.includes('tree') ||
-                 t.id.includes('park') || t.id.includes('grove') || t.id.includes('well') ||
-                 t.id.includes('fountain') || t.id.includes('statue') || t.id.includes('lamp') ||
-                 t.id.includes('cart') || t.id.includes('wagon') || t.id.includes('bench');
-        }
-
-        if (activeShopCategory === 'nature') {
-          return t.category === 'terrain' || t.category === 'biome' || t.category === 'landmark' ||
-                 t.id.startsWith('s') || t.id.startsWith('m') || t.id.startsWith('l');
-        }
-
-        return t.category === activeShopCategory;
+        return getShopCategory(t) === activeShopCategory;
       });
 
       filtered.forEach(tile => {
         const reqLvl = getTileRequiredLevel(tile.id);
         const isLocked = reqLvl > playerLevel;
-        const isPen = tile.id === "b21_chicken_coop" || tile.id === "b22_cow_pasture" || tile.id === "b57_sheep_pasture";
+        const isPen = isLivestockTile(tile.id);
         const maxPens = isPen ? getMaxPenCount(tile.id, playerLevel) : Infinity;
         const builtPens = isPen ? countBuiltPens(tile.id) : 0;
         const isPenLimitReached = isPen && !isLocked && builtPens >= maxPens;
 
         const card = document.createElement("div");
         card.className = "shop-item-card" + (activeBrush === tile.id ? " selected" : "") + (isLocked || isPenLimitReached ? " locked-item" : "");
+        card.title = tile.doc || tile.label;
         const cost = getTileCost(tile.id, tile.category);
         const pop = getTilePopulation(tile.id, tile.category);
-        const imgSrc = AESTHETIC_TILE_URIS[tile.id] || TILE_DATA_URIS[tile.id] || TILE_DATA_URIS.d12_meadow_wildflowers;
+        const imgSrc = getBuildingSpriteUri(tile.id, 1) || AESTHETIC_TILE_URIS[tile.id] || TILE_DATA_URIS[tile.id];
+        if (!imgSrc && !isFenceTile(tile.id)) return;
 
         let penBadge = "";
         if (isPen && !isLocked) {
@@ -2105,16 +2091,16 @@ export function initIsometricStudio() {
 
         card.innerHTML = `
           ${isLocked ? `<div class="locked-badge-overlay">🔒 Cần Cấp ${reqLvl}</div>` : (isPenLimitReached ? `<div class="locked-badge-overlay" style="background: rgba(15, 23, 42, 0.75); color: #facc15;">🛖 Đầy chuồng (${builtPens}/${maxPens})</div>` : '')}
-          ${isFenceTile(tile.id)
+          ${isFenceTile(tile.id) || isExpansionGround(tile.id)
             ? `<canvas class="shop-item-thumb" width="160" height="160" role="img" aria-label="${tile.label}"></canvas>`
             : `<img class="shop-item-thumb" src="${imgSrc}" alt="${tile.label}" onerror="this.style.visibility='hidden';" />`}
           <div class="shop-item-name">${tile.label}</div>
-          <div class="shop-item-desc">${tile.doc || "Công trình trang trí vương quốc."}</div>
           <div class="shop-item-badges">
             <span class="shop-item-cost">${cost === 0 ? "Miễn phí" : `${cost} 🪙`}</span>
             ${pop > 0 ? `<span class="shop-item-pop">+${pop} 👥</span>` : ''}
             ${reqLvl > 1 ? `<span style="font-size:0.68rem; padding:1px 5px; border-radius:4px; background:${isLocked ? '#fee2e2' : '#f0fdf4'}; color:${isLocked ? '#b91c1c' : '#15803d'}; font-weight:700;">Lv.${reqLvl}</span>` : ''}
             ${penBadge}
+            ${tile.shopCategory === 'farming' && tile.category === 'decoration' ? '<span class="shop-item-pop">Cây trang trí</span>' : ''}
           </div>
         `;
 
@@ -2140,6 +2126,7 @@ export function initIsometricStudio() {
         });
 
         if (isFenceTile(tile.id)) paintFenceThumbnail(card.querySelector("canvas"), tile.id);
+        else if (isExpansionGround(tile.id)) paintExpansionGroundThumbnail(card.querySelector('canvas'), tile.id);
         shopItemsContainer.appendChild(card);
       });
     }
@@ -2215,6 +2202,8 @@ export function initIsometricStudio() {
       showToast,
       requestRender,
       eraseCell: (r, c) => eraseCell(r, c),
+      removeFenceAt,
+      rotateFenceAt,
       setMovingBuilding: (info) => { movingBuilding = info; },
       triggerAutoSave
     });
@@ -2228,10 +2217,53 @@ export function initIsometricStudio() {
       }, tileId, row, col, flipped);
     }
 
+    function removeFenceAt(row, col) {
+      const index = fences.findIndex(f => f.row === row && f.col === col);
+      if (index >= 0) {
+        const removed = fences[index];
+        fences.splice(index, 1);
+        const item = FENCE_ITEM_BY_ID[removed.tileId];
+        const refund = item ? Math.floor(item.price * 0.5) : 15;
+        if (refund > 0 && gameMode === "game") {
+          playerGold += refund;
+          updateGoldDisplay();
+          saveGameEconomyState();
+        }
+        showToast(`♻️ Đã dỡ bỏ ${item ? item.label : "hàng rào"} (+${refund} 🪙 [50%])`, "success");
+        playBuildSound();
+        persistGameState();
+        requestRender();
+        return true;
+      }
+      return false;
+    }
+
+    function rotateFenceAt(row, col) {
+      let f = fences.find(x => x.row === row && x.col === col);
+      if (!f) {
+        f = fences.find(x => {
+          const segs = getFenceSegments(x.tileId, x.row, x.col, x.flipped);
+          return segs.some(([a, b]) => (a.row === row && a.col === col) || (b.row === row && b.col === col));
+        });
+      }
+      if (f) {
+        const res = getRotatedTileIdAndFlip(f.tileId, !!f.flipped);
+        f.tileId = res.nextId;
+        f.flipped = res.nextFlip;
+        playRotateSound();
+        const item = FENCE_ITEM_BY_ID[f.tileId];
+        showToast(`🔄 Đã xoay: ${item ? item.label : "Hàng rào"}`, "info");
+        persistGameState();
+        requestRender();
+        return true;
+      }
+      return false;
+    }
+
     // Erase cell logic
     function eraseCell(row, col) {
       if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
-      const tid = currentGrid[row]?.[col];
+      const tid = constructions[`${row}_${col}`]?.targetTileId || currentGrid[row]?.[col];
       if (isProtectedTile(row, col, tid)) {
         if (col <= 5) {
           showToast("🌊 Vùng biển đại dương & bờ cảng tự nhiên của vương quốc, không thể gỡ bỏ!", "warning");
@@ -2269,6 +2301,11 @@ export function initIsometricStudio() {
         checkQuestsProgress();
         requestRender();
         return true;
+      }
+
+      if (currentGrid[row][col] === "d12_meadow_wildflowers") {
+        if (removeFenceAt(row, col)) return true;
+        return false;
       }
 
       if (currentGrid[row][col] !== "d12_meadow_wildflowers") {
@@ -2312,7 +2349,7 @@ export function initIsometricStudio() {
         if (livestockState && livestockState[key]) {
           delete livestockState[key];
         }
-        currentGrid[row][col] = "d12_meadow_wildflowers";
+        currentGrid[row][col] = getClearedSurface(oldTid, row, col, terrainMap);
         updateVillageStatsUI();
         checkQuestsProgress();
         persistGameState();
@@ -2747,62 +2784,8 @@ export function initIsometricStudio() {
     let activeLivestockCell = null;
     let livestockTimerInterval = null;
 
-    const LIVESTOCK_CONFIG = {
-      b21_chicken_coop: {
-        title: "Chuồng Gà Đẻ Trứng",
-        animalName: "Gà mái",
-        animalIcon: "🐔",
-        feedRes: "wheat",
-        feedName: "Lúa mì",
-        feedIcon: "🌾",
-        productRes: "egg",
-        productName: "Trứng gà tươi",
-        productIcon: "🥚",
-        durationSec: 45,
-        maxAnimals: 5,
-        baseAnimalPrice: 20,
-        priceStep: 15,
-        goldGain: 25,
-        xpGain: 15,
-        sound: playChickenCluckSound
-      },
-      b22_cow_pasture: {
-        title: "Chuồng Bò Sữa",
-        animalName: "Bò sữa",
-        animalIcon: "🐮",
-        feedRes: "corn",
-        feedName: "Bắp ngô",
-        feedIcon: "🌽",
-        productRes: "milk",
-        productName: "Bình sữa tươi",
-        productIcon: "🥛",
-        durationSec: 75,
-        maxAnimals: 3,
-        baseAnimalPrice: 50,
-        priceStep: 30,
-        goldGain: 50,
-        xpGain: 25,
-        sound: playCowMooSound
-      },
-      b57_sheep_pasture: {
-        title: "Chuồng Cừu Lấy Lông",
-        animalName: "Cừu lông",
-        animalIcon: "🐑",
-        feedRes: "carrot",
-        feedName: "Cà rốt",
-        feedIcon: "🥕",
-        productRes: "wool",
-        productName: "Lông cừu mịn",
-        productIcon: "🐑",
-        durationSec: 60,
-        maxAnimals: 3,
-        baseAnimalPrice: 80,
-        priceStep: 45,
-        goldGain: 40,
-        xpGain: 20,
-        sound: playSheepBaaSound
-      }
-    };
+    const livestockSounds = { chicken: playChickenCluckSound, cow: playCowMooSound, sheep: playSheepBaaSound, pig: playHarvestPlopSound };
+    const LIVESTOCK_CONFIG = Object.fromEntries(Object.entries(LIVESTOCK_RULES).map(([id, rule]) => [id, { ...rule, sound: livestockSounds[rule.sound] }]));
 
     function getLivestockAnimalCost(tid, currentCount) {
       const cfg = LIVESTOCK_CONFIG[tid] || LIVESTOCK_CONFIG.b21_chicken_coop;
@@ -2826,7 +2809,7 @@ export function initIsometricStudio() {
     }
 
     function checkCanPlaceTile(tileId) {
-      if (tileId === "b21_chicken_coop" || tileId === "b22_cow_pasture" || tileId === "b57_sheep_pasture") {
+      if (isLivestockTile(tileId)) {
         const maxPens = getMaxPenCount(tileId, playerLevel);
         const builtPens = countBuiltPens(tileId);
         if (builtPens >= maxPens) {
@@ -3218,11 +3201,12 @@ export function initIsometricStudio() {
           kingdomWondersManager.getWonderAt(row, col)) return false;
       const key = `${row}_${col}`;
       if (constructions[key]) return false;
+      if (isPlacementProtected(activeBrush, row, col, currentGrid[row]?.[col])) return false;
       if (currentGrid[row][col] === activeBrush) return false;
 
       // Collision Check: Chỉ cho phép vẽ đường / luống đất lên ô cỏ hoa trống
       const curTid = currentGrid[row][col];
-      const isEmptyGrass = curTid === "d12_meadow_wildflowers" || curTid === "g01_grass_flat" || curTid === "s13_sand_ground";
+      const isEmptyGrass = canPlaceOnSurface(activeBrush, curTid);
       if (!isEmptyGrass) return false;
 
       const t = tileMap[activeBrush];
@@ -3502,6 +3486,7 @@ export function initIsometricStudio() {
 
     // Input Handler Module (Mouse clicks, panning, zooming, continuous drag, hotkeys)
     const inputHandler = initInputHandler(container, {
+      getTerrainMap: () => terrainMap,
       getFences: () => fences,
       getCamera: () => camera,
       applyZoom,
@@ -3578,6 +3563,8 @@ export function initIsometricStudio() {
       },
       addPlayerXP: (amt, title) => addPlayerXP(amt, title),
       eraseCell: (r, c) => eraseCell(r, c),
+      removeFenceAt: (r, c) => removeFenceAt(r, c),
+      rotateFenceAt: (r, c) => rotateFenceAt(r, c),
       openMarketModal,
       openSeedModal,
       inspectGrowingCrop: (r, c) => farmToolsManager && farmToolsManager.inspectGrowingCrop(r, c),
@@ -3656,6 +3643,8 @@ export function initIsometricStudio() {
     });
 
     window.addEventListener('storage', (event) => {
+      if (event.key === WAREHOUSE_TUNING_KEY) { requestRender(); return; }
+      if (event.key === TOWN_HALL_TUNING_KEY) { requestRender(); return; }
       if (event.key !== TERRAIN_MAP_KEY) return;
       terrainMap = readTerrainMap(localStorage);
       syncTerrainToGrid(currentGrid, terrainMap);

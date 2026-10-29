@@ -33,3 +33,10 @@ __pycache__/
 
 # AI Studio temp artifacts cache
 .aistudio/
+
+# Original asset archive stays local; the game uses public/assets.
+/assets-source/
+
+# Root-level review screenshots
+/*-preview.png
+/*-example.png

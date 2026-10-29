@@ -237,7 +237,7 @@ export default function MapEditor() {
   return <div className="map-editor">
     <header className="me-header">
       <div className="me-brand"><span className="me-logo">◈</span><div><small>ISOMETRIC VILLAGE</small><h1>Xưởng vẽ bản đồ</h1></div><span className="me-dimension">32 × 32</span></div>
-      <div className="me-header-actions"><a href="/" target="_blank" rel="noreferrer">Mở game ↗</a><button className="me-primary" onClick={apply}>Áp dụng vào game{dirty?' ·':''}</button></div>
+      <div className="me-header-actions"><a href="/warehouse-editor">Chỉnh kho</a><a href="/" target="_blank" rel="noreferrer">Mở game ↗</a><button className="me-primary" onClick={apply}>Áp dụng vào game{dirty?' ·':''}</button></div>
     </header>
     <div className="me-workspace">
       <aside className="me-sidebar">

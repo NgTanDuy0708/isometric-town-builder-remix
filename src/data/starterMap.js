@@ -3,7 +3,7 @@
  * 
  * Thiết kế theo yêu cầu:
  * - Tòa thị chính (b14_town_hall) nằm ngay trung tâm bản đồ (Row 14, Col 15), hiển thị footprint 2x3 ô.
- * - Quảng trường hoàng gia 3x3 ô nằm ngay trước tòa thị chính.
+ * - Đất trước tòa thị chính để trống cho người chơi xây dựng.
  * - Đường chính lát đá cẩm thạch hoàng gia chạy từ quảng trường ra khỏi thị trấn.
  * - Trước cửa Tòa Thị Chính có Sân lát đá với Bảng Đơn Hàng (Order Board) và Ô tô giao hàng (Delivery Truck).
  * - Nông trại, luống đất, nhà dân, đài phun nước và cây cối bố trí hài hòa xung quanh.
@@ -26,12 +26,12 @@ export function createStarterTownMap32() {
   // Biển cols 0..3, bờ biển col 4, cát cols 5..6, mọi hàng.
   applyCoastTerrainLayout(grid);
 
-  // Bản đồ trống: chỉ giữ tòa thị chính, khuôn viên và trục đường đá.
+  // Bản đồ trống: chỉ giữ tòa thị chính và trục đường đá.
   applyTownCenterLayout(grid);
   return grid;
 }
 
-/** Set the royal hall (2x3), 3x3 plaza forecourt, and royal marble delivery road */
+/** Set the royal hall (2x3), remove the old forecourt, and keep the delivery road. */
 export function applyTownCenterLayout(grid) {
   if (!grid) return grid;
 
@@ -52,10 +52,10 @@ export function applyTownCenterLayout(grid) {
     }
   }
 
-  // Quảng trường chiếm footprint 3x3 đối xứng (Rows 15..17, Cols 14..16); sprite neo ở tâm (16, 15).
+  // Dọn khuôn viên cũ trên save hiện có; giữ nguyên đồ người chơi đặt ở đây.
   for (let r = 15; r <= 17; r++) {
     for (let c = 14; c <= 16; c++) {
-      if (grid[r]?.[c] !== undefined) grid[r][c] = "d01_plaza_fountain";
+      if (grid[r]?.[c] === "d01_plaza_fountain") grid[r][c] = "d12_meadow_wildflowers";
     }
   }
 
@@ -69,20 +69,21 @@ export function applyTownCenterLayout(grid) {
 /**
  * Các vị trí mặc định không thể bị nhấc di chuyển hoặc phá dỡ:
  * - Tòa thị chính 2x3 ô (Rows 12..13, Cols 14..16)
- * - Quảng trường 3x3 ô (Rows 15..17, Cols 14..16; neo ở 16, 15)
  * - Trục đường đá cẩm thạch hoàng gia ra khỏi thị trấn (Col 15, Row từ 18 đến 31)
  */
 export function isProtectedTile(row, col, tid) {
-  // Các ô footprint và neo của tòa thị chính/quảng trường.
-  if ((row >= 12 && row <= 13 && col >= 14 && col <= 16) ||
-      (row >= 15 && row <= 17 && col >= 14 && col <= 16)) return true;
+  // Footprint tòa thị chính; khuôn viên cũ đã trả lại cho người chơi.
+  if (row >= 12 && row <= 13 && col >= 14 && col <= 16) return true;
   if (tid === "b14_town_hall" || tid === "d01_plaza_fountain") return true;
 
   // Trục đường đá cẩm thạch lớn của xe tải giao hàng (Row 18..31, Col 15)
   if (col === 15 && row >= 18 && row <= 31) return true;
 
   // 3. Vùng Biển Đại Dương & Bến Cảng Hoàng Gia trải dài hết sườn Tây (không cho phép phá dỡ hay di dời)
-  if (col <= 3 && row >= 0 && row <= 31) return true;
+  if (col <= 3 && row >= 0 && row <= 31) {
+    // Player-owned water decorations can move and be removed; the sea stays.
+    return !['a01_whale', 'a02_flamingo_flock', 'r12_road_bridge_stone'].includes(tid);
+  }
   if (col === 5 && row >= 11 && row <= 17) return true;
 
   return false;

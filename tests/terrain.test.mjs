@@ -1,9 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createStarterTownMap32 } from '../src/data/starterMap.js';
+import { createStarterTownMap32, applyTownCenterLayout, isProtectedTile } from '../src/data/starterMap.js';
 import { applyCoastTerrainLayout, getBaseTerrainTile, TERRAIN_SPRITES } from '../src/data/terrainConfig.js';
 import { drawTerrainTile } from '../src/engine/terrainRenderer.js';
+
+test('old town hall forecourt becomes buildable grass without removing player buildings', () => {
+  const grid = createStarterTownMap32();
+  for (let r = 15; r <= 17; r++) for (let c = 14; c <= 16; c++) {
+    assert.equal(grid[r][c], 'd12_meadow_wildflowers');
+    grid[r][c] = 'd01_plaza_fountain';
+  }
+  grid[15][14] = 'b01_cottage_red';
+  applyTownCenterLayout(grid);
+  for (let r = 15; r <= 17; r++) for (let c = 14; c <= 16; c++) {
+    assert.equal(grid[r][c], r === 15 && c === 14 ? 'b01_cottage_red' : 'd12_meadow_wildflowers');
+    assert.equal(isProtectedTile(r, c, grid[r][c]), false);
+  }
+  assert.equal(grid[13][15], 'b14_town_hall');
+  assert.equal(isProtectedTile(13, 15, grid[13][15]), true);
+  const once = structuredClone(grid);
+  applyTownCenterLayout(grid);
+  assert.deepEqual(grid, once);
+});
 
 test('new maps and legacy terrain use sea 0..3, shore 4 and sand 5..6 on every row', () => {
   const fresh = createStarterTownMap32();

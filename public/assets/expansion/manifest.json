@@ -1,0 +1,2439 @@
+{
+  "source": "docs/EXPANSION_ASSET_PROMPTS.md",
+  "sourceSha256": "e1d9d906619a42a1073cd0dc1d532c7e7e247db6114050d517b1f8ea96c2239b",
+  "mode": "built-in imagegen",
+  "total": 94,
+  "items": [
+    {
+      "filename": "ancient_wizard_tower_lv1.png",
+      "group": "A1",
+      "title": "Tháp pháp sư cổ đại",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-52c625ac-7902-44ee-94e6-5137f63eefff.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\ancient_wizard_tower_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\ancient_wizard_tower_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          266,
+          37,
+          1014,
+          1211
+        ]
+      },
+      "sha256": "2dd2353f8854b68184f29d74a919da13b04cba59bbfeaa456b40020d55382d11",
+      "generationPromptPath": "docs/generated-assets/expansion/ancient_wizard_tower_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "ancient_wizard_tower_lv2.png",
+      "group": "A1",
+      "title": "Tháp pháp sư cổ đại",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "ancient_wizard_tower_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-09b952af-2c60-4ea4-9cc0-3adaa20f22cb.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\ancient_wizard_tower_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\ancient_wizard_tower_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          272,
+          14,
+          1093,
+          1225
+        ]
+      },
+      "sha256": "e89fb85c501b4dc642246539c1137015a39b03be185f6cd424397ada694aa7e0",
+      "generationPromptPath": "docs/generated-assets/expansion/ancient_wizard_tower_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "ancient_wizard_tower_lv3.png",
+      "group": "A1",
+      "title": "Tháp pháp sư cổ đại",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "ancient_wizard_tower_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-b3975f68-6bd4-48ab-9596-4cc2b3c0e591.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\ancient_wizard_tower_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\ancient_wizard_tower_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          246,
+          9,
+          1152,
+          1223
+        ]
+      },
+      "sha256": "0e8a38c245a3b772a6ed1c741114d04e427f5937aa347841ed11821ccb2ed248",
+      "generationPromptPath": "docs/generated-assets/expansion/ancient_wizard_tower_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "carpentry_sawmill_lv1.png",
+      "group": "A2",
+      "title": "Xưởng mộc & cưa gỗ",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-83e7f1ed-af51-42db-ae65-b1708f994ca7.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\carpentry_sawmill_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\carpentry_sawmill_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          65,
+          133,
+          1212,
+          1092
+        ]
+      },
+      "sha256": "10f9f1956c4fdcba429a2e7c56a544444b2b644173ed6b5ab51778102d8b6fac",
+      "generationPromptPath": "docs/generated-assets/expansion/carpentry_sawmill_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "carpentry_sawmill_lv2.png",
+      "group": "A2",
+      "title": "Xưởng mộc & cưa gỗ",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "carpentry_sawmill_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-12623512-ae13-43f3-aecd-be80a99011e8.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\carpentry_sawmill_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\carpentry_sawmill_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          26,
+          116,
+          1243,
+          1155
+        ]
+      },
+      "sha256": "97c3266ac71cf1089d2e1e1cb0e00dfc6e2e01e2aac266f9b2751b2cbe64412f",
+      "generationPromptPath": "docs/generated-assets/expansion/carpentry_sawmill_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "carpentry_sawmill_lv3.png",
+      "group": "A2",
+      "title": "Xưởng mộc & cưa gỗ",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "carpentry_sawmill_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-969b7042-c159-4c3d-b1a6-1e53dde70afd.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\carpentry_sawmill_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\carpentry_sawmill_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          46,
+          33,
+          1245,
+          1211
+        ]
+      },
+      "sha256": "825ff78b0936d13de476f321908f54110f8fd71bbd70d891f516f4fef10ea082",
+      "generationPromptPath": "docs/generated-assets/expansion/carpentry_sawmill_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "weaving_workshop_lv1.png",
+      "group": "A3",
+      "title": "Xưởng dệt vải",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-24a77b00-6a2d-410f-9390-0c97109afcf5.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\weaving_workshop_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\weaving_workshop_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          67,
+          96,
+          1205,
+          1123
+        ]
+      },
+      "sha256": "0ffcec2d50ad407b8c9e69ecf0bc14468733bd73aa4d32ee1d90b87386e40386",
+      "generationPromptPath": "docs/generated-assets/expansion/weaving_workshop_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "weaving_workshop_lv2.png",
+      "group": "A3",
+      "title": "Xưởng dệt vải",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "weaving_workshop_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-c666d991-c29e-4f1d-afcb-034b2dc8a077.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\weaving_workshop_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\weaving_workshop_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          57,
+          88,
+          1211,
+          1130
+        ]
+      },
+      "sha256": "242d6a3767fc56093ee275521c963d738259d8a101c8560b2c23d672993a84fb",
+      "generationPromptPath": "docs/generated-assets/expansion/weaving_workshop_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "weaving_workshop_lv3.png",
+      "group": "A3",
+      "title": "Xưởng dệt vải",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "weaving_workshop_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-05f9ef77-a716-4402-aedf-43d82e15c1d9.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\weaving_workshop_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\weaving_workshop_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          40,
+          78,
+          1224,
+          1206
+        ]
+      },
+      "sha256": "ce97fd1982f91011c16a4d26cb15c60540456d99a304994c09460a6436bf9138",
+      "generationPromptPath": "docs/generated-assets/expansion/weaving_workshop_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "dairy_workshop_lv1.png",
+      "group": "A4",
+      "title": "Xưởng bơ sữa",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-45ddbc48-140f-493b-a2ac-0f61eb7eeb50.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\dairy_workshop_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\dairy_workshop_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          44,
+          65,
+          1222,
+          1148
+        ]
+      },
+      "sha256": "074fb177f73b300843d15c189d47002c748a3c398897a0f7a4bd23fd976cec14",
+      "generationPromptPath": "docs/generated-assets/expansion/dairy_workshop_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "dairy_workshop_lv2.png",
+      "group": "A4",
+      "title": "Xưởng bơ sữa",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "dairy_workshop_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-c630651d-2208-49fb-bbff-a3fbbfc4b00d.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\dairy_workshop_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\dairy_workshop_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          40,
+          130,
+          1218,
+          1130
+        ]
+      },
+      "sha256": "b80629966740671467a6fd43d157addd7b7dc783296eb7009b1d54c16e4f1db9",
+      "generationPromptPath": "docs/generated-assets/expansion/dairy_workshop_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "dairy_workshop_lv3.png",
+      "group": "A4",
+      "title": "Xưởng bơ sữa",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "dairy_workshop_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-397fe957-d7b6-499f-b680-8476b117e56b.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\dairy_workshop_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\dairy_workshop_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          28,
+          95,
+          1235,
+          1189
+        ]
+      },
+      "sha256": "ac63521f80fec192ce00369bb4af94c41ad33687223c1f333635a376ab76e4de",
+      "generationPromptPath": "docs/generated-assets/expansion/dairy_workshop_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "clay_house_lv1.png",
+      "group": "A5",
+      "title": "Nhà đất sét",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-9a91680e-ca04-4b2f-aafd-f6f5aa008778.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\clay_house_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\clay_house_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          139,
+          144,
+          1169,
+          1114
+        ]
+      },
+      "sha256": "9aea99840078f31d4205d5414c23b50f6740b7dd87164193f3e5f1e8e70b4a26",
+      "generationPromptPath": "docs/generated-assets/expansion/clay_house_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "clay_house_lv2.png",
+      "group": "A5",
+      "title": "Nhà đất sét",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "clay_house_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e5cfed91-61c6-4a40-9843-0685ae33f9b1.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\clay_house_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\clay_house_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          46,
+          135,
+          1231,
+          1155
+        ]
+      },
+      "sha256": "d01a581502dd14ab386176d79f0e75bd2f570a9039b201b306f20a3100a23b19",
+      "generationPromptPath": "docs/generated-assets/expansion/clay_house_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "clay_house_lv3.png",
+      "group": "A5",
+      "title": "Nhà đất sét",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "clay_house_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-7083967d-a876-41ab-94bf-9cbe5c9a0dba.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\clay_house_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\clay_house_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          46,
+          54,
+          1237,
+          1186
+        ]
+      },
+      "sha256": "57e23a0b00926bd101c2437ac1f548e1d670918b67e26a20a1152a74e161aa34",
+      "generationPromptPath": "docs/generated-assets/expansion/clay_house_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "canvas_tent_lv1.png",
+      "group": "A6",
+      "title": "Lều",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-3dbdef92-6199-47c1-8618-37dd01e91a8c.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\canvas_tent_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\canvas_tent_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          82,
+          211,
+          1190,
+          1095
+        ]
+      },
+      "sha256": "c0e08755224c080b5b2365ffdf1939b12f8287159dd09a07cb9c4d92409f2bde",
+      "generationPromptPath": "docs/generated-assets/expansion/canvas_tent_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "canvas_tent_lv2.png",
+      "group": "A6",
+      "title": "Lều",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "canvas_tent_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e37477fd-8051-44fb-bd14-788444a470fb.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\canvas_tent_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\canvas_tent_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          41,
+          210,
+          1231,
+          1106
+        ]
+      },
+      "sha256": "21b1819a2e8b2fa028fbe84dd179bf865618e68d056d30be94a023ed56c076ac",
+      "generationPromptPath": "docs/generated-assets/expansion/canvas_tent_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "canvas_tent_lv3.png",
+      "group": "A6",
+      "title": "Lều",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "canvas_tent_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-cf476563-6213-48e7-87fc-b2251e386064.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\canvas_tent_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\canvas_tent_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          32,
+          83,
+          1245,
+          1159
+        ]
+      },
+      "sha256": "9cf49dbfb856e52f81a30edb3498f65ebd85a26267fc0ef8dcd20b1b4a884cb6",
+      "generationPromptPath": "docs/generated-assets/expansion/canvas_tent_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "nordic_longhouse_lv1.png",
+      "group": "A7",
+      "title": "Nhà dài gỗ Bắc Âu",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-ba237c4c-e01d-4ceb-8d1e-6c6ce81e0a02.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\nordic_longhouse_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\nordic_longhouse_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          102,
+          135,
+          1233,
+          1122
+        ]
+      },
+      "sha256": "6084e4e4096e9553fbda4e96b3317bafee90d31dcb6b7eb362153250d83df25a",
+      "generationPromptPath": "docs/generated-assets/expansion/nordic_longhouse_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "nordic_longhouse_lv2.png",
+      "group": "A7",
+      "title": "Nhà dài gỗ Bắc Âu",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "nordic_longhouse_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-b274a820-d11a-4f91-864e-b64b7a2ef6b0.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\nordic_longhouse_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\nordic_longhouse_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          62,
+          197,
+          1241,
+          1115
+        ]
+      },
+      "sha256": "8db7e6130f2236fc5f1aebb40f6f88584dfe83449c7e7326b01590d184e006ee",
+      "generationPromptPath": "docs/generated-assets/expansion/nordic_longhouse_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "nordic_longhouse_lv3.png",
+      "group": "A7",
+      "title": "Nhà dài gỗ Bắc Âu",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "nordic_longhouse_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-f6662e6c-68e2-4a2a-a5b2-67a68fd3db9c.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\nordic_longhouse_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\nordic_longhouse_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          26,
+          201,
+          1247,
+          1112
+        ]
+      },
+      "sha256": "85b985538b435bbbed7b55997526dd2400448a76588eb25baaac990eb2e6c0c3",
+      "generationPromptPath": "docs/generated-assets/expansion/nordic_longhouse_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "mediterranean_villa_lv1.png",
+      "group": "A8",
+      "title": "Biệt thự Địa Trung Hải",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-0327d7fa-c335-4569-8d66-e58fb21175f2.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\mediterranean_villa_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\mediterranean_villa_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          103,
+          165,
+          1162,
+          1092
+        ]
+      },
+      "sha256": "4e6b9d8287078135cf955f1d6ebe995f0163048106a94a24323d51af12ce4991",
+      "generationPromptPath": "docs/generated-assets/expansion/mediterranean_villa_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "mediterranean_villa_lv2.png",
+      "group": "A8",
+      "title": "Biệt thự Địa Trung Hải",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "mediterranean_villa_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-3cd43022-7e40-4abe-9464-913007820a7b.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\mediterranean_villa_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\mediterranean_villa_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          116,
+          114,
+          1179,
+          1196
+        ]
+      },
+      "sha256": "24e4d75d73418152f2b7dc4b92d21f31d89b95d2132c61f3917ee662a9023abf",
+      "generationPromptPath": "docs/generated-assets/expansion/mediterranean_villa_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "mediterranean_villa_lv3.png",
+      "group": "A8",
+      "title": "Biệt thự Địa Trung Hải",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "mediterranean_villa_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-a35c7695-832b-4d43-b938-67eb3201b9c9.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\mediterranean_villa_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\mediterranean_villa_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          82,
+          115,
+          1198,
+          1195
+        ]
+      },
+      "sha256": "64908a0bc98964360f1d6e08ece30b1ebf9362850ba682e23b877e0d44db72f5",
+      "generationPromptPath": "docs/generated-assets/expansion/mediterranean_villa_lv3.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "wooden_buddhist_temple_lv1.png",
+      "group": "A9",
+      "title": "Chùa gỗ",
+      "module": "B",
+      "stage": 1,
+      "folder": "buildings",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-c8f235bb-4a7d-4e8d-a1aa-c0fd8c69214b.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\wooden_buddhist_temple_lv1.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\wooden_buddhist_temple_lv1.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          40,
+          101,
+          1216,
+          1169
+        ]
+      },
+      "sha256": "509fa69e7c74af84d06cdc7a05ca1a51576b267b8fe08d8225bf874b2c3fab37",
+      "generationPromptPath": "docs/generated-assets/expansion/wooden_buddhist_temple_lv1.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "wooden_buddhist_temple_lv2.png",
+      "group": "A9",
+      "title": "Chùa gỗ",
+      "module": "B",
+      "stage": 2,
+      "folder": "buildings",
+      "dependency": "wooden_buddhist_temple_lv1.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-a0ff2929-7baf-4bad-aaab-d86519aad3c6.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\wooden_buddhist_temple_lv2.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\wooden_buddhist_temple_lv2.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          22,
+          61,
+          1233,
+          1243
+        ]
+      },
+      "sha256": "a08db44ca48d37756cc83069b9a56cca02c9b0890e5ba52b4b7c8ef52ee284b6",
+      "generationPromptPath": "docs/generated-assets/expansion/wooden_buddhist_temple_lv2.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "wooden_buddhist_temple_lv3.png",
+      "group": "A9",
+      "title": "Chùa gỗ",
+      "module": "B",
+      "stage": 3,
+      "folder": "buildings",
+      "dependency": "wooden_buddhist_temple_lv2.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-88fbfa9e-052d-4fa4-89a3-f70a2a157ec7.png",
+      "sourcePath": "assets-source\\expansion\\buildings\\wooden_buddhist_temple_lv3.png",
+      "gameAssetPath": "public\\assets\\expansion\\buildings\\wooden_buddhist_temple_lv3.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          66,
+          62,
+          1233,
+          1254
+        ]
+      },
+      "sha256": "832b2af510c5537aa13926c4e9dd7d0015294b5dcf6ad0eed48ecd3f0bc5f45c",
+      "generationPromptPath": "docs/generated-assets/expansion/wooden_buddhist_temple_lv3.actual.txt",
+      "reviewNotes": [
+        "Cần tạo lại: phần móng phía trước bị cắt ở mép dưới ảnh."
+      ]
+    },
+    {
+      "filename": "alchemy_laboratory.png",
+      "group": "B1",
+      "title": "Phòng thí nghiệm giả kim",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-fd770c86-f1bb-4733-86de-bbfa4c27f9ae.png",
+      "sourcePath": "assets-source\\expansion\\props\\alchemy_laboratory.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\alchemy_laboratory.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          139,
+          33,
+          1127,
+          1203
+        ]
+      },
+      "sha256": "8a98a696da2fac7c1dfe3fa058cfb1f1316ddf2d6669e0567531a329d1f7aeef",
+      "generationPromptPath": "docs/generated-assets/expansion/alchemy_laboratory.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "royal_library.png",
+      "group": "B2",
+      "title": "Thư viện hoàng gia",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-8da73e21-52be-450c-a23c-46c052a3541d.png",
+      "sourcePath": "assets-source\\expansion\\props\\royal_library.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\royal_library.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          35,
+          39,
+          1241,
+          1179
+        ]
+      },
+      "sha256": "e57a7068db792d80979516b6e19e44c7fb40afd5710292bbdd6fd7c96fc8e836",
+      "generationPromptPath": "docs/generated-assets/expansion/royal_library.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "twin_tower_gate.png",
+      "group": "B3",
+      "title": "Cổng thành tháp đôi",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-d3c6691c-bdf4-4122-80ab-86bd2dc1af6e.png",
+      "sourcePath": "assets-source\\expansion\\props\\twin_tower_gate.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\twin_tower_gate.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          79,
+          48,
+          1201,
+          1213
+        ]
+      },
+      "sha256": "b0b605ee5ee02ab532bf3b2aff1341fef4d25600167924eabf11a8807cd1d792",
+      "generationPromptPath": "docs/generated-assets/expansion/twin_tower_gate.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "royal_greenhouse.png",
+      "group": "B4",
+      "title": "Nhà kính hoàng gia",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-60b755b0-4e16-4bf2-b0a0-8103058a028f.png",
+      "sourcePath": "assets-source\\expansion\\props\\royal_greenhouse.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\royal_greenhouse.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          117,
+          78,
+          1220,
+          1177
+        ]
+      },
+      "sha256": "7e20caabbe7d9e9d75b9bb0a3ba27acf9ad7ff3fc9800d357d984f1ac0eea8f4",
+      "generationPromptPath": "docs/generated-assets/expansion/royal_greenhouse.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "harbor_lighthouse.png",
+      "group": "B5",
+      "title": "Hải đăng cảng biển",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-24fca27b-528b-405c-a4b6-02139c557b09.png",
+      "sourcePath": "assets-source\\expansion\\props\\harbor_lighthouse.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\harbor_lighthouse.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          303,
+          9,
+          1032,
+          1209
+        ]
+      },
+      "sha256": "672e3a4fc557055f6092e103a0493e3c76ab262734ddd85112e8d6863fdb8bbf",
+      "generationPromptPath": "docs/generated-assets/expansion/harbor_lighthouse.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "stone_road_straight.png",
+      "group": "B6",
+      "title": "Đường đá — đoạn thẳng",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-492b60c9-f1b6-4da7-bd1a-5fd9115379f0.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\stone_road_straight.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\stone_road_straight.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          161,
+          412,
+          1093,
+          1015
+        ]
+      },
+      "sha256": "e468bbcdabbbf60e3abd4e6fed2d4c181cad447c3a52e2dc1d259ed78d03a7c4",
+      "generationPromptPath": "docs/generated-assets/expansion/stone_road_straight.actual.txt",
+      "reviewNotes": [
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "stone_road_crossroads.png",
+      "group": "B7",
+      "title": "Ngã tư đường đá",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": "stone_road_straight.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-a515cf26-2d4e-4177-8f0f-93cf58dc2454.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\stone_road_crossroads.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\stone_road_crossroads.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          74,
+          324,
+          1180,
+          1040
+        ]
+      },
+      "sha256": "2cc9a1817aca19b77bbf2e7c7101394f46d6e93fc584bad9ce84046616782b09",
+      "generationPromptPath": "docs/generated-assets/expansion/stone_road_crossroads.actual.txt",
+      "reviewNotes": [
+        "Cần tạo lại: bốn nhánh đang theo trục màn hình, chưa đúng hai trục chéo của lưới isometric.",
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "stone_road_t_junction.png",
+      "group": "B8",
+      "title": "Ngã ba đường đá",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": "stone_road_straight.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-fb290ef4-ba2c-4c29-8d16-f229d5f13516.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\stone_road_t_junction.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\stone_road_t_junction.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          159,
+          403,
+          1124,
+          1019
+        ]
+      },
+      "sha256": "25520d4d6c08c6bd18b6c8de14232a672cc3b1ea07b175d7d36984211c2bd789",
+      "generationPromptPath": "docs/generated-assets/expansion/stone_road_t_junction.actual.txt",
+      "reviewNotes": [
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "stone_road_l_corner.png",
+      "group": "B9",
+      "title": "Góc chữ L đường đá",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": "stone_road_straight.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-516e44e9-1525-41d5-9819-a51cca60ec03.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\stone_road_l_corner.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\stone_road_l_corner.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          468,
+          378,
+          1084,
+          979
+        ]
+      },
+      "sha256": "945038bdd0ae6a3bbd1a60ed1352198f0367b65486abdfa3c0b83fe0b4965e6c",
+      "generationPromptPath": "docs/generated-assets/expansion/stone_road_l_corner.actual.txt",
+      "reviewNotes": [
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "arched_stone_bridge.png",
+      "group": "B10",
+      "title": "Cầu đá vòm",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-cc7a3c45-6a09-4b7d-a8e9-456f1d7f989f.png",
+      "sourcePath": "assets-source\\expansion\\props\\arched_stone_bridge.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\arched_stone_bridge.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          40,
+          214,
+          1233,
+          1096
+        ]
+      },
+      "sha256": "4107a72bc3746ff7184acb9ce85676405a4e3289f8eb0f69d93a3942ef2059a0",
+      "generationPromptPath": "docs/generated-assets/expansion/arched_stone_bridge.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "village_well.png",
+      "group": "B11",
+      "title": "Giếng nước",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-d2c73ab0-4d81-4527-8455-cb4685b25d17.png",
+      "sourcePath": "assets-source\\expansion\\props\\village_well.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\village_well.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          174,
+          56,
+          1085,
+          1176
+        ]
+      },
+      "sha256": "f97f0d1fe9fccd6db21181b12e5b8447b5732963f76b294162cccc4eda6cfd03",
+      "generationPromptPath": "docs/generated-assets/expansion/village_well.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "market_stall.png",
+      "group": "B12",
+      "title": "Quầy hàng chợ",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-5596513f-ff2e-4bc6-800c-9ac4f2bae6a5.png",
+      "sourcePath": "assets-source\\expansion\\props\\market_stall.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\market_stall.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          110,
+          89,
+          1161,
+          1192
+        ]
+      },
+      "sha256": "f7e931073f335c77c37f880791fb432adc940649923b130305579736e6dbd4f0",
+      "generationPromptPath": "docs/generated-assets/expansion/market_stall.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "ancient_tree_park.png",
+      "group": "B13",
+      "title": "Công viên cây cổ thụ",
+      "module": "V",
+      "stage": 1,
+      "folder": "gardens",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-2f79389e-c4ab-4bbd-b7d6-a947e9a45ad5.png",
+      "sourcePath": "assets-source\\expansion\\gardens\\ancient_tree_park.png",
+      "gameAssetPath": "public\\assets\\expansion\\gardens\\ancient_tree_park.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          16,
+          45,
+          1235,
+          1187
+        ]
+      },
+      "sha256": "18349c0562c5ffb4cbc5f59d3b2c0bb9cd504a07a9d00bf55334d93941786da8",
+      "generationPromptPath": "docs/generated-assets/expansion/ancient_tree_park.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "green_pine_grove.png",
+      "group": "B14",
+      "title": "Rừng thông xanh",
+      "module": "V",
+      "stage": 1,
+      "folder": "gardens",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e34363cd-07c7-4358-9ee7-a6737b01c106.png",
+      "sourcePath": "assets-source\\expansion\\gardens\\green_pine_grove.png",
+      "gameAssetPath": "public\\assets\\expansion\\gardens\\green_pine_grove.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          99,
+          117,
+          1174,
+          1139
+        ]
+      },
+      "sha256": "ca5f89499d6ebb93565a15aed29ed9403a27a1f04183865930d09f7b6d231864",
+      "generationPromptPath": "docs/generated-assets/expansion/green_pine_grove.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "cherry_blossom_garden.png",
+      "group": "B15",
+      "title": "Vườn hoa anh đào",
+      "module": "V",
+      "stage": 1,
+      "folder": "gardens",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-ab601e94-7377-4b24-8fa6-71d1ba098b6e.png",
+      "sourcePath": "assets-source\\expansion\\gardens\\cherry_blossom_garden.png",
+      "gameAssetPath": "public\\assets\\expansion\\gardens\\cherry_blossom_garden.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          30,
+          80,
+          1231,
+          1114
+        ]
+      },
+      "sha256": "4ba3c84e74bea91f7bb2cea66fabbb24f2478425da97578767345e43d9d76ece",
+      "generationPromptPath": "docs/generated-assets/expansion/cherry_blossom_garden.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "village_lamppost.png",
+      "group": "B16",
+      "title": "Cột đèn",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e5077117-3fa1-48ab-8021-bb41c981ba5a.png",
+      "sourcePath": "assets-source\\expansion\\props\\village_lamppost.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\village_lamppost.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          457,
+          50,
+          928,
+          1208
+        ]
+      },
+      "sha256": "8ea9f132c9ee85e992365912bb68e142724607b68abc27027b502f1ec3ee1ac6",
+      "generationPromptPath": "docs/generated-assets/expansion/village_lamppost.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "hero_monument.png",
+      "group": "B17",
+      "title": "Tượng đài anh hùng",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-b5228179-fb6f-401a-b3db-0f1aa4f75a0e.png",
+      "sourcePath": "assets-source\\expansion\\props\\hero_monument.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\hero_monument.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          360,
+          43,
+          895,
+          1224
+        ]
+      },
+      "sha256": "e01fc2f203c8e2146a8aa09e6b718bb80f9cde044e4c3dad2e985e922493ca28",
+      "generationPromptPath": "docs/generated-assets/expansion/hero_monument.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "goods_cart.png",
+      "group": "B18",
+      "title": "Xe hàng",
+      "module": "B",
+      "stage": 1,
+      "folder": "props",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-ed377c92-3fab-436c-aff0-69f51d03c7b9.png",
+      "sourcePath": "assets-source\\expansion\\props\\goods_cart.png",
+      "gameAssetPath": "public\\assets\\expansion\\props\\goods_cart.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          40,
+          219,
+          1214,
+          1092
+        ]
+      },
+      "sha256": "82cbba33b5d9db4fd1a41c52b7db598c7f55e56cb581d83a0cfc37b63d11fa4a",
+      "generationPromptPath": "docs/generated-assets/expansion/goods_cart.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "rose_garden.png",
+      "group": "B19",
+      "title": "Vườn hoa hồng",
+      "module": "V",
+      "stage": 1,
+      "folder": "gardens",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e677cd97-15c1-4cc3-898a-57f3f2097f28.png",
+      "sourcePath": "assets-source\\expansion\\gardens\\rose_garden.png",
+      "gameAssetPath": "public\\assets\\expansion\\gardens\\rose_garden.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          22,
+          123,
+          1232,
+          1128
+        ]
+      },
+      "sha256": "14f64edb51a1f8d6490e1fff09d6af07b94debf98cd8c09192d75cf121e90632",
+      "generationPromptPath": "docs/generated-assets/expansion/rose_garden.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "canal_straight.png",
+      "group": "B20",
+      "title": "Kênh đào",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-3aa6c8da-ed87-4337-b7e1-beb5fd6ee8a5.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\canal_straight.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\canal_straight.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          32,
+          298,
+          1238,
+          1056
+        ]
+      },
+      "sha256": "09b30a5f1e8299df3989ed8bac9b10708cd659ecc6df46430b6819ab7c1b03e8",
+      "generationPromptPath": "docs/generated-assets/expansion/canal_straight.actual.txt",
+      "reviewNotes": [
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "wildflower_meadow.png",
+      "group": "B21",
+      "title": "Đồng cỏ hoa dại",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-df943cc3-8a4a-4647-9e70-40f5be917735.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\wildflower_meadow.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\wildflower_meadow.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          27,
+          325,
+          1229,
+          1054
+        ]
+      },
+      "sha256": "67a83f46c030c6f093012a5e3de2fc205127843359740d3dd0f90f28aa55a11f",
+      "generationPromptPath": "docs/generated-assets/expansion/wildflower_meadow.actual.txt",
+      "reviewNotes": [
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "stream_straight.png",
+      "group": "B22",
+      "title": "Suối",
+      "module": "T",
+      "stage": 1,
+      "folder": "terrain",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-7ffffe22-0ab5-4abe-8028-7b38e79e3a45.png",
+      "sourcePath": "assets-source\\expansion\\terrain\\stream_straight.png",
+      "gameAssetPath": "public\\assets\\expansion\\terrain\\stream_straight.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          88,
+          333,
+          1171,
+          1031
+        ]
+      },
+      "sha256": "5f726e117d3204f327c03b8aca6691ff500120146130f14a98267268b5233037",
+      "generationPromptPath": "docs/generated-assets/expansion/stream_straight.actual.txt",
+      "reviewNotes": [
+        "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
+      ]
+    },
+    {
+      "filename": "glacier_mountain.png",
+      "group": "B23",
+      "title": "Núi băng hà",
+      "module": "N",
+      "stage": 1,
+      "folder": "landmarks",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-5dd05697-6091-4846-9773-41ae9dbd45f6.png",
+      "sourcePath": "assets-source\\expansion\\landmarks\\glacier_mountain.png",
+      "gameAssetPath": "public\\assets\\expansion\\landmarks\\glacier_mountain.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          46,
+          104,
+          1209,
+          1165
+        ]
+      },
+      "sha256": "69d23366079c5dbb3ea158f83f5ee7dfe8d54d2789f5b0e329068559c04cf349",
+      "generationPromptPath": "docs/generated-assets/expansion/glacier_mountain.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "frozen_lake.png",
+      "group": "B24",
+      "title": "Hồ băng",
+      "module": "N",
+      "stage": 1,
+      "folder": "landmarks",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-412896d3-a096-4111-8b80-8144070c4f80.png",
+      "sourcePath": "assets-source\\expansion\\landmarks\\frozen_lake.png",
+      "gameAssetPath": "public\\assets\\expansion\\landmarks\\frozen_lake.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          34,
+          392,
+          1232,
+          1058
+        ]
+      },
+      "sha256": "bab8dc2ef89e125b76fe6988418e84dedf0020c22a952c683a9173f63993d475",
+      "generationPromptPath": "docs/generated-assets/expansion/frozen_lake.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "whale.png",
+      "group": "B25",
+      "title": "Cá voi",
+      "module": "A",
+      "stage": 1,
+      "folder": "animals",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-0f704c15-d3d0-4682-9691-e3f87d6b5ac6.png",
+      "sourcePath": "assets-source\\expansion\\animals\\whale.png",
+      "gameAssetPath": "public\\assets\\expansion\\animals\\whale.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          91,
+          173,
+          1244,
+          1103
+        ]
+      },
+      "sha256": "3adfceeabf69d9dccbe639e57d360611490c5ffbe7e7bd1474f02225a48a9c82",
+      "generationPromptPath": "docs/generated-assets/expansion/whale.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "hot_spring.png",
+      "group": "B26",
+      "title": "Suối khoáng nóng",
+      "module": "N",
+      "stage": 1,
+      "folder": "landmarks",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-c24f2047-11c7-45d8-a6c6-2571829fedd0.png",
+      "sourcePath": "assets-source\\expansion\\landmarks\\hot_spring.png",
+      "gameAssetPath": "public\\assets\\expansion\\landmarks\\hot_spring.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          35,
+          339,
+          1219,
+          1090
+        ]
+      },
+      "sha256": "06b63c49f759173d7c632021c2e7f0f1d836eb5521a997ebc643d7d818ae242b",
+      "generationPromptPath": "docs/generated-assets/expansion/hot_spring.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "flamingo_flock.png",
+      "group": "B27",
+      "title": "Đàn hồng hạc",
+      "module": "A",
+      "stage": 1,
+      "folder": "animals",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-9365a8c2-5ce7-4417-99ac-819e02431d3f.png",
+      "sourcePath": "assets-source\\expansion\\animals\\flamingo_flock.png",
+      "gameAssetPath": "public\\assets\\expansion\\animals\\flamingo_flock.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          88,
+          41,
+          1228,
+          1174
+        ]
+      },
+      "sha256": "9369e6dab849e2caf27e47a43f6791532fa979549e188224539c9f2c9078c907",
+      "generationPromptPath": "docs/generated-assets/expansion/flamingo_flock.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "apple_tree_seedling.png",
+      "group": "C1",
+      "title": "Cây táo",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e2c83fb2-018d-4518-bf64-3562dbccb62b.png",
+      "sourcePath": "assets-source\\expansion\\plants\\apple_tree_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\apple_tree_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          498,
+          812,
+          745,
+          1121
+        ]
+      },
+      "sha256": "ad8627186cfec3238c5e2359f89ecabb5c3721cee05c17e138a316668d601d5f",
+      "generationPromptPath": "docs/generated-assets/expansion/apple_tree_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "apple_tree_young.png",
+      "group": "C1",
+      "title": "Cây táo",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "apple_tree_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-96cadd2d-7267-4e87-a9ef-4c8f40872405.png",
+      "sourcePath": "assets-source\\expansion\\plants\\apple_tree_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\apple_tree_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          413,
+          572,
+          899,
+          1138
+        ]
+      },
+      "sha256": "f62ff261ada227b464efb20a0aa0670b8403549be8885c7424066ad8ab6ba156",
+      "generationPromptPath": "docs/generated-assets/expansion/apple_tree_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "apple_tree_flowering.png",
+      "group": "C1",
+      "title": "Cây táo",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "apple_tree_young.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-053edf90-0350-45f6-a16c-7b0496d41bb3.png",
+      "sourcePath": "assets-source\\expansion\\plants\\apple_tree_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\apple_tree_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          188,
+          229,
+          1090,
+          1183
+        ]
+      },
+      "sha256": "73ce88db21e08be02e1b87d612113c1f2c8446e306885d86a849d7f4b68dfa8d",
+      "generationPromptPath": "docs/generated-assets/expansion/apple_tree_flowering.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "apple_tree_fruiting.png",
+      "group": "C1",
+      "title": "Cây táo",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "apple_tree_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/apple_tree_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "apple_tree_withered.png",
+      "group": "C1",
+      "title": "Cây táo",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "apple_tree_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/apple_tree_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "coconut_palm_seedling.png",
+      "group": "C2",
+      "title": "Dừa",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e05a6be2-9c43-4cab-908e-96a3b7382ed8.png",
+      "sourcePath": "assets-source\\expansion\\plants\\coconut_palm_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\coconut_palm_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          458,
+          607,
+          852,
+          1121
+        ]
+      },
+      "sha256": "83d19de34ccf1bee39ee5b16f15d1c5c35d11f16591e9f72d2c97dc70f7e70a4",
+      "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "coconut_palm_young.png",
+      "group": "C2",
+      "title": "Dừa",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "coconut_palm_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-9537b2f3-68c2-41b1-89f4-5f360e845091.png",
+      "sourcePath": "assets-source\\expansion\\plants\\coconut_palm_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\coconut_palm_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          428,
+          546,
+          897,
+          1131
+        ]
+      },
+      "sha256": "9cee5473abc1b97906708ce228acb04292197bbf5bcb7abd3728daba8896345b",
+      "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "coconut_palm_flowering.png",
+      "group": "C2",
+      "title": "Dừa",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "coconut_palm_young.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-8b195bea-37e2-49b2-aef0-ebc85ff73eeb.png",
+      "sourcePath": "assets-source\\expansion\\plants\\coconut_palm_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\coconut_palm_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          198,
+          81,
+          1057,
+          1174
+        ]
+      },
+      "sha256": "01f3c8dcae16c153bd8d8a33d3089873c7a6a4316d7abc43f06594ab81197e9f",
+      "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_flowering.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "coconut_palm_fruiting.png",
+      "group": "C2",
+      "title": "Dừa",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "coconut_palm_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "coconut_palm_withered.png",
+      "group": "C2",
+      "title": "Dừa",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "coconut_palm_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "tamarind_tree_seedling.png",
+      "group": "C3",
+      "title": "Me",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-9b86003c-f7e3-4023-923e-ac0116700394.png",
+      "sourcePath": "assets-source\\expansion\\plants\\tamarind_tree_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\tamarind_tree_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          392,
+          737,
+          863,
+          1141
+        ]
+      },
+      "sha256": "a4f98de5dcbb59b8d85be22a8459f5dd24a437d94c16253cf9b5e1a5c4caac62",
+      "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "tamarind_tree_young.png",
+      "group": "C3",
+      "title": "Me",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "tamarind_tree_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-92e16808-c156-429d-aef4-3814f846535b.png",
+      "sourcePath": "assets-source\\expansion\\plants\\tamarind_tree_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\tamarind_tree_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          304,
+          591,
+          908,
+          1146
+        ]
+      },
+      "sha256": "072fc0aa29a6700d30d38323bb809561eef1135f8880744ee6fde0569477c66a",
+      "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "tamarind_tree_flowering.png",
+      "group": "C3",
+      "title": "Me",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "tamarind_tree_young.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-312a1541-6f4c-4b6b-9e13-6539d2b6c5a9.png",
+      "sourcePath": "assets-source\\expansion\\plants\\tamarind_tree_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\tamarind_tree_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          113,
+          294,
+          1148,
+          1177
+        ]
+      },
+      "sha256": "400153d8a2c71b8788cb01f2b6666417422f08f89cfb3d87ea3be50dd6f08a9f",
+      "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_flowering.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "tamarind_tree_fruiting.png",
+      "group": "C3",
+      "title": "Me",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "tamarind_tree_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "tamarind_tree_withered.png",
+      "group": "C3",
+      "title": "Me",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "tamarind_tree_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "cacao_tree_seedling.png",
+      "group": "C4",
+      "title": "Ca cao",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-1ec0c1f8-7950-40df-8441-d0557313e952.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cacao_tree_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cacao_tree_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          366,
+          745,
+          910,
+          1120
+        ]
+      },
+      "sha256": "5c75dd2176399ebeab9030b5c056d022e7e8169c3a35bf429937a981c5d9ad38",
+      "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "cacao_tree_young.png",
+      "group": "C4",
+      "title": "Ca cao",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "cacao_tree_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-d52384cf-d288-4cb1-8505-603edeaf97d3.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cacao_tree_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cacao_tree_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          256,
+          527,
+          1006,
+          1119
+        ]
+      },
+      "sha256": "342353c22f085b3fb08c544caa1e045a6c8be20d5f72331fbe5aa34fb5b0f157",
+      "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "cacao_tree_flowering.png",
+      "group": "C4",
+      "title": "Ca cao",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "cacao_tree_young.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-04e84f29-7de3-4e81-8cd2-757b1e6ddbd6.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cacao_tree_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cacao_tree_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          198,
+          371,
+          1104,
+          1128
+        ]
+      },
+      "sha256": "03942ef988e04eb612eef51ffd5590fb429f5b3c83343822f8b1877ddcf7c1eb",
+      "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_flowering.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "cacao_tree_fruiting.png",
+      "group": "C4",
+      "title": "Ca cao",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "cacao_tree_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "cacao_tree_withered.png",
+      "group": "C4",
+      "title": "Ca cao",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "cacao_tree_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "cherry_tree_seedling.png",
+      "group": "C5",
+      "title": "Cherry / cheri",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-5065ea4b-9bd3-4714-ae61-6732389818ea.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cherry_tree_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cherry_tree_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          493,
+          823,
+          763,
+          1134
+        ]
+      },
+      "sha256": "edd1efb585727b8f899c14010770d9c84219b6f200e5886a70a1456e1fb1254f",
+      "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "cherry_tree_young.png",
+      "group": "C5",
+      "title": "Cherry / cheri",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "cherry_tree_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-75c4702e-3ff2-467d-975a-a3fe41b81f98.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cherry_tree_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cherry_tree_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          431,
+          565,
+          872,
+          1132
+        ]
+      },
+      "sha256": "d7d19262d4455fc12235c8d6598dfada3469f2cfd330138a7db1fe416300b54e",
+      "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "cherry_tree_flowering.png",
+      "group": "C5",
+      "title": "Cherry / cheri",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "cherry_tree_young.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_flowering.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "cherry_tree_fruiting.png",
+      "group": "C5",
+      "title": "Cherry / cheri",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "cherry_tree_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "cherry_tree_withered.png",
+      "group": "C5",
+      "title": "Cherry / cheri",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "cherry_tree_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "blueberry_bush_seedling.png",
+      "group": "C6",
+      "title": "Berry — việt quất",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-497fa7ef-fcd2-49e0-8ca1-fcc21235350d.png",
+      "sourcePath": "assets-source\\expansion\\plants\\blueberry_bush_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\blueberry_bush_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          550,
+          966,
+          699,
+          1120
+        ]
+      },
+      "sha256": "06a234407725537348cc7f59ada3a709f0ab571e3ac77dce14c81d81951adc3c",
+      "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "blueberry_bush_young.png",
+      "group": "C6",
+      "title": "Berry — việt quất",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "blueberry_bush_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-69a88c09-7ff2-47c8-b5fc-3fbc28d6a602.png",
+      "sourcePath": "assets-source\\expansion\\plants\\blueberry_bush_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\blueberry_bush_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          470,
+          784,
+          795,
+          1123
+        ]
+      },
+      "sha256": "15e5d64a15a98f7653399c289b80a8be4d13578744323dd7f7dec0b3fc9b1186",
+      "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "blueberry_bush_flowering.png",
+      "group": "C6",
+      "title": "Berry — việt quất",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "blueberry_bush_young.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_flowering.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "blueberry_bush_fruiting.png",
+      "group": "C6",
+      "title": "Berry — việt quất",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "blueberry_bush_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "blueberry_bush_withered.png",
+      "group": "C6",
+      "title": "Berry — việt quất",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "blueberry_bush_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "durian_tree_seedling.png",
+      "group": "C7",
+      "title": "Sầu riêng",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-f9faa90f-1b92-4d5d-8227-4aaee5b33fff.png",
+      "sourcePath": "assets-source\\expansion\\plants\\durian_tree_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\durian_tree_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          429,
+          675,
+          884,
+          1131
+        ]
+      },
+      "sha256": "4023d80f6c6e8d263c676cbb5b52e6cae1b8f21ffa5810f6dde8791181003b0f",
+      "generationPromptPath": "docs/generated-assets/expansion/durian_tree_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "durian_tree_young.png",
+      "group": "C7",
+      "title": "Sầu riêng",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "durian_tree_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-4cd4b405-e4d7-4d72-b7d2-d27ffde9d664.png",
+      "sourcePath": "assets-source\\expansion\\plants\\durian_tree_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\durian_tree_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          316,
+          451,
+          993,
+          1132
+        ]
+      },
+      "sha256": "11e5a87d908ad8f0f4bb0e9abf7556923562b6ad9c4ec09749b5a8a01daeeeaf",
+      "generationPromptPath": "docs/generated-assets/expansion/durian_tree_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "durian_tree_flowering.png",
+      "group": "C7",
+      "title": "Sầu riêng",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "durian_tree_young.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/durian_tree_flowering.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "durian_tree_fruiting.png",
+      "group": "C7",
+      "title": "Sầu riêng",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "durian_tree_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/durian_tree_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "durian_tree_withered.png",
+      "group": "C7",
+      "title": "Sầu riêng",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "durian_tree_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/durian_tree_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "orange_tree_seedling.png",
+      "group": "C8",
+      "title": "Cam",
+      "module": "P",
+      "stage": 1,
+      "folder": "plants",
+      "dependency": null,
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-f8224043-b00c-4999-b6b8-44104d1ae983.png",
+      "sourcePath": "assets-source\\expansion\\plants\\orange_tree_seedling.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\orange_tree_seedling.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          509,
+          873,
+          740,
+          1123
+        ]
+      },
+      "sha256": "9dca7a8ce55586922c4b30768717d0759902a1aa5a46f006348e0b94fa39adcd",
+      "generationPromptPath": "docs/generated-assets/expansion/orange_tree_seedling.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "orange_tree_young.png",
+      "group": "C8",
+      "title": "Cam",
+      "module": "P",
+      "stage": 2,
+      "folder": "plants",
+      "dependency": "orange_tree_seedling.png",
+      "status": "generated",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-bb4ee78e-eade-4464-968b-13fee4972a9e.png",
+      "sourcePath": "assets-source\\expansion\\plants\\orange_tree_young.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\orange_tree_young.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          439,
+          678,
+          866,
+          1125
+        ]
+      },
+      "sha256": "48c7e303a99140d84c5065750e28898af7fabe932e43a4bc1c14c1f66a3f744c",
+      "generationPromptPath": "docs/generated-assets/expansion/orange_tree_young.actual.txt",
+      "reviewNotes": []
+    },
+    {
+      "filename": "orange_tree_flowering.png",
+      "group": "C8",
+      "title": "Cam",
+      "module": "P",
+      "stage": 3,
+      "folder": "plants",
+      "dependency": "orange_tree_young.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/orange_tree_flowering.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "orange_tree_fruiting.png",
+      "group": "C8",
+      "title": "Cam",
+      "module": "P",
+      "stage": 4,
+      "folder": "plants",
+      "dependency": "orange_tree_flowering.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/orange_tree_fruiting.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    },
+    {
+      "filename": "orange_tree_withered.png",
+      "group": "C8",
+      "title": "Cam",
+      "module": "P",
+      "stage": 5,
+      "folder": "plants",
+      "dependency": "orange_tree_fruiting.png",
+      "status": "pending",
+      "generationPromptPath": "docs/generated-assets/expansion/orange_tree_withered.actual.txt",
+      "reviewNotes": [],
+      "blockedReason": "imagegen usage_limit_reached"
+    }
+  ],
+  "completed": 74,
+  "generationState": {
+    "status": "partial_usage_limit",
+    "remaining": 20,
+    "reportedReset": "2026-10-30T02:13:18+07:00",
+    "integration": "Assets saved for review; not registered in game renderer or economy.",
+    "notes": "Native 1254x1254 PNG retained per source document rule 9. Working-box coordinates, anchors and relative scale still need runtime calibration. Some native cutout edges show coloured fringe; inspect against game backgrounds before integration."
+  }
+}

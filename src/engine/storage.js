@@ -3,6 +3,7 @@ import { INITIAL_GOLD, INITIAL_GEMS } from "../data/gameEconomy.js";
 import { INITIAL_UNLOCKED_CHUNKS } from "../data/landConfig.js";
 import { expandGrid16to32 } from "./isoMath.js";
 import { createStarterTownMap32, getStarterFarmlandState } from "../data/starterMap.js";
+import { isValidTerrainMap } from './terrainEditing.js';
 
 export const SAVE_VERSION = 3;
 export const STORAGE_KEY_V3 = 'isometric_town_builder_save_v3';
@@ -294,6 +295,7 @@ export function loadGameSave(fallbackGrid) {
           presetName: parsed.presetName || 'custom',
           grid,
           fences: Array.isArray(parsed.fences) ? parsed.fences : [],
+          terrainMap: isValidTerrainMap(parsed.terrainMap) ? parsed.terrainMap : null,
           flippedGrid: (parsed.flippedGrid && typeof parsed.flippedGrid === 'object') ? parsed.flippedGrid : {},
           constructions: (parsed.constructions && typeof parsed.constructions === 'object') ? parsed.constructions : {},
           productionState: (parsed.productionState && typeof parsed.productionState === 'object') ? parsed.productionState : {},
@@ -383,6 +385,7 @@ export function saveGameSave(state) {
       savedAt: Date.now(),
       presetName: state.presetName || 'custom',
       grid: state.grid,
+      terrainMap: isValidTerrainMap(state.terrainMap) ? state.terrainMap : null,
       fences: Array.isArray(state.fences) ? state.fences : [],
       flippedGrid: state.flippedGrid || {},
       constructions: state.constructions || {},
@@ -464,6 +467,7 @@ export function exportGameToJSON(state, filename = 'isometric-town-progress.json
     gridSize: { rows: 32, cols: 32 },
     presetName: state.presetName || 'custom',
     grid: state.grid,
+    terrainMap: isValidTerrainMap(state.terrainMap) ? state.terrainMap : null,
     fences: Array.isArray(state.fences) ? state.fences : [],
     flippedGrid: state.flippedGrid || {},
     constructions: state.constructions || {},
@@ -567,6 +571,7 @@ export function importGameFromJSON(file, currentFallbackGrid) {
             savedAt: data.savedAt || Date.now(),
             presetName: data.presetName || 'custom',
             grid: ensureGrid32(data.grid),
+            terrainMap: isValidTerrainMap(data.terrainMap) ? data.terrainMap : null,
             fences: Array.isArray(data.fences) ? data.fences : [],
             flippedGrid: (data.flippedGrid && typeof data.flippedGrid === 'object') ? data.flippedGrid : {},
             constructions: (data.constructions && typeof data.constructions === 'object') ? data.constructions : {},

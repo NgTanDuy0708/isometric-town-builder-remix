@@ -1,3 +1,4 @@
+import { LIVESTOCK_TILE_IDS } from "../data/livestockConfig.js";
 /**
  * productionManager.js
  * ------------------------------------------------------------------
@@ -27,7 +28,7 @@ import {
 import { ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W } from "./isoMath.js";
 
 // Chuồng trại do LivestockManager quản lý, không đi qua productionState.
-const LIVESTOCK_TILES = new Set(["b21_chicken_coop", "b22_cow_pasture", "b57_sheep_pasture"]);
+const LIVESTOCK_TILES = new Set(LIVESTOCK_TILE_IDS);
 
 // Nguyên liệu tiêu hao khi bắt đầu một mẻ sản xuất.
 const INPUT_RESOURCES = {

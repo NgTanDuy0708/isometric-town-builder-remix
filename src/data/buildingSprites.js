@@ -1,8 +1,17 @@
+import { FARM_BUILDING_LEVELS, FARM_BUILDING_GEOMETRY, getFarmAnimalRect } from './farmSprites.js';
+import { applyTownHallTuning, readTownHallTuning, TOWN_HALL_ENTRANCE } from '../engine/townHallTuning.js';
+import { getWarehouseRenderAdjustment, readWarehouseTuning } from '../engine/warehouseTuning.js';
+import { EXPANSION_BUILDING_LEVELS, EXPANSION_BUILDING_GEOMETRY } from './expansionCatalog.js';
 // Level-specific building art. Each family shares a canvas and ground anchor.
 export const BUILDING_LEVEL_SPRITES = {
+  ...EXPANSION_BUILDING_LEVELS,
+  // One finished warehouse, shared by every storage upgrade level.
+  b60_combined_warehouse: {
+    1: "/assets/buildings/royal_warehouse_three_storey.png"
+  },
   // One definitive civic landmark, shared by every gameplay level.
   b14_town_hall: {
-    1: "/assets/buildings/town_hall_main.png"
+    1: "/assets/buildings/town_hall_redrawn_v2.png"
   },
   b01_cottage_red: {
     1: "/assets/buildings/cottage_lv1.png",
@@ -48,7 +57,13 @@ export const BUILDING_LEVEL_SPRITES = {
     1: "/assets/buildings/chapel_lv1.png",
     2: "/assets/buildings/chapel_lv2.png",
     3: "/assets/buildings/chapel_lv3.png"
-  }
+  },
+  b20_noble_manor: {
+    1: "/assets/buildings/manor_lv1.png",
+    2: "/assets/buildings/manor_lv2.png",
+    3: "/assets/buildings/manor_lv3.png"
+  },
+  ...FARM_BUILDING_LEVELS
 };
 
 export function getBuildingSpriteUri(tileId, level = 1) {
@@ -59,10 +74,18 @@ export function getBuildingSpriteUri(tileId, level = 1) {
 // Original generated PNGs are kept byte-for-byte. Scale only at draw time;
 // source-space foot anchors preserve placement without shrinking the asset.
 export const BUILDING_SOURCE_GEOMETRY = {
+  ...EXPANSION_BUILDING_GEOMETRY,
+  b60_combined_warehouse: {
+    // Three-storey replacement: actual straight foundation edges, no projecting
+    // dock. Front corner is the intersection of the measured ground-edge fits.
+    1: { width: 1254, height: 1254, visibleWidth: 1040,
+      anchorX: 638.0688270368859, anchorY: 1238.1570163324172, worldWidth: 256,
+      worldAnchorX: 64, worldAnchorY: 128 }
+  },
   b14_town_hall: {
-    // Front foundation contact -> front vertex of rows 12..13, cols 14..16.
-    1: { width: 1254, height: 1254, visibleWidth: 1019, anchorX: 816, anchorY: 1214,
-      worldWidth: 300, worldAnchorX: 128, worldAnchorY: 160 }
+    // Bottom stair edge midpoint -> centre of cell [15,15], relative to [13,15].
+    1: { width: 1254, height: 1254, visibleWidth: 829, anchorX: TOWN_HALL_ENTRANCE.anchorX, anchorY: TOWN_HALL_ENTRANCE.anchorY,
+      worldWidth: 280, worldAnchorX: TOWN_HALL_ENTRANCE.worldX, worldAnchorY: TOWN_HALL_ENTRANCE.worldY }
   },
   b04_windmill: {
     1: { width: 1254, height: 1254, visibleWidth: 718, anchorX: 665, anchorY: 1061, worldWidth: 144 },
@@ -93,19 +116,41 @@ export const BUILDING_SOURCE_GEOMETRY = {
     1: { width: 1254, height: 1254, visibleWidth: 910, anchorX: 677, anchorY: 1147, worldWidth: 128 },
     2: { width: 1254, height: 1254, visibleWidth: 972, anchorX: 678, anchorY: 1225, worldWidth: 152 },
     3: { width: 1254, height: 1254, visibleWidth: 1059, anchorX: 820, anchorY: 1227, worldWidth: 176 }
-  }
+  },
+  b20_noble_manor: {
+    1: { width: 1254, height: 1254, visibleWidth: 1051, anchorX: 780, anchorY: 1164, worldWidth: 176 },
+    2: { width: 1254, height: 1254, visibleWidth: 1165, anchorX: 908, anchorY: 1188, worldWidth: 192 },
+    3: { width: 1254, height: 1254, visibleWidth: 1142, anchorX: 884, anchorY: 1200, worldWidth: 208 }
+  },
+  ...FARM_BUILDING_GEOMETRY
 };
 
-export function getBuildingRenderAdjustment(tileId, level = 1) {
+/** @param {Record<string, any> | undefined} tuning */
+export function getBuildingRenderAdjustment(tileId, level = 1, tuning = undefined) {
   const levels = BUILDING_SOURCE_GEOMETRY[tileId];
   const source = levels && (levels[level] || levels[1]);
   if (!source) return undefined;
+  if (tileId === 'b60_combined_warehouse') return getWarehouseRenderAdjustment(source, tuning ?? readWarehouseTuning());
   const scale = source.worldWidth / source.visibleWidth;
-  return {
+  const adjustment = {
     dx: (source.worldAnchorX ?? 64) - source.anchorX * scale,
     dy: (source.worldAnchorY ?? 128) - source.anchorY * scale,
     dw: source.width * scale,
     dh: source.height * scale,
     highQuality: true
   };
+  return tileId === 'b14_town_hall'
+    ? applyTownHallTuning(adjustment, source, tuning ?? readTownHallTuning()) : adjustment;
+}
+
+// Return source-anchored animal rectangles on each building's ground plane.
+export function getBuildingAnimalSlots(tileId, level = 1) {
+  const levels = BUILDING_SOURCE_GEOMETRY[tileId];
+  const source = levels && (levels[level] || levels[1]);
+  if (!source?.animalSlots) return [];
+  const adjustment = getBuildingRenderAdjustment(tileId, level);
+  const scale = source.worldWidth / source.visibleWidth;
+  return source.animalSlots.map(([x, y], index) => getFarmAnimalRect(
+    source.animalType, adjustment.dx + x * scale, adjustment.dy + y * scale,
+    source.animalWidth, index % 2 === 1));
 }

@@ -6,8 +6,9 @@ Actual output: 1254×1254 RGBA, alpha 0–255 (requested 1024×1024).
 Game asset: `public/assets/buildings/town_hall_main.png`.
 Untouched source: `assets-source/town-hall/town_hall_main_source.png`.
 Opaque bounds (alpha >128): x=143..1161, y=22..1214.
-Front foundation contact: source (816,1214) -> (128,160) relative to cell (13,15).
-Visible width: 300 world pixels; aspect ratio is preserved. The old `town_hall_royal.png` is retained.
+Entrance contact: midpoint of bottom stair edge, source (412,1174) -> (-64,160) relative to cell (13,15), exactly the centre of cell [15,15].
+The bottom step edge uses source vector (156,52); vertical shear is computed so this edge follows the 2:1 ground grid while walls stay vertical (whole-image rotation is zero). Legacy wall-corner offsets are discarded, retaining approved size/proportions.
+Visible width: 255 world pixels (reduced by 15% at the user's request); aspect ratio and ground anchor are preserved. The old `town_hall_royal.png` is retained.
 
 ## Final generation prompt
 

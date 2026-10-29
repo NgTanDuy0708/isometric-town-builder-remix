@@ -8,6 +8,7 @@ function makeCtx() {
   grid[6][6] = 'b02_tudor_inn';
   grid[7][7] = 'd21_apple_tree';
   grid[8][8] = 'b21_chicken_coop';
+  grid[9][9] = 'd33_pig_pen_barn';
 
   const resources = { wheat: 0, bread: 0 };
   const levels = {};
@@ -54,6 +55,15 @@ test('scanGrid tạo entry cho công trình sản xuất, bỏ qua chuồng tr�
   assert.ok(s['6_6']);
   assert.ok(s['7_7']);
   assert.equal(s['8_8'], undefined);
+  assert.equal(s['9_9'], undefined);
+});
+
+test('pig harvest uses the livestock path rather than automatic factory output', () => {
+  const { ctx, state, events } = makeCtx();
+  const manager = createProductionManager(ctx);
+  manager.init(state);
+  assert.equal(manager.harvest(9, 9), true);
+  assert.deepEqual(events, [{ type: 'livestock' }]);
 });
 
 test('thiếu nguyên liệu -> paused, có nguyên liệu -> tự chạy lại', () => {

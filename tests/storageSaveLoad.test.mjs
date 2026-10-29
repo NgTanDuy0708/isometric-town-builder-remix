@@ -23,6 +23,30 @@ test('sức chứa Kho Tổng Hợp sống sót qua save/load', () => {
   assert.equal(loaded.storage.warehouseCapacity, 825);
 });
 
+test('aquatic decorations preserve their inland sea underlay through save/load', () => {
+  store.clear();
+  const state=getDefaultSaveState();
+  state.terrainMap=Array.from({length:32},()=>Array(32).fill('d12_meadow_wildflowers'));
+  state.terrainMap[20][20]='m30_sea_var2_coral_reef';
+  state.grid[20][20]='a01_whale';
+  assert.equal(saveGameSave(state),true);
+  const loaded=loadGameSave();
+  assert.equal(loaded.grid[20][20],'a01_whale');
+  assert.equal(loaded.terrainMap[20][20],'m30_sea_var2_coral_reef');
+});
+
+test('pig ownership, feed cycle and meat survive save/load', () => {
+  store.clear();
+  const state = getDefaultSaveState();
+  state.grid[20][20] = 'd33_pig_pen_barn';
+  state.livestockState = { '20_20': { animalCount: 4, fedCount: 4, state: 'producing', feedTime: Date.now(), durationMs: 75000 } };
+  state.resources.meat = 4;
+  assert.equal(saveGameSave(state), true);
+  const loaded = loadGameSave();
+  assert.deepEqual(loaded.livestockState['20_20'], state.livestockState['20_20']);
+  assert.equal(loaded.resources.meat, 4);
+});
+
 test('thành tựu đã nhận được lưu cùng save', () => {
   store.clear();
   const state = getDefaultSaveState();

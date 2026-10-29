@@ -1,8 +1,10 @@
 // Building upgrades configuration (Levels 1 to 3)
+import { EXPANSION_UPGRADES } from './expansionCatalog.js';
 
 export const MAX_BUILDING_LEVEL = 3;
 
 export const UPGRADES_CONFIG = {
+  ...EXPANSION_UPGRADES,
   // Nhà tranh ấm cúng
   "b01_cottage_red": {
     maxLevel: 3,
@@ -331,6 +333,12 @@ export const UPGRADES_CONFIG = {
 /**
  * Get upgrade data for next level of building
  */
+UPGRADES_CONFIG.d33_pig_pen_barn = {
+  ...UPGRADES_CONFIG.b22_cow_pasture,
+  2: { ...UPGRADES_CONFIG.b22_cow_pasture[2], desc: "Cải tiến chuồng và máng ăn. Nuôi tối đa 4 heo, mỗi heo được cho ăn tạo 1 phần thịt sau 75 giây." },
+  3: { ...UPGRADES_CONFIG.b22_cow_pasture[3], desc: "Chuồng heo hoàn thiện. Nuôi tối đa 4 heo, mỗi heo được cho ăn tạo 1 phần thịt sau 75 giây." }
+};
+
 export function getNextUpgrade(tileId, currentLevel = 1) {
   const cfg = UPGRADES_CONFIG[tileId];
   if (!cfg) return null;
