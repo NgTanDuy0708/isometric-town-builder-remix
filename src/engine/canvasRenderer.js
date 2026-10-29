@@ -1,6 +1,6 @@
 /**
  * canvasRenderer.js - Module kết xuất đồ họa Canvas 2D Isometric
- * 
+ *
  * Quản lý toàn bộ quá trình vẽ thế giới đẳng cự (Isometric Town):
  * - Bộ nhớ đệm sprite gạch và nông sản (imageCache, cropImageCache)
  * - Chiều sâu đồ họa (Depth Sorting theo trục hàng + cột)
@@ -32,6 +32,13 @@ import { FRUIT_TREES_CONFIG, RESOURCES_CONFIG } from "../data/resourcesConfig.js
 import { TILES_DATA } from "../data/tilesData.js";
 import { TILE_DATA_URIS } from "../data/sprites.js";
 import { AESTHETIC_TILE_URIS } from "../data/aestheticTileIcons.js";
+import { isFenceTile, canAddFence, getFenceSegments } from "../data/fenceConfig.js";
+import { FENCE_TEXTURE_URI, buildFenceNetwork, drawFencePart } from "./fenceRenderer.js";
+import { BUILDING_LEVEL_SPRITES, getBuildingRenderAdjustment } from "../data/buildingSprites.js";
+import { compareWorldDepth, isFlatGroundTile } from "./renderOrder.js";
+import { getTerrainSprite, getBaseTerrainTile } from "../data/terrainConfig.js";
+import { drawTerrainTile } from "./terrainRenderer.js";
+import { SHIP_DOCK_ROW, SHIP_DOCK_COL, SHIP_WATER_ROW, SHIP_WATER_COL } from "../data/harborShipConfig.js";
 import { playCoinFlyHitSound } from "./audioEngine.js";
 
 /**
@@ -45,36 +52,28 @@ export function isImageReady(img) {
 
 /**
  * Kiểm tra xem một toạ độ ngoại vi ngoài bản đồ có thuộc dải Đại Dương hay không
- * @param {number} row 
- * @param {number} col 
+ * @param {number} row
+ * @param {number} col
  * @returns {boolean}
  */
 export function isSurroundingOcean(row, col) {
-  // 1. Toàn bộ vùng biển mênh mông phía Tây vương quốc (col < 0)
-  if (col < 0) return true;
-  // 2. Dải đại dương tiếp nối kéo dài về phía Bắc ngoài đảo (row < 0, col <= 3)
-  if (row < 0 && col <= 3) return true;
-  // 3. Dải đại dương tiếp nối kéo dài về phía Nam ngoài đảo (row >= ROWS, col <= 2)
-  if (row >= ROWS && col <= 2) return true;
-  return false;
+  return col <= 3;
 }
 
 /**
  * Kiểm tra xem một toạ độ ngoại vi có phải bãi biển cát vàng tiếp nối bờ cát hay không
- * @param {number} row 
- * @param {number} col 
+ * @param {number} row
+ * @param {number} col
  * @returns {boolean}
  */
 export function isSurroundingBeach(row, col) {
-  if (row < 0 && col === 4) return true;
-  if (row >= ROWS && (col === 3 || col === 4)) return true;
-  return false;
+  return col >= 4 && col <= 6;
 }
 
 /**
  * Trả về thông tin tile cho các ô đại dương ngoại vi ngoài vương quốc
- * @param {number} row 
- * @param {number} col 
+ * @param {number} row
+ * @param {number} col
  * @returns {{ tid: string, flipped: boolean }}
  */
 export function getSurroundingOceanTile(row, col) {
@@ -149,8 +148,8 @@ export function getSurroundingOceanTile(row, col) {
 
 /**
  * Trả về thông tin loại cây/đường xá cho các ô rừng đại ngàn bao quanh vương quốc
- * @param {number} row 
- * @param {number} col 
+ * @param {number} row
+ * @param {number} col
  * @returns {{ tid: string, flipped: boolean }}
  */
 export function getSurroundingForestTile(row, col) {
@@ -207,23 +206,10 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
 
     // 1. Luôn vẽ nước biển xanh lam trong vắt làm nền
     const baseSea = imageCache["m30_sea_var2_coral_reef"];
-    if (isImageReady(baseSea)) {
-      c2d.drawImage(baseSea, ox, oy);
-    } else {
-      c2d.save();
-      c2d.beginPath();
-      c2d.moveTo(ox + 64, oy + 64);
-      c2d.lineTo(ox + 128, oy + 96);
-      c2d.lineTo(ox + 64, oy + 128);
-      c2d.lineTo(ox, oy + 96);
-      c2d.closePath();
-      c2d.fillStyle = "#0284c7";
-      c2d.fill();
-      c2d.restore();
-    }
+    drawTerrainTile(c2d, baseSea, 'm30_sea_var2_coral_reef', ox, oy);
 
     // 2. Vẽ sprite biển/đảo/sinh vật nếu không phải nền san hô cơ bản
-    if (sTid !== "m30_sea_var2_coral_reef") {
+    if (!getTerrainSprite(sTid)) {
       const sImg = imageCache[sTid];
       if (isImageReady(sImg)) {
         c2d.save();
@@ -253,13 +239,8 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
 
   // B. Ô BÃI CÁT BỜ BIỂN TIẾP NỐI
   if (isSurroundingBeach(row, col)) {
-    const beachImg = imageCache["m01_sandy_beach_s"];
-    if (isImageReady(beachImg)) {
-      c2d.drawImage(beachImg, ox, oy);
-    } else {
-      const baseMeadow = imageCache["d12_meadow_wildflowers"];
-      if (isImageReady(baseMeadow)) c2d.drawImage(baseMeadow, ox, oy);
-    }
+    const beachId = getBaseTerrainTile(col);
+    drawTerrainTile(c2d, imageCache[beachId], beachId, ox, oy);
     return;
   }
 
@@ -270,20 +251,7 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
 
   // 1. Luôn vẽ thảm cỏ hoa đồng nội bên dưới làm nền đất xanh mướt liền mạch
   const baseMeadow = imageCache["d12_meadow_wildflowers"];
-  if (isImageReady(baseMeadow)) {
-    c2d.drawImage(baseMeadow, ox, oy);
-  } else {
-    c2d.save();
-    c2d.beginPath();
-    c2d.moveTo(ox + 64, oy + 64);
-    c2d.lineTo(ox + 128, oy + 96);
-    c2d.lineTo(ox + 64, oy + 128);
-    c2d.lineTo(ox, oy + 96);
-    c2d.closePath();
-    c2d.fillStyle = "#5cb85c";
-    c2d.fill();
-    c2d.restore();
-  }
+  drawTerrainTile(c2d, baseMeadow, 'd12_meadow_wildflowers', ox, oy);
 
   // 2. Vẽ sprite cây cối / con đường / cột đèn
   if (fTid !== "d12_meadow_wildflowers") {
@@ -318,19 +286,26 @@ export function createCanvasRenderer(ctx) {
   // 1. Khởi tạo Image Cache cho Tiles
   const imageCache = {};
 
-  // Nhà Tranh có 3 cấp độ hình ảnh riêng (1: lều nhỏ, 2: nhà vừa, 3: nhà lớn).
-  const cottageLevelImages = {};
-  for (let lv = 1; lv <= 3; lv++) {
-    const im = new Image();
-    im.src = `/assets/buildings/cottage_lv${lv}.png`;
-    im.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-    cottageLevelImages[lv] = im;
+  // Công trình đổi hình theo cấp, dùng chung cho bản đồ và preview.
+  const buildingLevelImages = {};
+  for (const [tileId, levels] of Object.entries(BUILDING_LEVEL_SPRITES)) {
+    buildingLevelImages[tileId] = {};
+    for (const [level, uri] of Object.entries(levels)) {
+      const im = new Image();
+      im.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
+      im.src = uri;
+      buildingLevelImages[tileId][level] = im;
+    }
+  }
+
+  function getTileImage(tileId, level = 1) {
+    const levelImage = buildingLevelImages[tileId]?.[level];
+    return isImageReady(levelImage) ? levelImage : imageCache[tileId];
   }
   TILES_DATA.forEach(t => {
+    const uri = AESTHETIC_TILE_URIS[t.id] || TILE_DATA_URIS[t.id];
+    if (!uri) return;
     const img = new Image();
-    const uri = AESTHETIC_TILE_URIS[t.id] || ((typeof TILE_DATA_URIS !== 'undefined' && TILE_DATA_URIS[t.id]) 
-      ? TILE_DATA_URIS[t.id] 
-      : ('tiles/' + t.id + '_128.png'));
     img.src = uri;
     img.onload = () => {
       if (ctx.onRequestRender) ctx.onRequestRender();
@@ -378,6 +353,10 @@ export function createCanvasRenderer(ctx) {
       cropStageImages[seedId][stage] = im;
     }
   }
+
+  const fenceTexture = new Image();
+  fenceTexture.onload = () => ctx.onRequestRender?.();
+  fenceTexture.src = FENCE_TEXTURE_URI;
 
   const cropImageCache = {};
   for (const [cKey, cUri] of Object.entries(CROP_PIXEL_SPRITES)) {
@@ -577,10 +556,10 @@ export function createCanvasRenderer(ctx) {
 
       for (let i = 0; i < renderLimit; i++) {
         const slot = chickenSlots[i];
-        const bob = isProducing 
-          ? Math.abs(Math.sin(animTime * 6.5 + i * 1.8)) * 3 
+        const bob = isProducing
+          ? Math.abs(Math.sin(animTime * 6.5 + i * 1.8)) * 3
           : Math.sin(animTime * 2.5 + i * 1.5) * 1.2;
-        
+
         c2d.save();
         if (ready) {
           if (slot.flip) {
@@ -717,8 +696,8 @@ export function createCanvasRenderer(ctx) {
 
       for (let i = 0; i < renderLimit; i++) {
         const slot = cowSlots[i];
-        const bob = isProducing 
-          ? Math.sin(animTime * 4.5 + i * 2) * 1.5 
+        const bob = isProducing
+          ? Math.sin(animTime * 4.5 + i * 2) * 1.5
           : Math.sin(animTime * 2.0 + i * 1.5) * 0.8;
 
         c2d.save();
@@ -857,8 +836,8 @@ export function createCanvasRenderer(ctx) {
 
       for (let i = 0; i < renderLimit; i++) {
         const slot = sheepSlots[i];
-        const bob = isProducing 
-          ? Math.sin(animTime * 4.5 + i * 2) * 1.5 
+        const bob = isProducing
+          ? Math.sin(animTime * 4.5 + i * 2) * 1.5
           : Math.sin(animTime * 2.0 + i * 1.5) * 0.8;
 
         c2d.save();
@@ -1182,8 +1161,7 @@ export function createCanvasRenderer(ctx) {
   // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
   // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
   const TILE_RENDER_ADJUSTMENTS = {
-    // Tòa thị chính 2x3 ô (neo mới ở 13,15 — đã lùi 1 hàng): giữ offset đã căn.
-    b14_town_hall: { dx: -39, dy: -261, dw: 300, dh: 403 },
+    // Tòa thị chính 2x3: native sprite geometry is in buildingSprites.js.
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
     // Khuôn viên 3x3: chỉ còn cây/giếng/ghế/hoa, không vẽ nền riêng —
     // mặt đất bên dưới là texture cỏ chung của bản đồ.
@@ -1191,6 +1169,12 @@ export function createCanvasRenderer(ctx) {
     // Kho Tổng Hợp 2x2: silhouette rộng đúng 256px (2 ô), chân đế chạm đáy hình thoi 2x2.
     // Ảnh gốc 1024px có bbox x 79..983, y 34..929 nên scale 290px cho bề ngang ~256px.
     b60_combined_warehouse: { dx: -86, dy: -135, dw: 290, dh: 290 },
+    // Nhà Tranh 3 cấp: canvas 256x256, điểm tiếp đất (128,256) -> (ox+64, oy+128).
+    b01_cottage_red: { dx: -64, dy: -128, dw: 256, dh: 256 },
+    // Nhà Trọ: canvas 256x256, điểm tiếp đất (128,256) -> (ox+64, oy+128).
+    b02_tudor_inn: { dx: -64, dy: -128, dw: 256, dh: 256 },
+    // Lò Rèn: chung điểm tiếp đất (128,256), đổi ảnh theo cấp 1/2/3.
+    b03_blacksmith_forge: { dx: -64, dy: -128, dw: 256, dh: 256 },
     // Cột cờ hiệu hoàng triều: đặt vào tâm của ô đất (dy = -16 căn chân đế đá vào đúng tâm ô)
     d27_royal_banner_flag: { dx: 0, dy: -16, dw: 128, dh: 128 },
     // Luống hoa tulip nở rộ: hạ sát mặt đất phẳng (dy = +22)
@@ -1206,6 +1190,19 @@ export function createCanvasRenderer(ctx) {
     // Chuồng Cừu Lấy Lông: hạ sát xuống nền đất kim cương không bị bay lơ lửng (dy = +22)
     b57_sheep_pasture: { dx: 0, dy: 22, dw: 128, dh: 128 }
   };
+
+  function getTileRenderAdjustment(tileId, level = 1) {
+    return getBuildingRenderAdjustment(tileId, level) || TILE_RENDER_ADJUSTMENTS[tileId] ||
+      { dx: 0, dy: 0, dw: 128, dh: 128 };
+  }
+
+  function setSpriteSampling(c2d, adjustment) {
+    if (adjustment.pixelated) c2d.imageSmoothingEnabled = false;
+    if (adjustment.highQuality) {
+      c2d.imageSmoothingEnabled = true;
+      c2d.imageSmoothingQuality = "high";
+    }
+  }
 
   /**
    * Kết xuất thủ công chi tiết 5 vật phẩm thẩm mỹ hoàng gia
@@ -1593,6 +1590,7 @@ export function createCanvasRenderer(ctx) {
     const camera = ctx.getCamera();
     const dayNightWeather = ctx.getDayNightWeather();
     const currentGrid = ctx.getCurrentGrid();
+    const terrainMap = ctx.getTerrainMap?.();
     const constructions = ctx.getConstructions();
     const farmlandState = ctx.getFarmlandState();
     const productionState = ctx.getProductionState();
@@ -1619,710 +1617,16 @@ export function createCanvasRenderer(ctx) {
     const selectedObj = ctx.getSelectedObjectCell ? ctx.getSelectedObjectCell() : null;
     const animTime = ctx.getAnimTime();
 
-    c2d.save();
-    try {
-      c2d.scale(dpr, dpr);
-
-      // Render Dynamic Sky (Dawn, Day, Sunset, Night with stars)
-      if (dayNightWeather) {
-        dayNightWeather.renderSky(c2d, viewW, viewH);
-      }
-
-      c2d.save();
-      c2d.translate(camera.x, camera.y);
-      c2d.scale(camera.zoom, camera.zoom);
-
-      // Render grid tiles depth sorted (Bao gồm Vương quốc 32x32 và Cánh rừng đại ngàn bao quanh 4 phía)
-      const FOREST_BORDER = 24;
-      const minI = -FOREST_BORDER;
-      const maxI = ROWS - 1 + FOREST_BORDER;
-      const minJ = -FOREST_BORDER;
-      const maxJ = COLS - 1 + FOREST_BORDER;
-      const minDepth = minI + minJ;
-      const maxDepth = maxI + maxJ;
-
-      const bubbleOverlays = [];
-
-      // Vẽ toàn bộ thảm cỏ nền trước khi vẽ công trình: nền đất luôn nằm dưới chân công trình,
-      // tránh ô cỏ phía trước (depth lớn hơn) phủ lên chân nhà kho/công trình.
-      const meadowBase = imageCache["d12_meadow_wildflowers"];
-      if (isImageReady(meadowBase)) {
-        for (let i = 0; i < ROWS; i++) {
-          for (let j = 0; j < COLS; j++) {
-            const bx = ORIGIN_X + (j - i) * HALF_W;
-            const by = ORIGIN_Y + (i + j) * QUARTER_W;
-            // Phủ dư 1px mỗi cạnh để các tam giác mép tile chồng lên nhau,
-            // không lộ đường viền/đáy giữa các ô cỏ.
-            c2d.drawImage(meadowBase, bx - 1, by - 1, 130, 130);
-          }
-        }
-      }
-
-      for (let depth = minDepth; depth <= maxDepth; depth++) {
-        const startI = Math.max(minI, depth - maxJ);
-        const endI = Math.min(maxI, depth - minJ);
-
-        for (let i = startI; i <= endI; i++) {
-          const j = depth - i;
-          const ox = ORIGIN_X + (j - i) * HALF_W;
-          const oy = ORIGIN_Y + (i + j) * QUARTER_W;
-
-          // Fast viewport culling with safe padding (320px)
-          if (!isTileInViewport(ox, oy, camera, viewW, viewH, 320)) continue;
-
-          const isPlayable = (i >= 0 && i < ROWS && j >= 0 && j < COLS);
-          if (!isPlayable) {
-            renderSurroundingTile(c2d, i, j, ox, oy, imageCache, dayNightWeather);
-            continue;
-          }
-
-          if (isPlayable) {
-            const tid = currentGrid[i][j];
-            const key = `${i}_${j}`;
-
-            if (constructions[key]) {
-              const c = constructions[key];
-              const elapsed = Date.now() - c.startTime;
-              const progress = Math.min(1.0, elapsed / c.durationMs);
-
-              c2d.save();
-              c2d.strokeStyle = "#d97706";
-              c2d.lineWidth = 2;
-              c2d.beginPath();
-              c2d.moveTo(ox + 64, oy + 64);
-              c2d.lineTo(ox + 128, oy + 96);
-              c2d.lineTo(ox + 64, oy + 128);
-              c2d.lineTo(ox, oy + 96);
-              c2d.closePath();
-              c2d.stroke();
-
-              const cImg = imageCache[c.targetTileId];
-              if (isImageReady(cImg)) {
-                const cAdj = TILE_RENDER_ADJUSTMENTS[c.targetTileId] || { dx: 0, dy: 0, dw: 128, dh: 128 };
-                const cDx = cAdj.dx || 0;
-                const cDy = cAdj.dy || 0;
-                const cDw = cAdj.dw || 128;
-                const cDh = cAdj.dh || 128;
-                c2d.save();
-                c2d.globalAlpha = 0.35 + progress * 0.45;
-                if (c.flipped) {
-                  c2d.translate(ox + 128 - cDx, oy + cDy);
-                  c2d.scale(-1, 1);
-                  c2d.drawImage(cImg, 0, 0, cDw, cDh);
-                } else {
-                  c2d.drawImage(cImg, ox + cDx, oy + cDy, cDw, cDh);
-                }
-                c2d.restore();
-              }
-
-              const bounce = Math.sin(animTime * 6.0) * 3;
-              c2d.font = "20px sans-serif";
-              c2d.textAlign = "center";
-              c2d.fillText("🏗️", ox + 64, oy + 70 + bounce);
-
-              const secLeft = Math.ceil((c.durationMs - elapsed) / 1000);
-              const gemCost = Math.max(1, Math.ceil(secLeft / 15));
-              const barW = 56;
-              const barH = 6;
-              const barX = ox + 64 - barW / 2;
-              const barY = oy + 104;
-
-              c2d.fillStyle = "rgba(15, 23, 42, 0.75)";
-              c2d.beginPath();
-              c2d.roundRect(barX - 2, barY - 2, barW + 4, barH + 4, 3);
-              c2d.fill();
-
-              c2d.fillStyle = "#f59e0b";
-              c2d.beginPath();
-              c2d.roundRect(barX, barY, Math.max(2, barW * progress), barH, 2);
-              c2d.fill();
-
-              // Badge: 15s ⚡💎 1
-              const tagW = 66;
-              const tagH = 17;
-              const tagX = ox + 64 - tagW / 2;
-              const tagY = barY - 20;
-              c2d.fillStyle = "rgba(15, 23, 42, 0.9)";
-              c2d.strokeStyle = "#38bdf8";
-              c2d.lineWidth = 1;
-              c2d.beginPath();
-              c2d.roundRect(tagX, tagY, tagW, tagH, 8);
-              c2d.fill();
-              c2d.stroke();
-
-              c2d.font = "700 9px sans-serif";
-              c2d.fillStyle = "#ffffff";
-              c2d.textAlign = "center";
-              c2d.textBaseline = "middle";
-              c2d.shadowColor = "rgba(0,0,0,0.8)";
-              c2d.shadowBlur = 3;
-              c2d.fillText(`${secLeft}s  ⚡💎${gemCost}`, ox + 64, tagY + tagH / 2);
-              c2d.restore();
-              continue;
-            }
-
-            if (tid === "d13_farmland_plot") {
-              const farmImg = imageCache["d13_farmland_plot"];
-              if (isImageReady(farmImg)) {
-                const farmBase = imageCache["d12_meadow_wildflowers"];
-                if (isImageReady(farmBase)) c2d.drawImage(farmBase, ox, oy);
-                c2d.drawImage(farmImg, ox - 8, oy - 8, 144, 144);
-              } else {
-                c2d.save();
-                c2d.beginPath();
-                c2d.moveTo(ox + 64, oy + 64);
-                c2d.lineTo(ox + 128, oy + 96);
-                c2d.lineTo(ox + 64, oy + 128);
-                c2d.lineTo(ox, oy + 96);
-                c2d.closePath();
-                c2d.fillStyle = "#553018";
-                c2d.fill();
-                c2d.strokeStyle = "#3e210e";
-                c2d.lineWidth = 1;
-                c2d.stroke();
-                c2d.restore();
-              }
-
-              const farmData = farmlandState[key];
-              if (farmData) {
-                const cropCfg = CROPS_CONFIG[farmData.seedId];
-                if (cropCfg) {
-                  const elapsed = Date.now() - farmData.plantTime;
-                  const progress = Math.min(1.0, elapsed / getCropGrowDurationMs(farmData));
-                  const isRipe = progress >= 1.0;
-                  const cropCenterX = ox + 64;
-                  const cropCenterY = oy + 90;
-
-                  if (isRipe) {
-                    const ripeSpr = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].ripe)) ? cropStageImages[farmData.seedId].ripe : farmRipeImg;
-                    if (isImageReady(ripeSpr)) c2d.drawImage(ripeSpr, ox - 8, oy - 8, 144, 144);
-                    const bounceY = Math.sin(animTime * 4.0 + (i * 2 + j * 3)) * 4;
-                    const bubbleX = cropCenterX;
-                    const bubbleY = oy + 30 + bounceY;
-
-                    // Hay Day Golden Twinkling Sparkles
-                    const spTime = animTime * 4.0 + (i * 3 + j * 5);
-                    const spAlpha = Math.max(0, Math.sin(spTime));
-                    if (spAlpha > 0.35) {
-                      c2d.save();
-                      c2d.font = "12px sans-serif";
-                      c2d.globalAlpha = spAlpha;
-                      c2d.fillText("✨", cropCenterX + Math.cos(spTime) * 16, cropCenterY - 18 + Math.sin(spTime) * 10);
-                      c2d.restore();
-                    }
-
-                    // Harvest Bubble
-                    c2d.save();
-                    c2d.fillStyle = "rgba(0, 0, 0, 0.3)";
-                    c2d.beginPath();
-                    c2d.ellipse(bubbleX, bubbleY + 16, 14, 4, 0, 0, Math.PI * 2);
-                    c2d.fill();
-
-                    c2d.fillStyle = "#ffffff";
-                    c2d.strokeStyle = "#22c55e";
-                    c2d.lineWidth = 2.5;
-                    c2d.beginPath();
-                    c2d.arc(bubbleX, bubbleY, 16, 0, Math.PI * 2);
-                    c2d.fill();
-                    c2d.stroke();
-
-                    const iconImg = cropImageCache['icon_' + farmData.seedId];
-                    if (isImageReady(iconImg)) {
-                      c2d.imageSmoothingEnabled = false;
-                      c2d.drawImage(iconImg, bubbleX - 11, bubbleY - 11, 22, 22);
-                    } else {
-                      c2d.font = "18px sans-serif";
-                      c2d.textAlign = "center";
-                      c2d.textBaseline = "middle";
-                      c2d.fillText(cropCfg.icon, bubbleX, bubbleY);
-                    }
-
-                    const badgeText = `+${cropCfg.harvestYield || 3} Chín!`;
-                    c2d.fillStyle = "#15803d";
-                    c2d.beginPath();
-                    c2d.roundRect(bubbleX - 25, bubbleY + 12, 50, 14, 4);
-                    c2d.fill();
-
-                    c2d.font = "700 9px monospace";
-                    c2d.fillStyle = "#ffffff";
-                    c2d.fillText(badgeText, bubbleX, bubbleY + 19);
-                    c2d.restore();
-
-                  } else if (progress < 0.50) {
-                    // Trạng thái 2: Planted (Giai đoạn 1: 0% - 50% thời gian) - Hiển thị mầm cây
-                    const sproutImg = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].sprout)) ? cropStageImages[farmData.seedId].sprout : farmSproutImg;
-                    if (isImageReady(sproutImg)) {
-                      c2d.save();
-                      c2d.drawImage(sproutImg, ox - 8, oy - 8, 144, 144);
-                      c2d.restore();
-                    } else {
-                      c2d.save();
-                      c2d.font = "18px sans-serif";
-                      c2d.textAlign = "center";
-                      c2d.textBaseline = "middle";
-                      c2d.fillText("🌱", cropCenterX, cropCenterY);
-                      c2d.restore();
-                    }
-                  } else {
-                    const bushImg = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].grow)) ? cropStageImages[farmData.seedId].grow : farmGrowImg;
-                    const windSway = Math.sin(animTime * 3.0 + i * 2 + j * 3) * 1.8;
-                    if (isImageReady(bushImg)) {
-                      c2d.save();
-                      c2d.drawImage(bushImg, ox - 8, oy - 8, 144, 144);
-                      c2d.restore();
-                    } else {
-                      c2d.save();
-                      c2d.font = "22px sans-serif";
-                      c2d.textAlign = "center";
-                      c2d.textBaseline = "middle";
-                      c2d.fillText("🌿", cropCenterX + windSway, cropCenterY);
-                      c2d.restore();
-                    }
-                  }
-
-                  if (!isRipe) {
-                    const miniW = 34;
-                    const miniH = 3;
-                    const miniX = cropCenterX - miniW / 2;
-                    const miniY = oy + 104;
-                    c2d.save();
-                    c2d.fillStyle = "rgba(0, 0, 0, 0.45)";
-                    c2d.fillRect(miniX - 1, miniY - 1, miniW + 2, miniH + 2);
-                    c2d.fillStyle = "#22c55e";
-                    c2d.fillRect(miniX, miniY, miniW * progress, miniH);
-                    c2d.restore();
-                  }
-                }
-              }
-            } else {
-              let img = imageCache[tid];
-              // Nhà Tranh: đổi sprite theo cấp độ đang lưu (1/2/3).
-              if (tid === "b01_cottage_red") {
-                const lv = buildingLevels[`${i}_${j}`] || 1;
-                const lvImg = cottageLevelImages[lv];
-                if (lvImg && isImageReady(lvImg)) img = lvImg;
-              }
-              let drawOffsetY = 0;
-
-              // Xử lý Cây Táo Đỏ, Cây Me & Cây Dừa 3 Giai Đoạn
-              if (tid === "d21_apple_tree") {
-                const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
-                const now = Date.now();
-                const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-                const cfg = FRUIT_TREES_CONFIG[tid];
-                const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 45000;
-                const pElapsed = now - lastHarvest;
-                const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
-                const progress = Math.min(1.0, pElapsed / pIntervalMs);
-
-                if (isReady) {
-                  img = appleTreeStageImages.ripe;
-                } else if (progress >= 0.45) {
-                  img = appleTreeStageImages.flowering;
-                } else {
-                  img = appleTreeStageImages.growing;
-                }
-              } else if (tid === "d23_tamarind_tree") {
-                const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
-                const now = Date.now();
-                const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-                const cfg = FRUIT_TREES_CONFIG[tid];
-                const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 60000;
-                const pElapsed = now - lastHarvest;
-                const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
-                const progress = Math.min(1.0, pElapsed / pIntervalMs);
-
-                if (isReady) {
-                  img = tamarindTreeStageImages.ripe;
-                } else if (progress >= 0.45) {
-                  img = tamarindTreeStageImages.flowering;
-                } else {
-                  img = tamarindTreeStageImages.growing;
-                }
-              } else if (tid === "d22_coconut_palm") {
-                const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
-                const now = Date.now();
-                const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-                const cfg = FRUIT_TREES_CONFIG[tid];
-                const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 60000;
-                const pElapsed = now - lastHarvest;
-                const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
-                const progress = Math.min(1.0, pElapsed / pIntervalMs);
-
-                if (isReady) {
-                  img = coconutPalmStageImages.ripe;
-                } else if (progress >= 0.45) {
-                  img = coconutPalmStageImages.flowering;
-                } else {
-                  img = coconutPalmStageImages.growing;
-                }
-              }
-
-              const isTownHallCell = (i >= 12 && i <= 13 && j >= 14 && j <= 16);
-              const isPlazaCell = (i >= 15 && i <= 17 && j >= 14 && j <= 16);
-              const isTownCenterCovered = isTownHallCell || isPlazaCell;
-              const isCombinedWarehouseCell = tid === "b60_combined_warehouse";
-              const isCombinedWarehouseAnchor = isCombinedWarehouseCell &&
-                currentGrid[i - 1]?.[j] === "b60_combined_warehouse" &&
-                currentGrid[i]?.[j - 1] === "b60_combined_warehouse" &&
-                currentGrid[i - 1]?.[j - 1] === "b60_combined_warehouse";
-
-              // Nền cỏ đã được vẽ một lần ở pre-pass phía trên.
-              const baseMeadow = imageCache["d12_meadow_wildflowers"];
-              const isTownCenterSprite = tid === "b14_town_hall" || tid === "d01_plaza_fountain";
-              const isTownCenterImageReady = isTownCenterSprite && isImageReady(img);
-              if (!isImageReady(img)) {
-                img = baseMeadow;
-              }
-              const isCellBeingMoved = (movingBuilding && (
-                (movingBuilding.fromRow === i && movingBuilding.fromCol === j) ||
-                (movingBuilding.footprint === 2 &&
-                  i >= movingBuilding.fromRow - 1 && i <= movingBuilding.fromRow &&
-                  j >= movingBuilding.fromCol - 1 && j <= movingBuilding.fromCol)
-              )) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
-
-              if (isImageReady(img)) {
-                const tileAdj = (isTownCenterSprite && !isTownCenterImageReady)
-                  ? { dx: 0, dy: 0, dw: 128, dh: 128 }
-                  : (TILE_RENDER_ADJUSTMENTS[tid] || { dx: 0, dy: 0, dw: 128, dh: 128 });
-                const tDx = tileAdj.dx || 0;
-                const tDy = (tileAdj.dy || 0) + drawOffsetY;
-                const tDw = tileAdj.dw || 128;
-                const tDh = tileAdj.dh || 128;
-                // Dev-only: cho phép căn chỉnh tòa thị chính bằng phím mũi tên (URL ?nudge=1)
-                let advDx = tDx;
-                let advDy = tDy;
-                if (tid === "b14_town_hall" && typeof window !== "undefined" && window.__thNudge) {
-                  advDx += window.__thNudge.dx || 0;
-                  advDy += window.__thNudge.dy || 0;
-                }
-
-                if (isTownCenterImageReady) {
-                  const isAnchor = (tid === "b14_town_hall" && i === 13 && j === 15) ||
-                                   (tid === "d01_plaza_fountain" && i === 16 && j === 15);
-                  if (isAnchor) {
-                    // Vẽ ngay tại đúng độ sâu của ô neo để công trình đứng trước (row/col lớn hơn)
-                    // có thể che tòa thị chính/quảng trường, thay vì luôn dán lên trên cùng.
-                    c2d.save();
-                    c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
-                    c2d.restore();
-                  }
-                } else if (tid !== "d12_meadow_wildflowers" && !isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
-                  c2d.save();
-                  if (isCellBeingMoved) c2d.globalAlpha = 0.35;
-                  if (flippedGrid[key]) {
-                    c2d.translate(ox + 128 - advDx, oy + advDy);
-                    c2d.scale(-1, 1);
-                    c2d.drawImage(img, 0, 0, tDw, tDh);
-                  } else {
-                    c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
-                  }
-                  c2d.restore();
-                }
-              } else if (!isTownCenterCovered) {
-                // Procedural fallback: đảm bảo luôn hiện thảm cỏ xanh mướt ngay cả khi ảnh chưa kịp decode
-                c2d.save();
-                c2d.beginPath();
-                c2d.moveTo(ox + 64, oy + 64);
-                c2d.lineTo(ox + 128, oy + 96);
-                c2d.lineTo(ox + 64, oy + 128);
-                c2d.lineTo(ox, oy + 96);
-                c2d.closePath();
-                c2d.fillStyle = "#5cb85c";
-                c2d.fill();
-                c2d.strokeStyle = "#4cae4c";
-                c2d.lineWidth = 1;
-                c2d.stroke();
-                c2d.restore();
-              }
-
-              // 5 Vật phẩm thẩm mỹ & trang trí hoàng gia
-              if (AESTHETIC_TILE_IDS.includes(tid)) {
-                c2d.save();
-                if (isCellBeingMoved) c2d.globalAlpha = 0.35;
-                renderAestheticTileDetails(c2d, ox, oy, animTime, tid);
-                c2d.restore();
-              }
-
-              const ls = (livestockState && livestockState[key]) ? livestockState[key] : null;
-              if (isCellBeingMoved) c2d.save(), c2d.globalAlpha = 0.35;
-              if (tid === "b21_chicken_coop") {
-                renderLivestockChickens(c2d, ox, oy, animTime, productionState[key], ls);
-              } else if (tid === "b22_cow_pasture") {
-                renderDairyCows(c2d, ox, oy, animTime, productionState[key], tid, ls);
-              } else if (tid === "b57_sheep_pasture") {
-                renderLivestockSheep(c2d, ox, oy, animTime, productionState[key], ls);
-              } else if (tid === "b58_textile_mill") {
-                renderTextileMillDetails(c2d, ox, oy, animTime);
-              } else if (tid === "b59_dairy_factory") {
-                renderDairyFactoryDetails(c2d, ox, oy, animTime);
-              }
-              if (isCellBeingMoved) c2d.restore();
-
-              // Cây ăn quả độc lập trên cỏ (Táo 🍎, Dừa 🥥, Me 🍈)
-              if (FRUIT_TREES_CONFIG[tid]) {
-                renderFruitTreeDetails(c2d, ox, oy, animTime, tid, productionState[key] || (fruitTreesState ? fruitTreesState[key] : null), i, j);
-              }
-
-              // Bong bóng Thành Tựu: chỉ 1 chiếc, vẽ ở lớp overlay sau công trình lớn.
-              if (tid === "b14_town_hall" && i === 13 && j === 15) {
-                const hasClaimable = ctx.hasClaimableAchievements ? ctx.hasClaimableAchievements() : false;
-                if (hasClaimable) {
-                  bubbleOverlays.push({ kind: "achievement", depth: i + j, ox, oy });
-                }
-              }
-
-              // Production Building Status & Harvest Bubbles (state do productionManager quản lý)
-              const isLivestock = tid === "b21_chicken_coop" || tid === "b22_cow_pasture" || tid === "b57_sheep_pasture";
-              if (PRODUCTION_BUILDINGS[tid] && !isLivestock) {
-                const prod = PRODUCTION_BUILDINGS[tid];
-                const p = productionState[key];
-                if (p) {
-                  bubbleOverlays.push({
-                    kind: "production",
-                    depth: i + j,
-                    ox,
-                    oy,
-                    tid,
-                    prod,
-                    p,
-                    bLvl: buildingLevels[key] || 1,
-                    i,
-                    j
-                  });
-                }
-              }
-
-              // Upgrade In Progress Overlay & Level Badges
-              if (upgradesInProgress[key]) {
-                const u = upgradesInProgress[key];
-                const elapsed = Date.now() - u.startTime;
-                const progress = Math.min(1.0, elapsed / u.durationMs);
-
-                c2d.save();
-                c2d.strokeStyle = "#2563eb";
-                c2d.lineWidth = 2;
-                c2d.beginPath();
-                c2d.moveTo(ox + 64, oy + 64);
-                c2d.lineTo(ox + 128, oy + 96);
-                c2d.lineTo(ox + 64, oy + 128);
-                c2d.lineTo(ox, oy + 96);
-                c2d.closePath();
-                c2d.stroke();
-
-                const bounce = Math.sin(animTime * 6.0) * 3;
-                c2d.font = "20px sans-serif";
-                c2d.textAlign = "center";
-                c2d.fillText("⭐", ox + 64, oy + 68 + bounce);
-
-                const barW = 48;
-                const barH = 5;
-                const barX = ox + 64 - barW / 2;
-                const barY = oy + 104;
-
-                c2d.fillStyle = "rgba(0, 0, 0, 0.65)";
-                c2d.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
-                c2d.fillStyle = "#3b82f6";
-                c2d.fillRect(barX, barY, barW * progress, barH);
-
-                const secLeft = Math.ceil((u.durationMs - elapsed) / 1000);
-                c2d.font = "700 9px sans-serif";
-                c2d.fillStyle = "#ffffff";
-                c2d.shadowColor = "#000";
-                c2d.shadowBlur = 3;
-                c2d.fillText(`Cấp ${u.targetLevel} (${secLeft}s)`, ox + 64, barY - 3);
-                c2d.restore();
-              } else {
-                const curBuildingLevel = buildingLevels[key] || 1;
-                if (curBuildingLevel > 1) {
-                  c2d.save();
-                  const starBadge = curBuildingLevel === 3 ? "🌟 Lv.3" : "⭐ Lv.2";
-                  c2d.fillStyle = "rgba(0, 0, 0, 0.65)";
-                  c2d.beginPath();
-                  c2d.roundRect(ox + 64 - 20, oy + 98, 40, 14, 4);
-                  c2d.fill();
-                  c2d.font = "700 9px sans-serif";
-                  c2d.fillStyle = "#fef08a";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillText(starBadge, ox + 64, oy + 105);
-                  c2d.restore();
-                }
-              }
-            }
-
-            // Render Locked Territory Fog & Purchase Badges
-            if (gameMode === "game" && !isCellUnlocked(i, j, landUnlockedChunks, gameMode)) {
-              const cId = getChunkId(i, j);
-              const isAdjacent = isChunkAdjacentToUnlocked(cId, landUnlockedChunks);
-
-              c2d.save();
-              c2d.beginPath();
-              c2d.moveTo(ox + 64, oy + 64);
-              c2d.lineTo(ox + 128, oy + 96);
-              c2d.lineTo(ox + 64, oy + 128);
-              c2d.lineTo(ox, oy + 96);
-              c2d.closePath();
-
-              if (isAdjacent) {
-                c2d.fillStyle = "rgba(15, 23, 42, 0.38)";
-                c2d.fill();
-                c2d.strokeStyle = "rgba(245, 158, 11, 0.28)";
-                c2d.lineWidth = 1;
-                c2d.stroke();
-              } else {
-                c2d.fillStyle = "rgba(15, 23, 42, 0.65)";
-                c2d.fill();
-              }
-              c2d.restore();
-
-              // Badge at chunk center (Hiển thị cả Vàng 🪙 và Biểu tượng Nguyên liệu 🌾🥕🍞⚒️)
-              const b = getChunkBounds(cId);
-              if (isAdjacent && b && i === (b.startRow + 1) && j === (b.startCol + 1)) {
-                const chunkCost = getNextChunkCost(landUnlockedChunks.length);
-                const markOx = ox + 64;
-                const markOy = oy + 92;
-
-                const resIcons = Object.keys(chunkCost.resources)
-                  .map(id => RESOURCES_CONFIG[id]?.icon || "📦")
-                  .join(" ");
-
-                c2d.save();
-                c2d.fillStyle = "rgba(15, 23, 42, 0.9)";
-                c2d.strokeStyle = "#f59e0b";
-                c2d.lineWidth = 1.5;
-                c2d.beginPath();
-                c2d.roundRect(markOx - 48, markOy - 16, 96, 32, 7);
-                c2d.fill();
-                c2d.stroke();
-
-                if (resIcons) {
-                  c2d.font = "700 11px sans-serif";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillStyle = "#fef08a";
-                  c2d.fillText(`🔒 ${chunkCost.gold.toLocaleString()}🪙`, markOx, markOy - 5);
-
-                  c2d.font = "9px sans-serif";
-                  c2d.fillStyle = "#cbd5e1";
-                  c2d.fillText(`+ ${resIcons}`, markOx, markOy + 7);
-                } else {
-                  c2d.font = "700 11px sans-serif";
-                  c2d.textAlign = "center";
-                  c2d.textBaseline = "middle";
-                  c2d.fillStyle = "#fef08a";
-                  c2d.fillText(`🔒 ${chunkCost.gold.toLocaleString()}🪙`, markOx, markOy);
-                }
-                c2d.restore();
-              }
-            }
-
-            // Render Order Board & Delivery Truck with proper depth sorting at their cell position
-            if (orderBoardManager && typeof orderBoardManager.renderWorldTruckAndBoard === "function") {
-              if (i === 15 && j === 15) {
-                orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "board" });
-              }
-              if (typeof orderBoardManager.getTruckCell === "function") {
-                const tc = orderBoardManager.getTruckCell();
-                if (tc && tc.isVisible) {
-                  // Sort by leading cell offset (front of truck) so road tiles underneath/ahead are rendered BEFORE the truck
-                  const leadRow = (tc.row > 15.5) ? (tc.row + 0.8) : tc.row;
-                  if (Math.floor(leadRow) === i && Math.floor(tc.col) === j) {
-                    orderBoardManager.renderWorldTruckAndBoard(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" });
-                  }
-                }
-              }
-            }
-          }
-        }
-        // Thú cưng được vẽ đúng độ sâu: đứng sau nhà thì bị nhà che.
-        if (petManager) {
-          petManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, depth);
-        }
-      }
-
-      // Bong bóng được vẽ sau toàn bộ tile/công trình.
-
-      // Vẽ toàn bộ bong bóng ở lớp trên cùng (sau Tòa Thị Chính/Quảng Trường).
-      bubbleOverlays.sort((a, b) => a.depth - b.depth);
-      for (const item of bubbleOverlays) {
-        if (item.kind === "production") drawProductionBubble(c2d, item, animTime);
-        else if (item.kind === "achievement") drawAchievementBubble(c2d, item, animTime);
-      }
-
-      // Render Villagers
-      if (villagerManager) {
-        villagerManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, camera.zoom);
-      }
-
-      // Trái tim / bong bóng thoại thú cưng luôn nằm trên cùng
-      if (petManager) {
-        petManager.renderOverlays(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W);
-      }
-
-      // Render Town Visitors (Khách Bộ Hành Ghé Thăm Tòa Thị Chính)
-      if (townVisitorManager && typeof townVisitorManager.render === "function") {
-        townVisitorManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime);
-      }
-
-      // Render Harbor Dock & Cargo Ship (Bến Cảng & Tàu Buôn Bờ Nước Row 14, Col 6)
-      if (harborShipManager && typeof harborShipManager.renderWorldShipAndDock === "function") {
-        harborShipManager.renderWorldShipAndDock(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime);
-      }
-
-      // Render Kingdom Wonders (Đại Kỳ Quan Vương Quốc tại Khu Đất Hoàng Gia Row 8, Col 15)
-      if (kingdomWondersManager && typeof kingdomWondersManager.renderWorldWonder === "function") {
-        kingdomWondersManager.renderWorldWonder(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime);
-      }
-
-      // Render Traffic Vehicles (Xe kéo lúa mì, Xe ngựa lọc cọc, Thuyền đánh cá ven biển)
-      if (vehicleManager && typeof vehicleManager.render === "function") {
-        const isNight = (dayNightWeather && typeof dayNightWeather.getCurrentPeriod === "function")
-          ? (dayNightWeather.getCurrentPeriod() === "night")
-          : false;
-        vehicleManager.render(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, camera, isNight);
-      }
-
-      // Render Floating Gain Texts
-      const pNow = performance.now();
-      floatingTexts = floatingTexts.filter(ft => (pNow - ft.startTime) < ft.duration);
-      for (const ft of floatingTexts) {
-        const tProgress = (pNow - ft.startTime) / ft.duration;
-        const curY = ft.y - tProgress * 36;
-        const alpha = Math.max(0, 1.0 - tProgress);
-
-        c2d.save();
-        c2d.font = "700 13px sans-serif";
-        c2d.textAlign = "center";
-        c2d.fillStyle = `rgba(34, 197, 94, ${alpha})`;
-        c2d.shadowColor = `rgba(0, 0, 0, ${alpha * 0.9})`;
-        c2d.shadowBlur = 4;
-        c2d.fillText(ft.text, ft.x, curY);
-        c2d.restore();
-      }
-
-      // Hover Indicator & Ghost Preview
+    function drawGhostPreview() {
+      // Ghost Preview (khung ô đã được vẽ ở ground pass).
       if (hoverCell) {
         const hOx = ORIGIN_X + (hoverCell.col - hoverCell.row) * HALF_W;
         const hOy = ORIGIN_Y + (hoverCell.row + hoverCell.col) * QUARTER_W;
         c2d.save();
-        c2d.beginPath();
-        c2d.moveTo(hOx + 64, hOy + 64);
-        c2d.lineTo(hOx + 128, hOy + 96);
-        c2d.lineTo(hOx + 64, hOy + 128);
-        c2d.lineTo(hOx, hOy + 96);
-        c2d.closePath();
-        
+
         const kingdomWondersManager = ctx.getKingdomWondersManager ? ctx.getKingdomWondersManager() : null;
         if (kingdomWondersManager && kingdomWondersManager.movingWonderId) {
           const isUnlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
-          c2d.strokeStyle = isUnlocked ? "#f59e0b" : "#ef4444";
-          c2d.fillStyle = isUnlocked ? "rgba(245, 158, 11, 0.35)" : "rgba(239, 68, 68, 0.35)";
-          c2d.lineWidth = 2.5;
-          c2d.fill();
-          c2d.stroke();
-          c2d.restore();
-
           const wid = kingdomWondersManager.movingWonderId;
           let wImg = imageCache[`wonder_${wid}`];
           if (!wImg) {
@@ -2345,40 +1649,7 @@ export function createCanvasRenderer(ctx) {
             }
             c2d.restore();
           }
-        } else if (activeSeedBrush) {
-          c2d.strokeStyle = "#22c55e";
-          c2d.fillStyle = "rgba(34, 197, 94, 0.30)";
-          c2d.lineWidth = 2.5;
-          c2d.fill();
-        } else if (activeBrush === "erase") {
-          c2d.strokeStyle = "#ef4444";
-          c2d.fillStyle = "rgba(239, 68, 68, 0.28)";
-          c2d.lineWidth = 2;
-          c2d.fill();
-        } else if (activeBrush || movingBuilding) {
-          const hKey = `${hoverCell.row}_${hoverCell.col}`;
-          const hTid = currentGrid[hoverCell.row] ? currentGrid[hoverCell.row][hoverCell.col] : null;
-          const isUnlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
-          const hasConstruction = !!constructions[hKey];
-          const isEmptyGrass = hTid === "d12_meadow_wildflowers" || hTid === "g01_grass_flat";
-          const isValidPlacement = isUnlocked && !hasConstruction && isEmptyGrass;
-
-          if (isValidPlacement) {
-            c2d.strokeStyle = "#22c55e";
-            c2d.fillStyle = "rgba(34, 197, 94, 0.32)";
-            c2d.lineWidth = 2.5;
-            c2d.fill();
-          } else {
-            c2d.strokeStyle = "#ef4444";
-            c2d.fillStyle = "rgba(239, 68, 68, 0.42)";
-            c2d.lineWidth = 2.5;
-            c2d.fill();
-          }
-        } else {
-          c2d.strokeStyle = "rgba(255, 255, 255, 0.4)";
-          c2d.lineWidth = 1.5;
         }
-        c2d.stroke();
 
         if (activeSeedBrush) {
           const crop = CROPS_CONFIG[activeSeedBrush];
@@ -2394,18 +1665,23 @@ export function createCanvasRenderer(ctx) {
           const isUnlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
           const hasConstruction = !!constructions[hKey];
           const isEmptyGrass = hTid === "d12_meadow_wildflowers" || hTid === "g01_grass_flat";
-          const isValidPlacement = isUnlocked && !hasConstruction && isEmptyGrass;
+          const isValidPlacement = isFenceTile(activeBrush)
+            ? isUnlocked && canAddFence(ctx.getFences?.() || [], activeBrush, hoverCell.row, hoverCell.col, brushFlipped)
+            : isUnlocked && !hasConstruction && isEmptyGrass;
 
-          const brushImg = imageCache[activeBrush];
-          if (isImageReady(brushImg)) {
-            const bAdj = TILE_RENDER_ADJUSTMENTS[activeBrush] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+          const brushImg = getTileImage(activeBrush);
+          if (!isFenceTile(activeBrush) && isImageReady(brushImg)) {
+            const bAdj = getTileRenderAdjustment(activeBrush);
             const bDx = bAdj.dx || 0;
             const bDy = bAdj.dy || 0;
             const bDw = bAdj.dw || 128;
             const bDh = bAdj.dh || 128;
             c2d.save();
+            setSpriteSampling(c2d, bAdj);
             c2d.globalAlpha = isValidPlacement ? 0.68 : 0.38;
-            if (brushFlipped) {
+            if (getTerrainSprite(activeBrush)) {
+              drawTerrainTile(c2d, brushImg, activeBrush, hOx, hOy, brushFlipped);
+            } else if (brushFlipped) {
               c2d.translate(hOx + 128 - bDx, hOy + bDy);
               c2d.scale(-1, 1);
               c2d.drawImage(brushImg, 0, 0, bDw, bDh);
@@ -2454,16 +1730,19 @@ export function createCanvasRenderer(ctx) {
             }
           }
 
-          const bImg = imageCache[movingBuilding.tileId];
-          if (isImageReady(bImg)) {
-            const mAdj = TILE_RENDER_ADJUSTMENTS[movingBuilding.tileId] || { dx: 0, dy: 0, dw: 128, dh: 128 };
+          const bImg = getTileImage(movingBuilding.tileId, movingBuilding.level || 1);
+          if (!isFenceTile(movingBuilding.tileId) && isImageReady(bImg)) {
+            const mAdj = getTileRenderAdjustment(movingBuilding.tileId, movingBuilding.level || 1);
             const mDx = mAdj.dx || 0;
             const mDy = mAdj.dy || 0;
             const mDw = mAdj.dw || 128;
             const mDh = mAdj.dh || 128;
             c2d.save();
+            setSpriteSampling(c2d, mAdj);
             c2d.globalAlpha = isValidPlacement ? 0.70 : 0.40;
-            if (movingBuilding.flipped) {
+            if (getTerrainSprite(movingBuilding.tileId)) {
+              drawTerrainTile(c2d, bImg, movingBuilding.tileId, hOx, hOy, movingBuilding.flipped);
+            } else if (movingBuilding.flipped) {
               c2d.translate(hOx + 128 - mDx, hOy + mDy);
               c2d.scale(-1, 1);
               c2d.drawImage(bImg, 0, 0, mDw, mDh);
@@ -2543,6 +1822,806 @@ export function createCanvasRenderer(ctx) {
             }
           }
         }
+        c2d.restore();
+      }
+
+    }
+
+    c2d.save();
+    try {
+      c2d.scale(dpr, dpr);
+
+      // Render Dynamic Sky (Dawn, Day, Sunset, Night with stars)
+      if (dayNightWeather) {
+        dayNightWeather.renderSky(c2d, viewW, viewH);
+      }
+
+      c2d.save();
+      c2d.translate(camera.x, camera.y);
+      c2d.scale(camera.zoom, camera.zoom);
+
+      // Render grid tiles depth sorted (Bao gồm Vương quốc 32x32 và Cánh rừng đại ngàn bao quanh 4 phía)
+      const FOREST_BORDER = 24;
+      const minI = -FOREST_BORDER;
+      const maxI = ROWS - 1 + FOREST_BORDER;
+      const minJ = -FOREST_BORDER;
+      const maxJ = COLS - 1 + FOREST_BORDER;
+      const minDepth = minI + minJ;
+      const maxDepth = maxI + maxJ;
+
+      const bubbleOverlays = [];
+      const worldQueue = [];
+      const uiOverlays = [];
+      const deferOverlay = draw => uiOverlays.push(draw);
+      const queueWorld = (row, col, draw, priority = 1) => {
+        if (!Number.isFinite(row) || !Number.isFinite(col)) return;
+        const x = ORIGIN_X + (col - row) * HALF_W;
+        const y = ORIGIN_Y + (row + col) * QUARTER_W;
+        if (isTileInViewport(x, y, camera, viewW, viewH, 320)) {
+          worldQueue.push({ row, col, priority, draw });
+        }
+      };
+
+      function drawLockedGroundCell(i, j) {
+        const ox = ORIGIN_X + (j - i) * HALF_W;
+        const oy = ORIGIN_Y + (i + j) * QUARTER_W;
+            // Render Locked Territory Fog & Purchase Badges
+            if (gameMode === "game" && !isCellUnlocked(i, j, landUnlockedChunks, gameMode)) {
+              const cId = getChunkId(i, j);
+              const isAdjacent = isChunkAdjacentToUnlocked(cId, landUnlockedChunks);
+
+              c2d.save();
+              c2d.beginPath();
+              c2d.moveTo(ox + 64, oy + 64);
+              c2d.lineTo(ox + 128, oy + 96);
+              c2d.lineTo(ox + 64, oy + 128);
+              c2d.lineTo(ox, oy + 96);
+              c2d.closePath();
+
+              if (isAdjacent) {
+                c2d.fillStyle = "rgba(15, 23, 42, 0.38)";
+                c2d.fill();
+                c2d.strokeStyle = "rgba(245, 158, 11, 0.28)";
+                c2d.lineWidth = 1;
+                c2d.stroke();
+              } else {
+                c2d.fillStyle = "rgba(15, 23, 42, 0.65)";
+                c2d.fill();
+              }
+              c2d.restore();
+
+              // Badge at chunk center (Hiển thị cả Vàng 🪙 và Biểu tượng Nguyên liệu 🌾🥕🍞⚒️)
+              const b = getChunkBounds(cId);
+              if (isAdjacent && b && i === (b.startRow + 1) && j === (b.startCol + 1)) {
+                deferOverlay(() => {
+                const chunkCost = getNextChunkCost(landUnlockedChunks.length);
+                const markOx = ox + 64;
+                const markOy = oy + 92;
+
+                const resIcons = Object.keys(chunkCost.resources)
+                  .map(id => RESOURCES_CONFIG[id]?.icon || "📦")
+                  .join(" ");
+
+                c2d.save();
+                c2d.fillStyle = "rgba(15, 23, 42, 0.9)";
+                c2d.strokeStyle = "#f59e0b";
+                c2d.lineWidth = 1.5;
+                c2d.beginPath();
+                c2d.roundRect(markOx - 48, markOy - 16, 96, 32, 7);
+                c2d.fill();
+                c2d.stroke();
+
+                if (resIcons) {
+                  c2d.font = "700 11px sans-serif";
+                  c2d.textAlign = "center";
+                  c2d.textBaseline = "middle";
+                  c2d.fillStyle = "#fef08a";
+                  c2d.fillText(`🔒 ${chunkCost.gold.toLocaleString()}🪙`, markOx, markOy - 5);
+
+                  c2d.font = "9px sans-serif";
+                  c2d.fillStyle = "#cbd5e1";
+                  c2d.fillText(`+ ${resIcons}`, markOx, markOy + 7);
+                } else {
+                  c2d.font = "700 11px sans-serif";
+                  c2d.textAlign = "center";
+                  c2d.textBaseline = "middle";
+                  c2d.fillStyle = "#fef08a";
+                  c2d.fillText(`🔒 ${chunkCost.gold.toLocaleString()}🪙`, markOx, markOy);
+                }
+                c2d.restore();
+                });
+              }
+            }
+      }
+
+      // Vẽ toàn bộ thảm cỏ nền trước khi vẽ công trình: nền đất luôn nằm dưới chân công trình,
+      // tránh ô cỏ phía trước (depth lớn hơn) phủ lên chân nhà kho/công trình.
+      {
+        for (let i = 0; i < ROWS; i++) {
+          for (let j = 0; j < COLS; j++) {
+            const bx = ORIGIN_X + (j - i) * HALF_W;
+            const by = ORIGIN_Y + (i + j) * QUARTER_W;
+            if (!isTileInViewport(bx, by, camera, viewW, viewH, 160)) continue;
+            const groundId = currentGrid[i][j];
+            const terrainId = terrainMap?.[i]?.[j] || (getTerrainSprite(groundId) ? groundId : getBaseTerrainTile(j));
+            drawTerrainTile(c2d, imageCache[terrainId], terrainId, bx, by);
+            const groundImg = imageCache[groundId];
+            if (!getTerrainSprite(groundId) && !constructions[`${i}_${j}`] &&
+                isFlatGroundTile(groundId, groundImg?.src) && isImageReady(groundImg)) {
+              c2d.save();
+              if (flippedGrid[`${i}_${j}`]) {
+                c2d.translate(bx + 128, by);
+                c2d.scale(-1, 1);
+                c2d.drawImage(groundImg, 0, 0, 128, 128);
+              } else {
+                c2d.drawImage(groundImg, bx, by, 128, 128);
+              }
+              c2d.restore();
+              if (AESTHETIC_TILE_IDS.includes(groundId)) renderAestheticTileDetails(c2d, bx, by, animTime, groundId);
+            }
+          }
+        }
+      }
+
+      if (gameMode === "game") {
+        for (let row = 0; row < ROWS; row++) {
+          for (let col = 0; col < COLS; col++) drawLockedGroundCell(row, col);
+        }
+      }
+
+      // Mọi khung ô nằm trên đất, phía SAU sprite, kể cả khi cầm brush khác.
+      if (hoverCell) {
+        const hx = ORIGIN_X + (hoverCell.col - hoverCell.row) * HALF_W;
+        const hy = ORIGIN_Y + (hoverCell.row + hoverCell.col) * QUARTER_W;
+        const key = `${hoverCell.row}_${hoverCell.col}`;
+        const tid = currentGrid[hoverCell.row]?.[hoverCell.col];
+        const placing = !!(activeBrush || movingBuilding);
+        const placingFence = isFenceTile(activeBrush);
+        const valid = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode) &&
+          (placingFence ? canAddFence(ctx.getFences?.() || [], activeBrush, hoverCell.row, hoverCell.col, brushFlipped)
+            : !constructions[key] && (tid === "d12_meadow_wildflowers" || tid === "g01_grass_flat"));
+        c2d.save();
+        c2d.beginPath();
+        c2d.moveTo(hx + 64, hy + 64);
+        c2d.lineTo(hx + 128, hy + 96);
+        c2d.lineTo(hx + 64, hy + 128);
+        c2d.lineTo(hx, hy + 96);
+        c2d.closePath();
+        if (kingdomWondersManager?.movingWonderId) {
+          const unlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
+          c2d.strokeStyle = unlocked ? "#f59e0b" : "#ef4444";
+          c2d.fillStyle = unlocked ? "rgba(245, 158, 11, 0.35)" : "rgba(239, 68, 68, 0.35)";
+          c2d.lineWidth = 2.5;
+          c2d.fill();
+        } else if (activeSeedBrush) {
+          c2d.strokeStyle = "#22c55e";
+          c2d.fillStyle = "rgba(34, 197, 94, 0.30)";
+          c2d.lineWidth = 2.5;
+          c2d.fill();
+        } else if (activeBrush === "erase") {
+          c2d.strokeStyle = "#ef4444";
+          c2d.fillStyle = "rgba(239, 68, 68, 0.28)";
+          c2d.lineWidth = 2;
+          c2d.fill();
+        } else if (placingFence) {
+          c2d.beginPath();
+          for (const [a, b] of getFenceSegments(activeBrush, hoverCell.row, hoverCell.col, brushFlipped)) {
+            c2d.moveTo(ORIGIN_X + (a.col-a.row)*64+64, ORIGIN_Y+(a.row+a.col)*32+64);
+            c2d.lineTo(ORIGIN_X + (b.col-b.row)*64+64, ORIGIN_Y+(b.row+b.col)*32+64);
+          }
+          c2d.strokeStyle = valid ? "#22c55e" : "#ef4444";
+          c2d.lineWidth = 3;
+        } else if (placing) {
+          c2d.strokeStyle = valid ? "#22c55e" : "#ef4444";
+          c2d.fillStyle = valid ? "rgba(34, 197, 94, 0.32)" : "rgba(239, 68, 68, 0.42)";
+          c2d.lineWidth = 2.5;
+          c2d.fill();
+        } else {
+          c2d.strokeStyle = "rgba(255, 255, 255, 0.4)";
+          c2d.lineWidth = 1.5;
+        }
+        c2d.stroke();
+        c2d.restore();
+      }
+
+      // Viền thi công nâng cấp cũng thuộc mặt đất, không đè lên tường công trình.
+      const constructionFrames = [
+        ...Object.keys(constructions).map(key => ({ key, color: "#d97706" })),
+        ...Object.keys(upgradesInProgress).map(key => ({ key, color: "#2563eb" }))
+      ].map(frame => {
+        const [row, col] = frame.key.split("_").map(Number);
+        return { ...frame, row, col };
+      }).sort(compareWorldDepth);
+      for (const { row, col, color } of constructionFrames) {
+        const ux = ORIGIN_X + (col - row) * HALF_W;
+        const uy = ORIGIN_Y + (row + col) * QUARTER_W;
+        if (!isTileInViewport(ux, uy, camera, viewW, viewH, 320)) continue;
+        c2d.save();
+        c2d.strokeStyle = color;
+        c2d.lineWidth = 2;
+        c2d.beginPath();
+        c2d.moveTo(ux + 64, uy + 64);
+        c2d.lineTo(ux + 128, uy + 96);
+        c2d.lineTo(ux + 64, uy + 128);
+        c2d.lineTo(ux, uy + 96);
+        c2d.closePath();
+        c2d.stroke();
+        c2d.restore();
+      }
+
+      for (let depth = minDepth; depth <= maxDepth; depth++) {
+        const startI = Math.max(minI, depth - maxJ);
+        const endI = Math.min(maxI, depth - minJ);
+
+        for (let i = startI; i <= endI; i++) {
+          const j = depth - i;
+          const ox = ORIGIN_X + (j - i) * HALF_W;
+          const oy = ORIGIN_Y + (i + j) * QUARTER_W;
+
+          // Fast viewport culling with safe padding (320px)
+          if (!isTileInViewport(ox, oy, camera, viewW, viewH, 320)) continue;
+
+          queueWorld(i, j, () => {
+            const isPlayable = (i >= 0 && i < ROWS && j >= 0 && j < COLS);
+            if (!isPlayable) {
+              renderSurroundingTile(c2d, i, j, ox, oy, imageCache, dayNightWeather);
+              return;
+            }
+
+            if (isPlayable) {
+              const tid = currentGrid[i][j];
+              const key = `${i}_${j}`;
+
+              if (constructions[key]) {
+                const c = constructions[key];
+                const elapsed = Date.now() - c.startTime;
+                const progress = Math.min(1.0, elapsed / c.durationMs);
+
+                c2d.save();
+
+                const cImg = getTileImage(c.targetTileId);
+                if (isImageReady(cImg)) {
+                  const cAdj = getTileRenderAdjustment(c.targetTileId);
+                  const cDx = cAdj.dx || 0;
+                  const cDy = cAdj.dy || 0;
+                  const cDw = cAdj.dw || 128;
+                  const cDh = cAdj.dh || 128;
+                  c2d.save();
+                  setSpriteSampling(c2d, cAdj);
+                  c2d.globalAlpha = 0.35 + progress * 0.45;
+                  if (getTerrainSprite(c.targetTileId)) {
+                    drawTerrainTile(c2d, cImg, c.targetTileId, ox, oy, c.flipped);
+                  } else if (c.flipped) {
+                    c2d.translate(ox + 128 - cDx, oy + cDy);
+                    c2d.scale(-1, 1);
+                    c2d.drawImage(cImg, 0, 0, cDw, cDh);
+                  } else {
+                    c2d.drawImage(cImg, ox + cDx, oy + cDy, cDw, cDh);
+                  }
+                  c2d.restore();
+                }
+
+                deferOverlay(() => {
+                c2d.save();
+                const bounce = Math.sin(animTime * 6.0) * 3;
+                c2d.font = "20px sans-serif";
+                c2d.textAlign = "center";
+                c2d.fillText("🏗️", ox + 64, oy + 70 + bounce);
+
+                const secLeft = Math.ceil((c.durationMs - elapsed) / 1000);
+                const gemCost = Math.max(1, Math.ceil(secLeft / 15));
+                const barW = 56;
+                const barH = 6;
+                const barX = ox + 64 - barW / 2;
+                const barY = oy + 104;
+
+                c2d.fillStyle = "rgba(15, 23, 42, 0.75)";
+                c2d.beginPath();
+                c2d.roundRect(barX - 2, barY - 2, barW + 4, barH + 4, 3);
+                c2d.fill();
+
+                c2d.fillStyle = "#f59e0b";
+                c2d.beginPath();
+                c2d.roundRect(barX, barY, Math.max(2, barW * progress), barH, 2);
+                c2d.fill();
+
+                // Badge: 15s ⚡💎 1
+                const tagW = 66;
+                const tagH = 17;
+                const tagX = ox + 64 - tagW / 2;
+                const tagY = barY - 20;
+                c2d.fillStyle = "rgba(15, 23, 42, 0.9)";
+                c2d.strokeStyle = "#38bdf8";
+                c2d.lineWidth = 1;
+                c2d.beginPath();
+                c2d.roundRect(tagX, tagY, tagW, tagH, 8);
+                c2d.fill();
+                c2d.stroke();
+
+                c2d.font = "700 9px sans-serif";
+                c2d.fillStyle = "#ffffff";
+                c2d.textAlign = "center";
+                c2d.textBaseline = "middle";
+                c2d.shadowColor = "rgba(0,0,0,0.8)";
+                c2d.shadowBlur = 3;
+                c2d.fillText(`${secLeft}s  ⚡💎${gemCost}`, ox + 64, tagY + tagH / 2);
+                c2d.restore();
+                });
+                c2d.restore();
+                return;
+              }
+
+              if (tid === "d13_farmland_plot") {
+                const farmDim = (movingBuilding && movingBuilding.fromRow === i && movingBuilding.fromCol === j) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
+                c2d.save();
+                if (farmDim) c2d.globalAlpha = 0.35;
+                const farmImg = imageCache["d13_farmland_plot"];
+                if (isImageReady(farmImg)) {
+                  c2d.drawImage(farmImg, ox - 8, oy - 8, 144, 144);
+                } else {
+                  c2d.save();
+                  c2d.beginPath();
+                  c2d.moveTo(ox + 64, oy + 64);
+                  c2d.lineTo(ox + 128, oy + 96);
+                  c2d.lineTo(ox + 64, oy + 128);
+                  c2d.lineTo(ox, oy + 96);
+                  c2d.closePath();
+                  c2d.fillStyle = "#553018";
+                  c2d.fill();
+                  c2d.strokeStyle = "#3e210e";
+                  c2d.lineWidth = 1;
+                  c2d.stroke();
+                  c2d.restore();
+                }
+
+                const farmData = farmlandState[key];
+                if (farmData) {
+                  const cropCfg = CROPS_CONFIG[farmData.seedId];
+                  if (cropCfg) {
+                    const elapsed = Date.now() - farmData.plantTime;
+                    const progress = Math.min(1.0, elapsed / getCropGrowDurationMs(farmData));
+                    const isRipe = progress >= 1.0;
+                    const cropCenterX = ox + 64;
+                    const cropCenterY = oy + 90;
+
+                    if (isRipe) {
+                      const ripeSpr = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].ripe)) ? cropStageImages[farmData.seedId].ripe : farmRipeImg;
+                      if (isImageReady(ripeSpr)) c2d.drawImage(ripeSpr, ox - 8, oy - 8, 144, 144);
+                      const bounceY = Math.sin(animTime * 4.0 + (i * 2 + j * 3)) * 4;
+                      const bubbleX = cropCenterX;
+                      const bubbleY = oy + 30 + bounceY;
+
+                      // Hay Day Golden Twinkling Sparkles
+                      const spTime = animTime * 4.0 + (i * 3 + j * 5);
+                      const spAlpha = Math.max(0, Math.sin(spTime));
+                      if (spAlpha > 0.35) {
+                        c2d.save();
+                        c2d.font = "12px sans-serif";
+                        c2d.globalAlpha = spAlpha;
+                        c2d.fillText("✨", cropCenterX + Math.cos(spTime) * 16, cropCenterY - 18 + Math.sin(spTime) * 10);
+                        c2d.restore();
+                      }
+
+                      // Harvest Bubble
+                      c2d.save();
+                      c2d.fillStyle = "rgba(0, 0, 0, 0.3)";
+                      c2d.beginPath();
+                      c2d.ellipse(bubbleX, bubbleY + 16, 14, 4, 0, 0, Math.PI * 2);
+                      c2d.fill();
+
+                      c2d.fillStyle = "#ffffff";
+                      c2d.strokeStyle = "#22c55e";
+                      c2d.lineWidth = 2.5;
+                      c2d.beginPath();
+                      c2d.arc(bubbleX, bubbleY, 16, 0, Math.PI * 2);
+                      c2d.fill();
+                      c2d.stroke();
+
+                      const iconImg = cropImageCache['icon_' + farmData.seedId];
+                      if (isImageReady(iconImg)) {
+                        c2d.imageSmoothingEnabled = false;
+                        c2d.drawImage(iconImg, bubbleX - 11, bubbleY - 11, 22, 22);
+                      } else {
+                        c2d.font = "18px sans-serif";
+                        c2d.textAlign = "center";
+                        c2d.textBaseline = "middle";
+                        c2d.fillText(cropCfg.icon, bubbleX, bubbleY);
+                      }
+
+                      const badgeText = `+${cropCfg.harvestYield || 3} Chín!`;
+                      c2d.fillStyle = "#15803d";
+                      c2d.beginPath();
+                      c2d.roundRect(bubbleX - 25, bubbleY + 12, 50, 14, 4);
+                      c2d.fill();
+
+                      c2d.font = "700 9px monospace";
+                      c2d.fillStyle = "#ffffff";
+                      c2d.fillText(badgeText, bubbleX, bubbleY + 19);
+                      c2d.restore();
+
+                    } else if (progress < 0.50) {
+                      // Trạng thái 2: Planted (Giai đoạn 1: 0% - 50% thời gian) - Hiển thị mầm cây
+                      const sproutImg = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].sprout)) ? cropStageImages[farmData.seedId].sprout : farmSproutImg;
+                      if (isImageReady(sproutImg)) {
+                        c2d.save();
+                        c2d.drawImage(sproutImg, ox - 8, oy - 8, 144, 144);
+                        c2d.restore();
+                      } else {
+                        c2d.save();
+                        c2d.font = "18px sans-serif";
+                        c2d.textAlign = "center";
+                        c2d.textBaseline = "middle";
+                        c2d.fillText("🌱", cropCenterX, cropCenterY);
+                        c2d.restore();
+                      }
+                    } else {
+                      const bushImg = (cropStageImages[farmData.seedId] && isImageReady(cropStageImages[farmData.seedId].grow)) ? cropStageImages[farmData.seedId].grow : farmGrowImg;
+                      const windSway = Math.sin(animTime * 3.0 + i * 2 + j * 3) * 1.8;
+                      if (isImageReady(bushImg)) {
+                        c2d.save();
+                        c2d.drawImage(bushImg, ox - 8, oy - 8, 144, 144);
+                        c2d.restore();
+                      } else {
+                        c2d.save();
+                        c2d.font = "22px sans-serif";
+                        c2d.textAlign = "center";
+                        c2d.textBaseline = "middle";
+                        c2d.fillText("🌿", cropCenterX + windSway, cropCenterY);
+                        c2d.restore();
+                      }
+                    }
+
+                    if (!isRipe) {
+                      const miniW = 34;
+                      const miniH = 3;
+                      const miniX = cropCenterX - miniW / 2;
+                      const miniY = oy + 104;
+                      c2d.save();
+                      c2d.fillStyle = "rgba(0, 0, 0, 0.45)";
+                      c2d.fillRect(miniX - 1, miniY - 1, miniW + 2, miniH + 2);
+                      c2d.fillStyle = "#22c55e";
+                      c2d.fillRect(miniX, miniY, miniW * progress, miniH);
+                      c2d.restore();
+                    }
+                  }
+                }
+                c2d.restore();
+              } else {
+                let img = getTileImage(tid, buildingLevels[key] || 1);
+                let drawOffsetY = 0;
+
+                // Xử lý Cây Táo Đỏ, Cây Me & Cây Dừa 3 Giai Đoạn
+                if (tid === "d21_apple_tree") {
+                  const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
+                  const now = Date.now();
+                  const lastHarvest = p ? (p.lastHarvest || 0) : 0;
+                  const cfg = FRUIT_TREES_CONFIG[tid];
+                  const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 45000;
+                  const pElapsed = now - lastHarvest;
+                  const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
+                  const progress = Math.min(1.0, pElapsed / pIntervalMs);
+
+                  if (isReady) {
+                    img = appleTreeStageImages.ripe;
+                  } else if (progress >= 0.45) {
+                    img = appleTreeStageImages.flowering;
+                  } else {
+                    img = appleTreeStageImages.growing;
+                  }
+                } else if (tid === "d23_tamarind_tree") {
+                  const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
+                  const now = Date.now();
+                  const lastHarvest = p ? (p.lastHarvest || 0) : 0;
+                  const cfg = FRUIT_TREES_CONFIG[tid];
+                  const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 60000;
+                  const pElapsed = now - lastHarvest;
+                  const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
+                  const progress = Math.min(1.0, pElapsed / pIntervalMs);
+
+                  if (isReady) {
+                    img = tamarindTreeStageImages.ripe;
+                  } else if (progress >= 0.45) {
+                    img = tamarindTreeStageImages.flowering;
+                  } else {
+                    img = tamarindTreeStageImages.growing;
+                  }
+                } else if (tid === "d22_coconut_palm") {
+                  const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
+                  const now = Date.now();
+                  const lastHarvest = p ? (p.lastHarvest || 0) : 0;
+                  const cfg = FRUIT_TREES_CONFIG[tid];
+                  const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 60000;
+                  const pElapsed = now - lastHarvest;
+                  const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
+                  const progress = Math.min(1.0, pElapsed / pIntervalMs);
+
+                  if (isReady) {
+                    img = coconutPalmStageImages.ripe;
+                  } else if (progress >= 0.45) {
+                    img = coconutPalmStageImages.flowering;
+                  } else {
+                    img = coconutPalmStageImages.growing;
+                  }
+                }
+
+                const isTownHallCell = (i >= 12 && i <= 13 && j >= 14 && j <= 16);
+                const isPlazaCell = (i >= 15 && i <= 17 && j >= 14 && j <= 16);
+                const isTownCenterCovered = isTownHallCell || isPlazaCell;
+                const isCombinedWarehouseCell = tid === "b60_combined_warehouse";
+                const isCombinedWarehouseAnchor = isCombinedWarehouseCell &&
+                  currentGrid[i - 1]?.[j] === "b60_combined_warehouse" &&
+                  currentGrid[i]?.[j - 1] === "b60_combined_warehouse" &&
+                  currentGrid[i - 1]?.[j - 1] === "b60_combined_warehouse";
+
+                // Nền cỏ đã được vẽ một lần ở pre-pass phía trên.
+                const isTownCenterSprite = tid === "b14_town_hall" || tid === "d01_plaza_fountain";
+                const isTownCenterImageReady = isTownCenterSprite && isImageReady(img);
+                const isCellBeingMoved = (movingBuilding && (
+                  (movingBuilding.fromRow === i && movingBuilding.fromCol === j) ||
+                  (movingBuilding.footprint === 2 &&
+                    i >= movingBuilding.fromRow - 1 && i <= movingBuilding.fromRow &&
+                    j >= movingBuilding.fromCol - 1 && j <= movingBuilding.fromCol)
+                )) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
+
+                if (isImageReady(img)) {
+                  const tileAdj = (isTownCenterSprite && !isTownCenterImageReady)
+                    ? { dx: 0, dy: 0, dw: 128, dh: 128 }
+                    : getTileRenderAdjustment(tid, buildingLevels[key] || 1);
+                  const tDx = tileAdj.dx || 0;
+                  const tDy = (tileAdj.dy || 0) + drawOffsetY;
+                  const tDw = tileAdj.dw || 128;
+                  const tDh = tileAdj.dh || 128;
+                  // Dev-only: cho phép căn chỉnh tòa thị chính bằng phím mũi tên (URL ?nudge=1)
+                  let advDx = tDx;
+                  let advDy = tDy;
+                  if (tid === "b14_town_hall" && typeof window !== "undefined" && window.__thNudge) {
+                    advDx += window.__thNudge.dx || 0;
+                    advDy += window.__thNudge.dy || 0;
+                  }
+
+                  if (isTownCenterImageReady) {
+                    const isAnchor = (tid === "b14_town_hall" && i === 13 && j === 15) ||
+                                     (tid === "d01_plaza_fountain" && i === 16 && j === 15);
+                    if (isAnchor) {
+                      // Công trình nhiều ô dùng đúng một ô neo trong world queue chung.
+                      c2d.save();
+                      setSpriteSampling(c2d, tileAdj);
+                      c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
+                      c2d.restore();
+                    }
+                  } else if (tid !== "d12_meadow_wildflowers" && !isFenceTile(tid) && !isFlatGroundTile(tid, imageCache[tid]?.src) &&
+                             !isTownCenterCovered && (!isCombinedWarehouseCell || isCombinedWarehouseAnchor)) {
+                    c2d.save();
+                    setSpriteSampling(c2d, tileAdj);
+                    if (isCellBeingMoved) c2d.globalAlpha = 0.35;
+                    if (flippedGrid[key]) {
+                      c2d.translate(ox + 128 - advDx, oy + advDy);
+                      c2d.scale(-1, 1);
+                      c2d.drawImage(img, 0, 0, tDw, tDh);
+                    } else {
+                      c2d.drawImage(img, ox + advDx, oy + advDy, tDw, tDh);
+                    }
+                    c2d.restore();
+                  }
+                }
+                // Ground, including missing-sprite fallbacks, is already complete
+                // in the ground pass. Never cover it with a solid green diamond.
+
+
+                // 5 Vật phẩm thẩm mỹ & trang trí hoàng gia
+                if (AESTHETIC_TILE_IDS.includes(tid) && !isFlatGroundTile(tid, imageCache[tid]?.src)) {
+                  c2d.save();
+                  if (isCellBeingMoved) c2d.globalAlpha = 0.35;
+                  renderAestheticTileDetails(c2d, ox, oy, animTime, tid);
+                  c2d.restore();
+                }
+
+                const ls = (livestockState && livestockState[key]) ? livestockState[key] : null;
+                if (isCellBeingMoved) c2d.save(), c2d.globalAlpha = 0.35;
+                if (tid === "b21_chicken_coop") {
+                  renderLivestockChickens(c2d, ox, oy, animTime, productionState[key], ls);
+                } else if (tid === "b22_cow_pasture") {
+                  renderDairyCows(c2d, ox, oy, animTime, productionState[key], tid, ls);
+                } else if (tid === "b57_sheep_pasture") {
+                  renderLivestockSheep(c2d, ox, oy, animTime, productionState[key], ls);
+                } else if (tid === "b58_textile_mill") {
+                  renderTextileMillDetails(c2d, ox, oy, animTime);
+                } else if (tid === "b59_dairy_factory") {
+                  renderDairyFactoryDetails(c2d, ox, oy, animTime);
+                }
+                if (isCellBeingMoved) c2d.restore();
+
+                // Cây ăn quả độc lập trên cỏ (Táo 🍎, Dừa 🥥, Me 🍈)
+                if (FRUIT_TREES_CONFIG[tid]) {
+                  renderFruitTreeDetails(c2d, ox, oy, animTime, tid, productionState[key] || (fruitTreesState ? fruitTreesState[key] : null), i, j);
+                }
+
+                // Bong bóng Thành Tựu: chỉ 1 chiếc, vẽ ở lớp overlay sau công trình lớn.
+                if (tid === "b14_town_hall" && i === 13 && j === 15) {
+                  const hasClaimable = ctx.hasClaimableAchievements ? ctx.hasClaimableAchievements() : false;
+                  if (hasClaimable) {
+                    bubbleOverlays.push({ kind: "achievement", depth: i + j, ox, oy });
+                  }
+                }
+
+                // Production Building Status & Harvest Bubbles (state do productionManager quản lý)
+                const isLivestock = tid === "b21_chicken_coop" || tid === "b22_cow_pasture" || tid === "b57_sheep_pasture";
+                if (PRODUCTION_BUILDINGS[tid] && !isLivestock) {
+                  const prod = PRODUCTION_BUILDINGS[tid];
+                  const p = productionState[key];
+                  if (p) {
+                    bubbleOverlays.push({
+                      kind: "production",
+                      depth: i + j,
+                      ox,
+                      oy,
+                      tid,
+                      prod,
+                      p,
+                      bLvl: buildingLevels[key] || 1,
+                      i,
+                      j
+                    });
+                  }
+                }
+
+                deferOverlay(() => {
+                // Upgrade In Progress Overlay & Level Badges
+                if (upgradesInProgress[key]) {
+                  const u = upgradesInProgress[key];
+                  const elapsed = Date.now() - u.startTime;
+                  const progress = Math.min(1.0, elapsed / u.durationMs);
+
+                  c2d.save();
+
+                  const bounce = Math.sin(animTime * 6.0) * 3;
+                  c2d.font = "20px sans-serif";
+                  c2d.textAlign = "center";
+                  c2d.fillText("⭐", ox + 64, oy + 68 + bounce);
+
+                  const barW = 48;
+                  const barH = 5;
+                  const barX = ox + 64 - barW / 2;
+                  const barY = oy + 104;
+
+                  c2d.fillStyle = "rgba(0, 0, 0, 0.65)";
+                  c2d.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+                  c2d.fillStyle = "#3b82f6";
+                  c2d.fillRect(barX, barY, barW * progress, barH);
+
+                  const secLeft = Math.ceil((u.durationMs - elapsed) / 1000);
+                  c2d.font = "700 9px sans-serif";
+                  c2d.fillStyle = "#ffffff";
+                  c2d.shadowColor = "#000";
+                  c2d.shadowBlur = 3;
+                  c2d.fillText(`Cấp ${u.targetLevel} (${secLeft}s)`, ox + 64, barY - 3);
+                  c2d.restore();
+                } else {
+                  const curBuildingLevel = buildingLevels[key] || 1;
+                  if (curBuildingLevel > 1) {
+                    c2d.save();
+                    const starBadge = curBuildingLevel === 3 ? "🌟 Lv.3" : "⭐ Lv.2";
+                    c2d.fillStyle = "rgba(0, 0, 0, 0.65)";
+                    c2d.beginPath();
+                    c2d.roundRect(ox + 64 - 20, oy + 98, 40, 14, 4);
+                    c2d.fill();
+                    c2d.font = "700 9px sans-serif";
+                    c2d.fillStyle = "#fef08a";
+                    c2d.textAlign = "center";
+                    c2d.textBaseline = "middle";
+                    c2d.fillText(starBadge, ox + 64, oy + 105);
+                    c2d.restore();
+                  }
+                }
+                });
+              }
+
+
+
+            }
+          }, 0);
+        }
+      }
+
+      // Assemble the entire fence network before queuing it: adjacent pieces
+      // share their posts/rails, including the buy/move ghost at the target.
+      const fenceCells = (ctx.getFences?.() || []).map(f => ({ ...f }));
+      for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLS; col++) {
+        const tileId = currentGrid[row]?.[col];
+        if (!isFenceTile(tileId) || constructions[`${row}_${col}`]) continue;
+        const isMoving = movingBuilding?.fromRow === row && movingBuilding?.fromCol === col;
+        const isSelected = selectedObj?.row === row && selectedObj?.col === col;
+        fenceCells.push({ tileId, row, col, flipped: !!flippedGrid[`${row}_${col}`],
+          alpha: isMoving || isSelected ? 0.35 : 1 });
+      }
+      const fenceGhost = activeBrush && activeBrush !== "erase"
+        ? (isFenceTile(activeBrush) ? { tileId: activeBrush, flipped: brushFlipped, validAlpha: 0.68, invalidAlpha: 0.38 } : null)
+        : (isFenceTile(movingBuilding?.tileId) ? { tileId: movingBuilding.tileId,
+          flipped: movingBuilding.flipped, validAlpha: 0.70, invalidAlpha: 0.40 } : null);
+      if (fenceGhost && hoverCell) {
+        const { row, col } = hoverCell;
+        const tid = currentGrid[row]?.[col];
+        const valid = isCellUnlocked(row, col, landUnlockedChunks, gameMode) &&
+          canAddFence(ctx.getFences?.() || [], fenceGhost.tileId, row, col, fenceGhost.flipped);
+        fenceCells.push({ ...fenceGhost, row, col, alpha: valid ? fenceGhost.validAlpha : fenceGhost.invalidAlpha });
+      }
+      for (const part of buildFenceNetwork(fenceCells)) {
+        queueWorld(part.row, part.col, () => drawFencePart(c2d, fenceTexture, part, ORIGIN_X, ORIGIN_Y), part.priority);
+      }
+
+      // All world bodies share the SAME anchor/depth comparator, including
+      // fractional positions of walking actors and vehicles.
+      for (const villager of villagerManager?.villagers || []) {
+        queueWorld(villager.r, villager.c, () => villagerManager.render(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, camera.zoom,
+          { only: villager, deferOverlay }));
+      }
+      for (const pet of petManager?.pets || []) {
+        queueWorld(pet.r, pet.c, () => petManager.render(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, null, pet));
+      }
+      for (const visitor of townVisitorManager?.visitors || []) {
+        queueWorld(visitor.row, visitor.col, () => townVisitorManager.render(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime,
+          { only: visitor, deferOverlay }));
+      }
+      if (orderBoardManager?.renderWorldTruckAndBoard) {
+        const board = orderBoardManager.getBoardCell?.() || { row: 15, col: 15 };
+        queueWorld(board.row, board.col, () => orderBoardManager.renderWorldTruckAndBoard(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "board", deferOverlay }));
+        const truck = orderBoardManager.getTruckCell?.();
+        if (truck?.isVisible) queueWorld(truck.row, truck.col, () => orderBoardManager.renderWorldTruckAndBoard(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" }));
+      }
+      if (harborShipManager?.renderWorldShipAndDock) {
+        queueWorld(SHIP_DOCK_ROW, SHIP_DOCK_COL, () => harborShipManager.renderWorldShipAndDock(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "dock", deferOverlay }));
+        queueWorld(SHIP_WATER_ROW, SHIP_WATER_COL, () => harborShipManager.renderWorldShipAndDock(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "ship", deferOverlay }));
+      }
+      for (const site of Object.values(kingdomWondersManager?.wonderSites || {})) {
+        if (site?.placed) queueWorld(site.row, site.col, () => kingdomWondersManager.renderSite(
+          c2d, site, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { deferOverlay }));
+      }
+      const isNight = dayNightWeather?.getCurrentPeriod?.() === "night";
+      for (const vehicle of [...(vehicleManager?.boats || []), ...(vehicleManager?.vehicles || [])]) {
+        queueWorld(vehicle.r, vehicle.c, () => vehicleManager.render(
+          c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, camera, isNight,
+          { only: vehicle, deferOverlay }));
+      }
+      if (hoverCell) queueWorld(hoverCell.row, hoverCell.col, drawGhostPreview, 2);
+      worldQueue.sort(compareWorldDepth);
+      for (const command of worldQueue) command.draw();
+
+      // Bong bóng được vẽ sau toàn bộ tile/công trình.
+
+      // Vẽ toàn bộ bong bóng ở lớp trên cùng (sau Tòa Thị Chính/Quảng Trường).
+      bubbleOverlays.sort((a, b) => a.depth - b.depth);
+      for (const item of bubbleOverlays) {
+        if (item.kind === "production") drawProductionBubble(c2d, item, animTime);
+        else if (item.kind === "achievement") drawAchievementBubble(c2d, item, animTime);
+      }
+
+      for (const draw of uiOverlays) draw();
+      if (petManager?.renderOverlays) {
+        petManager.renderOverlays(c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W);
+      }
+
+      // Render Floating Gain Texts
+      const pNow = performance.now();
+      floatingTexts = floatingTexts.filter(ft => (pNow - ft.startTime) < ft.duration);
+      for (const ft of floatingTexts) {
+        const tProgress = (pNow - ft.startTime) / ft.duration;
+        const curY = ft.y - tProgress * 36;
+        const alpha = Math.max(0, 1.0 - tProgress);
+
+        c2d.save();
+        c2d.font = "700 13px sans-serif";
+        c2d.textAlign = "center";
+        c2d.fillStyle = `rgba(34, 197, 94, ${alpha})`;
+        c2d.shadowColor = `rgba(0, 0, 0, ${alpha * 0.9})`;
+        c2d.shadowBlur = 4;
+        c2d.fillText(ft.text, ft.x, curY);
         c2d.restore();
       }
 

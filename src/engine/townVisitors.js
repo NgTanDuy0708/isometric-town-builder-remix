@@ -314,8 +314,8 @@ export class TownVisitorManager {
   /**
    * Vẽ Khách bộ hành và Bong bóng mua hàng trên Canvas
    */
-  render(c2d, originX, originY, halfW, quarterW, animTime) {
-    for (const v of this.visitors) {
+  render(c2d, originX, originY, halfW, quarterW, animTime, opts = {}) {
+    for (const v of (opts.only ? [opts.only] : this.visitors)) {
       const screenX = originX + (v.col - v.row) * halfW + 64;
       const screenY = originY + (v.row + v.col) * quarterW + 96;
 
@@ -350,45 +350,51 @@ export class TownVisitorManager {
       c2d.arc(screenX, charY - 4.5, 4, Math.PI, Math.PI * 2);
       c2d.fill();
 
-      // Trái tim khi bán hàng thành công
-      if (v.heartsAnim > 0) {
-        const heartY = charY - 26 - (1 - v.heartsAnim) * 12;
-        c2d.font = "14px sans-serif";
-        c2d.textAlign = "center";
-        c2d.fillText("❤️", screenX, heartY);
-      }
+      const drawOverlay = () => {
+        c2d.save();
+        // Trái tim khi bán hàng thành công
+        if (v.heartsAnim > 0) {
+          const heartY = charY - 26 - (1 - v.heartsAnim) * 12;
+          c2d.font = "14px sans-serif";
+          c2d.textAlign = "center";
+          c2d.fillText("❤️", screenX, heartY);
+        }
 
-      // Bong bóng mua hàng (khi đang đứng chờ tại Tòa Thị Chính)
-      if (v.state === "waiting") {
-        const bounceY = Math.sin(animTime * 4.0) * 3;
-        const bubbleX = screenX;
-        const bubbleY = charY - 22 + bounceY;
+        // Bong bóng mua hàng (khi đang đứng chờ tại Tòa Thị Chính)
+        if (v.state === "waiting") {
+          const bounceY = Math.sin(animTime * 4.0) * 3;
+          const bubbleX = screenX;
+          const bubbleY = charY - 22 + bounceY;
 
-        // Vẽ bong bóng trắng viền vàng
-        c2d.fillStyle = "#ffffff";
-        c2d.strokeStyle = "#f59e0b";
-        c2d.lineWidth = 1.8;
-        c2d.beginPath();
-        c2d.roundRect(bubbleX - 18, bubbleY - 10, 36, 20, 10);
-        c2d.fill();
-        c2d.stroke();
+          // Vẽ bong bóng trắng viền vàng
+          c2d.fillStyle = "#ffffff";
+          c2d.strokeStyle = "#f59e0b";
+          c2d.lineWidth = 1.8;
+          c2d.beginPath();
+          c2d.roundRect(bubbleX - 18, bubbleY - 10, 36, 20, 10);
+          c2d.fill();
+          c2d.stroke();
 
-        // Đuôi bong bóng
-        c2d.beginPath();
-        c2d.moveTo(bubbleX - 3, bubbleY + 10);
-        c2d.lineTo(bubbleX, bubbleY + 14);
-        c2d.lineTo(bubbleX + 3, bubbleY + 10);
-        c2d.fill();
-        c2d.stroke();
+          // Đuôi bong bóng
+          c2d.beginPath();
+          c2d.moveTo(bubbleX - 3, bubbleY + 10);
+          c2d.lineTo(bubbleX, bubbleY + 14);
+          c2d.lineTo(bubbleX + 3, bubbleY + 10);
+          c2d.fill();
+          c2d.stroke();
 
-        // Icon món hàng và số lượng
-        c2d.font = "11px sans-serif";
-        c2d.textAlign = "center";
-        c2d.textBaseline = "middle";
-        c2d.fillStyle = "#1e293b";
-        c2d.fillText(`${v.requestedItem.icon}×${v.requestedItem.amount}`, bubbleX, bubbleY);
-      }
+          // Icon món hàng và số lượng
+          c2d.font = "11px sans-serif";
+          c2d.textAlign = "center";
+          c2d.textBaseline = "middle";
+          c2d.fillStyle = "#1e293b";
+          c2d.fillText(`${v.requestedItem.icon}×${v.requestedItem.amount}`, bubbleX, bubbleY);
+        }
 
+        c2d.restore();
+      };
+      if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+      else drawOverlay();
       c2d.restore();
     }
   }

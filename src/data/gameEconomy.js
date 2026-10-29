@@ -1,5 +1,6 @@
 // Game economy configuration: gold prices, build durations, and production yields
 import { UPGRADES_CONFIG } from "./upgradesConfig.js";
+import { FENCE_PRICE_OVERRIDES, FENCE_DURATIONS } from "./fenceConfig.js";
 
 export const INITIAL_GOLD = 500;
 export const INITIAL_GEMS = 30; // Ruby khởi đầu cho Lãnh Chúa
@@ -16,6 +17,7 @@ export function getGemSpeedupCost(secondsRemaining) {
 
 // Specific price overrides for distinctive buildings and landmarks
 export const TILE_PRICE_OVERRIDES = {
+  ...FENCE_PRICE_OVERRIDES,
   // Common paths and decors
   "d12_meadow_wildflowers": 0,    // Free base grass
   "d01_plaza_fountain": 60,
@@ -377,6 +379,7 @@ export const TILE_BUILD_DURATIONS = {
 
 // Specific build duration overrides (in seconds)
 export const DURATION_OVERRIDES = {
+  ...FENCE_DURATIONS,
   "d12_meadow_wildflowers": 0,
   "d13_farmland_plot": 0, // Cày đất tức thì
   // Starter residential & livestock

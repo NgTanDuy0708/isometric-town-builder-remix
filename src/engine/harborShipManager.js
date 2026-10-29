@@ -610,7 +610,7 @@ export class HarborShipManager {
   /**
    * Vẽ Bến Tàu & Thuyền Buồm Caravel trên Canvas Isometric 2:1
    */
-  renderWorldShipAndDock(c2d, originX, originY, halfW, quarterW, animTime) {
+  renderWorldShipAndDock(c2d, originX, originY, halfW, quarterW, animTime, opts = {}) {
     // Tọa độ bến cảng đá tại ô [14, 3] (đứng ra ngoài mặt nước, không lấn vào đường)
     const dockRow = SHIP_DOCK_ROW;
     const dockCol = SHIP_DOCK_COL;
@@ -633,6 +633,7 @@ export class HarborShipManager {
     const drawPierX = dockX - (pierDrawW * 0.469);
     const drawPierY = (dockY + 8) - (pierDrawH * 0.791);
 
+    if (opts.only !== "ship") {
     if (pierImg && pierImg.complete && pierImg.naturalWidth > 0) {
       // Bóng cầu cảng đá trên mặt nước
       c2d.fillStyle = "rgba(15, 23, 42, 0.35)";
@@ -663,8 +664,11 @@ export class HarborShipManager {
       c2d.fillRect(dockX - 30, dockY - 20, 44, 2);
     }
 
+    }
+
     // 2. Nếu chưa mở khóa (Level < 6) -> Vẽ tấm biển cắm cọc khóa
     if (!this.isUnlocked()) {
+      if (opts.only === "ship") { c2d.restore(); return; }
       c2d.fillStyle = "#64748b";
       c2d.fillRect(dockX - 16, dockY - 42, 32, 16);
       c2d.fillStyle = "#f1f5f9";
@@ -677,6 +681,7 @@ export class HarborShipManager {
 
     // 3. Nếu tàu đang đi vắng (status === "away") -> Vẽ biển đếm ngược tàu tới
     if (this.ship && this.ship.status === "away") {
+      if (opts.only === "ship") { c2d.restore(); return; }
       const remMs = this.getTimeRemainingMs();
       c2d.fillStyle = "#92400e";
       c2d.fillRect(dockX - 22, dockY - 44, 44, 18);
@@ -689,6 +694,8 @@ export class HarborShipManager {
       c2d.restore();
       return;
     }
+
+    if (opts.only === "dock") { c2d.restore(); return; }
 
     // 4. Khi Tàu Buôn Đang Cập Bến (status === "docked") -> Đậu trên mặt nước ô [15, 3]
     const waveOffset = Math.sin((animTime || 0) * 2.2) * 2.5; // Nhấp nhô nhẹ nhàng theo sóng biển
@@ -732,26 +739,31 @@ export class HarborShipManager {
       c2d.quadraticCurveTo((shipBowX + bollardX) / 2 - 4, (shipBowY + bollardY) / 2 + 10 + waveOffset * 0.5, bollardX, bollardY);
       c2d.stroke();
 
-      // Bong bóng thông báo nổi trên cột buồm chính
-      const packedCount = this.getPackedCratesCount();
-      const bubbleX = drawX + shipDrawW * 0.435;
-      const bubbleY = drawY + shipDrawH * 0.143 - 8;
+      const drawOverlay = () => {
+        c2d.save();
+        // Bong bóng thông báo nổi trên cột buồm chính
+        const packedCount = this.getPackedCratesCount();
+        const bubbleX = drawX + shipDrawW * 0.435;
+        const bubbleY = drawY + shipDrawH * 0.143 - 8;
 
-      c2d.fillStyle = packedCount === 9 ? "#10b981" : "#ffffff";
-      c2d.strokeStyle = packedCount === 9 ? "#047857" : "#f59e0b";
-      c2d.lineWidth = 1.5;
+        c2d.fillStyle = packedCount === 9 ? "#10b981" : "#ffffff";
+        c2d.strokeStyle = packedCount === 9 ? "#047857" : "#f59e0b";
+        c2d.lineWidth = 1.5;
 
-      const bubbleText = packedCount === 9 ? "⚓ XUẤT BẾN!" : `${packedCount}/9 📦`;
-      c2d.beginPath();
-      c2d.roundRect(bubbleX - 28, bubbleY - 11, 56, 17, 8);
-      c2d.fill();
-      c2d.stroke();
+        const bubbleText = packedCount === 9 ? "⚓ XUẤT BẾN!" : `${packedCount}/9 📦`;
+        c2d.beginPath();
+        c2d.roundRect(bubbleX - 28, bubbleY - 11, 56, 17, 8);
+        c2d.fill();
+        c2d.stroke();
 
-      c2d.fillStyle = packedCount === 9 ? "#ffffff" : "#0f172a";
-      c2d.font = "bold 9px sans-serif";
-      c2d.textAlign = "center";
-      c2d.fillText(bubbleText, bubbleX, bubbleY + 1);
-
+        c2d.fillStyle = packedCount === 9 ? "#ffffff" : "#0f172a";
+        c2d.font = "bold 9px sans-serif";
+        c2d.textAlign = "center";
+        c2d.fillText(bubbleText, bubbleX, bubbleY + 1);
+        c2d.restore();
+      };
+      if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+      else drawOverlay();
       c2d.restore();
       return;
     }
@@ -851,27 +863,32 @@ export class HarborShipManager {
     c2d.lineTo(dockX - 26, dockY - 18);
     c2d.stroke();
 
-    // Bong bóng thông báo nổi trên cột buồm
-    const packedCount = this.getPackedCratesCount();
-    const bubbleY = shipY - 60;
-    const bubbleX = shipX + 14;
+    const drawOverlay = () => {
+      c2d.save();
+      // Bong bóng thông báo nổi trên cột buồm
+      const packedCount = this.getPackedCratesCount();
+      const bubbleY = shipY - 60;
+      const bubbleX = shipX + 14;
 
-    c2d.fillStyle = packedCount === 9 ? "#10b981" : "#ffffff";
-    c2d.strokeStyle = packedCount === 9 ? "#047857" : "#f59e0b";
-    c2d.lineWidth = 1.5;
+      c2d.fillStyle = packedCount === 9 ? "#10b981" : "#ffffff";
+      c2d.strokeStyle = packedCount === 9 ? "#047857" : "#f59e0b";
+      c2d.lineWidth = 1.5;
 
-    // Hộp bong bóng
-    const bubbleText = packedCount === 9 ? "⚓ XUẤT BẾN!" : `${packedCount}/9 📦`;
-    c2d.beginPath();
-    c2d.roundRect(bubbleX - 28, bubbleY - 11, 56, 17, 8);
-    c2d.fill();
-    c2d.stroke();
+      // Hộp bong bóng
+      const bubbleText = packedCount === 9 ? "⚓ XUẤT BẾN!" : `${packedCount}/9 📦`;
+      c2d.beginPath();
+      c2d.roundRect(bubbleX - 28, bubbleY - 11, 56, 17, 8);
+      c2d.fill();
+      c2d.stroke();
 
-    c2d.fillStyle = packedCount === 9 ? "#ffffff" : "#0f172a";
-    c2d.font = "bold 9px sans-serif";
-    c2d.textAlign = "center";
-    c2d.fillText(bubbleText, bubbleX, bubbleY + 1);
-
+      c2d.fillStyle = packedCount === 9 ? "#ffffff" : "#0f172a";
+      c2d.font = "bold 9px sans-serif";
+      c2d.textAlign = "center";
+      c2d.fillText(bubbleText, bubbleX, bubbleY + 1);
+      c2d.restore();
+    };
+    if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+    else drawOverlay();
     c2d.restore();
   }
 

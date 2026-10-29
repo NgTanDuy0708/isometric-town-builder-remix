@@ -1,0 +1,91 @@
+{
+  "mode": "built-in image_gen",
+  "prompt_file": "docs/WATCHTOWER_IMAGE_PROMPTS.md",
+  "levels": [
+    {
+      "level": 1,
+      "generated_file": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185de-b379-77f0-8a32-34290fd4e9e9\\exec-a69cd784-4c76-483a-8673-5b412addeac2.png",
+      "source_file": "watchtower_lv1_source.png",
+      "game_file": "public/assets/buildings/watchtower_lv1.png",
+      "world_width": 112,
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_bounds": [
+        302,
+        23,
+        988,
+        1202
+      ],
+      "render_geometry": {
+        "width": 1254,
+        "height": 1254,
+        "visibleWidth": 686,
+        "anchorX": 702,
+        "anchorY": 1202,
+        "worldWidth": 112
+      },
+      "sha256": "27a6e127fc8bbdbdff655492ab8cc155c1b3581168d8bae311196d4ceb20c363"
+    },
+    {
+      "level": 2,
+      "generated_file": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185de-b379-77f0-8a32-34290fd4e9e9\\exec-09b84627-0658-4d82-8e42-a37f5626a013.png",
+      "source_file": "watchtower_lv2_source.png",
+      "game_file": "public/assets/buildings/watchtower_lv2.png",
+      "world_width": 136,
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_bounds": [
+        313,
+        42,
+        968,
+        1206
+      ],
+      "render_geometry": {
+        "width": 1254,
+        "height": 1254,
+        "visibleWidth": 655,
+        "anchorX": 567,
+        "anchorY": 1206,
+        "worldWidth": 136
+      },
+      "sha256": "c5dd2a5609385bcd881ecd1907f4ab8c7db29e1e592c86a4c3890edd215b1d53"
+    },
+    {
+      "level": 3,
+      "generated_file": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185de-b379-77f0-8a32-34290fd4e9e9\\exec-729185cf-c2e1-490f-833c-8ae9a9aa62b5.png",
+      "source_file": "watchtower_lv3_source.png",
+      "game_file": "public/assets/buildings/watchtower_lv3.png",
+      "world_width": 128,
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_bounds": [
+        346,
+        27,
+        932,
+        1217
+      ],
+      "render_geometry": {
+        "width": 1254,
+        "height": 1254,
+        "visibleWidth": 586,
+        "anchorX": 571,
+        "anchorY": 1217,
+        "worldWidth": 128
+      },
+      "sha256": "39f1d6b45006da98caea6fdc88b5589bf79cc8b6319628b6b281cde5f16180b5"
+    }
+  ],
+  "postprocess": {
+    "mode": "original_png_byte_for_byte",
+    "resize": false,
+    "palette_reduction": false,
+    "pixel_block_upscale": false,
+    "alpha_preserved": true
+  }
+}

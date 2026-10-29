@@ -1,0 +1,20 @@
+Wheat seed icon — preview v1
+Generated with the built-in imagegen tool.
+Preview only; not wired into the game.
+Asset: assets-source/crop-seeds/wheat_seed_preview_v1.png
+Actual generated output: 1254x1254 RGBA with transparent alpha; original preserved.
+
+Use case: stylized-concept.
+Asset type: individual wheat seed inventory/shop icon for a medieval isometric farming town-builder.
+
+Primary request: ONE compact wheat-seed pouch icon, not a growing wheat plant and not a crop growth sheet. A small warm-beige linen seed pouch with a loosely open folded mouth showing a few golden elongated wheat kernels. One large, simple embroidered golden wheat-ear pictogram on the front of the pouch identifies the species, with no letters or written label. Three loose wheat kernels rest immediately beside the base, close enough to read as part of this single compact icon.
+
+Art direction: warm fantasy pixel-art game sprite compatible with timber-and-stone medieval buildings and muted olive-green terrain. Crisp stepped pixel edges, readable silhouette at 32px, clean clustered detail and restrained discrete shading. Preserve clean native pixel-art detail: no coarse mosaic and no artificially oversized 4x4 pixel blocks. Fine consistent dark warm-brown outline. Simple fabric folds, only a few clusters suggesting linen, no photographic weave or noisy tiny decoration.
+
+Camera: three-quarter strict 2:1 dimetric isometric view, gently looking down into the pouch opening. Upright pouch remains vertical. Light from upper-left. Flat colour clusters with clear upper-left highlights and darker lower-right folds.
+
+Palette: restrained warm natural colours, beige linen #e8cd97 and #e6dfa1, ochre and grain #ccb45c #ba9745, brown shadows #855c22 #9e5333, dark outline #67231b. Only a few coherent discrete shades per material.
+
+Composition and output: exactly 1024x1024 PNG with genuine transparent alpha. One isolated complete pouch-and-kernel icon, centred horizontally, all parts fully visible inside x=128..896 and y=128..896. Lowest base contact at approximately (512,896); draw upward from there. The seed icon is the subject and must remain legible when reduced to a small UI icon. Empty space outside the pouch and the three nearby grains must be genuinely transparent.
+
+Avoid: whole growing wheat plant, wheat field, cut or tied sheaf, harvested wheat bouquet, unrelated crops, leaves, flowers, extra bags, scattered pile of produce, text, letters, numbers, printed words, logos, watermark, decorative frame, soil, grass, terrain diamond, ground tile, floor, table, cast shadow, background scene, opaque background, painted checkerboard, smooth gradients, blur, soft anti-aliased fuzzy outlines, noisy dithering, photorealism, glossy 3D render, plastic fabric, sprite sheet, collage, multiple panels.

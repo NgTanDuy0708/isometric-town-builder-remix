@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { initIsometricStudio } from './studioEngine.js';
 import './styles.css';
+import { FENCE_ITEMS } from './data/fenceConfig.js';
 
 const STUDIO_MARKUP = `
   <!-- Canvas Container (Full Screen) -->
   <div id="canvas-container">
     <canvas id="builder-canvas"></canvas>
   </div>
+  <a href="/map-editor" target="_blank" rel="noreferrer" class="map-editor-link" style="position:fixed;bottom:18px;left:18px;z-index:60;padding:9px 13px;border:1px solid #7f985c;border-radius:9px;background:#fbf9ed;color:#355539;font:600 12px system-ui;text-decoration:none;box-shadow:0 3px 12px #182b1e25">✎ Vẽ map</a>
 
   <!-- Top-Left Floating HUD Bar: Level & Active Town Event & Season Pill -->
   <aside class="top-left-hud-bar" id="top-left-hud-bar" aria-label="Cấp độ và sự kiện vương quốc">
@@ -768,6 +770,7 @@ const STUDIO_MARKUP = `
         <button type="button" class="shop-tab-btn" data-shop-cat="production">🏭 Cửa hàng & Sản xuất</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="farming">🌱 Nông trại & Đất</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="roads">🛣️ Đường & Cầu</button>
+        <button type="button" class="shop-tab-btn" data-shop-cat="fences"><img class="shop-tab-icon" src="${FENCE_ITEMS[0].uri}" alt="" />Hàng rào</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="decor">🌸 Phong cảnh & Hoa</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="nature">🏞️ Địa hình & Biomes</button>
         <button type="button" class="shop-tab-btn" data-shop-cat="wonders">🏛️ Kỳ Quan</button>

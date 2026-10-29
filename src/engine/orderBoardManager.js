@@ -606,6 +606,10 @@ export function createOrderBoardManager(ctx) {
     return { row: r, col: c, isVisible };
   }
 
+  function getBoardCell() {
+    return { row: truckState.boardRow, col: truckState.boardCol };
+  }
+
   /**
    * Vẽ Bảng Đơn Hàng và Xe Tải Giao Hàng trên Canvas
    */
@@ -647,31 +651,37 @@ export function createOrderBoardManager(ctx) {
         c2d.fillRect(boardX - 12, boardY - 22, 24, 16);
       }
 
-      // Huy hiệu thông báo có đơn sẵn sàng giao trên đầu bảng
-      let readyCount = 0;
-      orders.forEach(slot => {
-        if (slot && slot.items && canFulfillOrder(slot)) readyCount++;
-      });
+      const drawOverlay = () => {
+        c2d.save();
+        // Huy hiệu thông báo có đơn sẵn sàng giao trên đầu bảng
+        let readyCount = 0;
+        orders.forEach(slot => {
+          if (slot && slot.items && canFulfillOrder(slot)) readyCount++;
+        });
 
-      if (readyCount > 0 && !truckState.isDelivering) {
-        const badgeBounce = Math.sin(animTime * 4.0) * 2.5;
-        const bx = boardX - 12;
-        const by = boardY - 56 + badgeBounce;
+        if (readyCount > 0 && !truckState.isDelivering) {
+          const badgeBounce = Math.sin(animTime * 4.0) * 2.5;
+          const bx = boardX - 12;
+          const by = boardY - 56 + badgeBounce;
 
-        c2d.fillStyle = "#10b981";
-        c2d.strokeStyle = "#ffffff";
-        c2d.lineWidth = 1.5;
-        c2d.beginPath();
-        c2d.arc(bx, by, 9, 0, Math.PI * 2);
-        c2d.fill();
-        c2d.stroke();
+          c2d.fillStyle = "#10b981";
+          c2d.strokeStyle = "#ffffff";
+          c2d.lineWidth = 1.5;
+          c2d.beginPath();
+          c2d.arc(bx, by, 9, 0, Math.PI * 2);
+          c2d.fill();
+          c2d.stroke();
 
-        c2d.font = "bold 9.5px sans-serif";
-        c2d.fillStyle = "#ffffff";
-        c2d.textAlign = "center";
-        c2d.textBaseline = "middle";
-        c2d.fillText(String(readyCount), bx, by);
-      }
+          c2d.font = "bold 9.5px sans-serif";
+          c2d.fillStyle = "#ffffff";
+          c2d.textAlign = "center";
+          c2d.textBaseline = "middle";
+          c2d.fillText(String(readyCount), bx, by);
+        }
+        c2d.restore();
+      };
+      if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+      else drawOverlay();
       c2d.restore();
     }
 
@@ -758,6 +768,7 @@ export function createOrderBoardManager(ctx) {
     checkWorldClick,
     renderWorldTruckAndBoard,
     getTruckCell,
+    getBoardCell,
     isTruckDelivering: () => truckState.isDelivering,
     reset: () => {
       orders = [];

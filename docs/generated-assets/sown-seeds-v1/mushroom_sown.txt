@@ -1,0 +1,14 @@
+Use case: stylized-concept.
+Asset type: just-sown mushroom planting material overlay for one tile of a medieval isometric farming game.
+
+Reference image 1 is the APPROVED WHEAT SOWING OVERLAY. Use it as the fixed visual template for composition, camera, seed positions, native pixel style, spacing, lighting and transparency. Create a NEW crop-specific asset. Replace each wheat kernel one-for-one with the requested seed. Preserve the same twelve planting positions, four parallel rows of three, low wide 2:1 isometric footprint, transparent margins and overall scale. Keep grain centres stationary; the shapes may differ naturally. Do not copy the wheat seed anatomy into this new species.
+
+Requested subject: mushroom planting spawn for a farming game: twelve tiny separate ivory-beige grain-shaped spawn pieces, each with a restrained cream-white mycelium coating shown by two or three flat pixel clusters. These are just-sown spawn grains, not biological true seeds. No mushroom caps, stalks, leafy seedlings, roots, cotton fluff, substrate block, soil or log.
+
+Only the twelve small just-sown seed/spawn pieces are visible. They lie flat where they were sown on an INVISIBLE ground plane before germination. The arrangement follows the same +1 vertical : +2 horizontal isometric planting-row direction as the reference. All twelve objects have the same scale within this image. Keep each object within the reference grain's small bounding area; do not zoom the seeds to fill the image.
+
+Match the approved sprite's warm fantasy pixel art: crisp stepped pixels, simple clean flat colour clusters, a thin dark brown or dark neutral outline, restrained material detail, upper-left lighting, no smooth shading or blur. Species-appropriate natural muted colours, only a few discrete tones per seed. Transparent pixels must not contain visible red fringes, halos or stray speckles. Do not introduce any background or drawn supporting surface.
+
+Output one complete square PNG with true transparent alpha, matching the reference canvas dimensions (1254x1254) and placement. Everything outside and between the twelve planting pieces must be transparent. This is one 1x1-tile overlay; it is not a contact sheet or inventory illustration.
+
+Avoid: soil, dirt, terrain, furrows, ground diamond, visible grid, floor, table, clods, pebbles, grass, cast shadows, drop shadow, bags, pouches, packets, bowls, harvested produce piles, crop fruit, growing plants, sprouts, leaves, roots, stems, mature grain ears, text, numbers, logos, watermark, border, panels, collage, photorealism, glossy 3D, gradients, fuzzy antialiasing, noise, oversized pixel mosaic, neon red edge contamination, opaque background, painted checkerboard.

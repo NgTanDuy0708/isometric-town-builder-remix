@@ -1,3 +1,4 @@
+import { placeFenceOnEdges } from "./engine/fencePlacement.js";
 import {
   INITIAL_GOLD, INITIAL_GEMS, getGemSpeedupCost, getTileCost, getTileBuildDuration, PRODUCTION_BUILDINGS,
   calculateVillageStats, getTilePopulation, getTileRequiredLevel,
@@ -7,7 +8,7 @@ import {
 } from "./data/gameEconomy.js";
 import { QUESTS_CONFIG, QUEST_CHAPTERS, isQuestUnlocked, getQuestById } from "./data/questsData.js";
 import { loadGameSave, saveGameSave, exportGameToJSON, importGameFromJSON, getDefaultSaveState, cleanOldSavesForV3 } from "./engine/storage.js";
-import { TILE_ANIM_URIS, ENTITY_SPRITES, TILE_DATA_URIS } from "./data/sprites.js";
+import { TILE_DATA_URIS } from "./data/sprites.js";
 import { TILES_DATA, PRESETS } from "./data/tilesData.js";
 import {
   ROWS, COLS, HALF_W, QUARTER_W, PAD, ORIGIN_X, ORIGIN_Y,
@@ -41,7 +42,6 @@ import {
   startBGM, stopBGM
 } from "./engine/audioEngine.js";
 import { dayNightWeather, TIME_PERIODS, WEATHER_TYPES } from "./engine/dayNightWeather.js";
-import { CROP_PIXEL_SPRITES } from "./data/cropSprites.js";
 import { createUpgradeManager, calculateDemolishRefund, getRotatedTileIdAndFlip, isRotationVisible } from "./engine/upgradeManager.js";
 import { createUIModalController, showToast } from "./engine/uiModalController.js";
 import { initInputHandler, findHitBubble } from "./engine/inputHandler.js";
@@ -60,6 +60,11 @@ import { FishingManager } from "./engine/fishingMinigame.js";
 import { DailyWheelManager } from "./engine/dailyWheel.js";
 import { SeasonalThemeManager } from "./engine/seasonalThemes.js";
 import { AESTHETIC_TILE_URIS } from "./data/aestheticTileIcons.js";
+import { getBuildingSpriteUri } from "./data/buildingSprites.js";
+import { applyCoastTerrainLayout } from "./data/terrainConfig.js";
+import { TERRAIN_MAP_KEY, readTerrainMap, syncTerrainToGrid } from "./engine/terrainEditing.js";
+import { isFenceTile, migrateGridFences } from "./data/fenceConfig.js";
+import { paintFenceThumbnail } from "./engine/fenceRenderer.js";
 import { createStarterTownMap32, applyTownCenterLayout, getStarterFarmlandState, isProtectedTile, isIndestructibleTile, migrateLegacyWarehouseLayout } from "./data/starterMap.js";
 import { DEV_FULL_VILLAGE_SAVE } from "./data/devSaveData.js";
 
@@ -205,27 +210,10 @@ export function initIsometricStudio() {
       localStorage.setItem(BLANK_MAP_MARKER, "1");
     }
 
-    // Dải cát ven biển cols 4..5 cho save hiện tại (một lần).
-    const SAND_STRIP_MARKER = "isometric_sand_strip_cols_4_5_v1";
-    if (!localStorage.getItem(SAND_STRIP_MARKER)) {
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 4; c <= 5; c++) {
-          if (currentGrid[r]) currentGrid[r][c] = "s13_sand_ground";
-        }
-      }
-      localStorage.setItem(SAND_STRIP_MARKER, "1");
-    }
-
-    // Dải biển Tây [0,0] -> [31,3] cho save hiện tại (một lần).
-    const SEA_STRIP_MARKER = "isometric_sea_strip_cols_0_3_v1";
-    if (!localStorage.getItem(SEA_STRIP_MARKER)) {
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c <= 3; c++) {
-          if (currentGrid[r]) currentGrid[r][c] = "m30_sea_var2_coral_reef";
-        }
-      }
-      localStorage.setItem(SEA_STRIP_MARKER, "1");
-    }
+    // Đồng bộ bờ col 4 và cát cols 5..6 cho save cũ, giữ công trình.
+    applyCoastTerrainLayout(currentGrid);
+    let terrainMap = readTerrainMap(localStorage);
+    syncTerrainToGrid(currentGrid, terrainMap);
 
     // Dọn sạch hoàn toàn các ô r02_cobblestone không có hình ảnh từ các bản đồ save cũ
     for (let r = 0; r < ROWS; r++) {
@@ -367,6 +355,7 @@ export function initIsometricStudio() {
 
     // Flipped Tiles State
     let flippedGrid = initialSave.flippedGrid || {};
+    let fences = migrateGridFences(currentGrid, flippedGrid, initialSave.fences || []);
 
     // Constructions State
     let constructions = initialSave.constructions || {};
@@ -406,6 +395,7 @@ export function initIsometricStudio() {
         savedAt: Date.now(),
         presetName: 'custom',
         grid: currentGrid,
+        fences,
         flippedGrid,
         constructions,
         productionState: productionManager.getState(),
@@ -853,6 +843,7 @@ export function initIsometricStudio() {
         egg: 0, milk: 0, wool: 0, fabric: 0, butter: 0, bread: 0, ironTools: 0
       };
       currentGrid = createStarterTownMap32();
+      fences = [];
       constructions = {};
       buildingLevels = {};
       upgradesInProgress = {};
@@ -1205,6 +1196,7 @@ export function initIsometricStudio() {
         return;
       }
       hud.classList.remove("hidden");
+      if (thumbEl) thumbEl.style.visibility = "visible";
 
       if (kingdomWondersManager && kingdomWondersManager.movingWonderId) {
         const wid = kingdomWondersManager.movingWonderId;
@@ -1236,7 +1228,7 @@ export function initIsometricStudio() {
         if (titleEl) titleEl.textContent = `🚚 Di chuyển: ${t ? t.label : movingBuilding.tileId}` + (movingBuilding.flipped ? " (Đã xoay)" : "");
         if (metaEl) metaEl.textContent = "Nhấp ô cỏ trống để đặt • R: Xoay • Esc: Hủy";
         if (thumbEl) {
-          thumbEl.src = AESTHETIC_TILE_URIS[movingBuilding.tileId] || ((typeof TILE_DATA_URIS !== "undefined" && TILE_DATA_URIS[movingBuilding.tileId]) ? TILE_DATA_URIS[movingBuilding.tileId] : ("tiles/" + movingBuilding.tileId + "_128.png"));
+          thumbEl.src = getBuildingSpriteUri(movingBuilding.tileId, movingBuilding.level || 1) || AESTHETIC_TILE_URIS[movingBuilding.tileId] || TILE_DATA_URIS[movingBuilding.tileId] || TILE_DATA_URIS.d12_meadow_wildflowers;
         }
         return;
       }
@@ -1245,7 +1237,8 @@ export function initIsometricStudio() {
         if (titleEl) titleEl.textContent = "❌ Công Cụ Phá Dỡ (Xóa)";
         if (metaEl) metaEl.textContent = "Nhấp chuột trái vào ô cần dọn dẹp (Hoàn tiền 100%)";
         if (thumbEl) {
-          thumbEl.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='30' font-size='28'>❌</text></svg>";
+          thumbEl.removeAttribute("src");
+          thumbEl.style.visibility = "hidden";
         }
         return;
       }
@@ -1254,9 +1247,9 @@ export function initIsometricStudio() {
       if (t) {
         if (titleEl) titleEl.textContent = t.label + (brushFlipped ? " (Đã xoay)" : "");
         const cost = getTileCost(t.id, t.category);
-        if (metaEl) metaEl.textContent = (gameMode === "sandbox" || cost === 0) ? "Miễn phí" : `Chi phí: ${cost} 🪙`;
+        if (metaEl) metaEl.textContent = ((gameMode === "sandbox" || cost === 0) ? "Miễn phí" : `Chi phí: ${cost} 🪙`) + (isFenceTile(activeBrush) ? " • Đặt trên cạnh, không chiếm ô đất • R: Xoay" : "");
         if (thumbEl) {
-          thumbEl.src = AESTHETIC_TILE_URIS[t.id] || ((typeof TILE_DATA_URIS !== "undefined" && TILE_DATA_URIS[t.id]) ? TILE_DATA_URIS[t.id] : ("tiles/" + t.id + "_128.png"));
+          thumbEl.src = AESTHETIC_TILE_URIS[t.id] || TILE_DATA_URIS[t.id] || TILE_DATA_URIS.d12_meadow_wildflowers;
         }
       }
     }
@@ -1700,7 +1693,10 @@ export function initIsometricStudio() {
       loadImportedState: (imported) => {
         currentGrid = imported.grid;
         migrateLegacyWarehouseLayout(currentGrid);
+        applyCoastTerrainLayout(currentGrid);
+        syncTerrainToGrid(currentGrid, terrainMap);
         flippedGrid = imported.flippedGrid || {};
+        fences = migrateGridFences(currentGrid, flippedGrid, imported.fences || []);
         constructions = imported.constructions || {};
         productionManager.setState(imported.productionState || {});
         buildingLevels = imported.buildingLevels || {};
@@ -2039,6 +2035,8 @@ export function initIsometricStudio() {
 
       const filtered = TILES_DATA.filter(t => {
         if (activeShopCategory === 'all') return true;
+        if (activeShopCategory === 'fences') return isFenceTile(t.id);
+        if (isFenceTile(t.id)) return false;
 
         if (activeShopCategory === 'residential') {
           return t.category === 'building' && (
@@ -2098,7 +2096,7 @@ export function initIsometricStudio() {
         card.className = "shop-item-card" + (activeBrush === tile.id ? " selected" : "") + (isLocked || isPenLimitReached ? " locked-item" : "");
         const cost = getTileCost(tile.id, tile.category);
         const pop = getTilePopulation(tile.id, tile.category);
-        const imgSrc = AESTHETIC_TILE_URIS[tile.id] || ((typeof TILE_DATA_URIS !== 'undefined' && TILE_DATA_URIS[tile.id]) ? TILE_DATA_URIS[tile.id] : ('tiles/' + tile.id + '_128.png'));
+        const imgSrc = AESTHETIC_TILE_URIS[tile.id] || TILE_DATA_URIS[tile.id] || TILE_DATA_URIS.d12_meadow_wildflowers;
 
         let penBadge = "";
         if (isPen && !isLocked) {
@@ -2107,7 +2105,9 @@ export function initIsometricStudio() {
 
         card.innerHTML = `
           ${isLocked ? `<div class="locked-badge-overlay">🔒 Cần Cấp ${reqLvl}</div>` : (isPenLimitReached ? `<div class="locked-badge-overlay" style="background: rgba(15, 23, 42, 0.75); color: #facc15;">🛖 Đầy chuồng (${builtPens}/${maxPens})</div>` : '')}
-          <img class="shop-item-thumb" src="${imgSrc}" alt="${tile.label}" onerror="this.onerror=null; this.src='tiles/d12_meadow_wildflowers_128.png';" />
+          ${isFenceTile(tile.id)
+            ? `<canvas class="shop-item-thumb" width="160" height="160" role="img" aria-label="${tile.label}"></canvas>`
+            : `<img class="shop-item-thumb" src="${imgSrc}" alt="${tile.label}" onerror="this.style.visibility='hidden';" />`}
           <div class="shop-item-name">${tile.label}</div>
           <div class="shop-item-desc">${tile.doc || "Công trình trang trí vương quốc."}</div>
           <div class="shop-item-badges">
@@ -2139,6 +2139,7 @@ export function initIsometricStudio() {
           showToast(`🏗️ Đã chọn: ${tile.label}`, "info");
         });
 
+        if (isFenceTile(tile.id)) paintFenceThumbnail(card.querySelector("canvas"), tile.id);
         shopItemsContainer.appendChild(card);
       });
     }
@@ -2217,6 +2218,15 @@ export function initIsometricStudio() {
       setMovingBuilding: (info) => { movingBuilding = info; },
       triggerAutoSave
     });
+
+    function placeFence(tileId, row, col, flipped = false) {
+      return placeFenceOnEdges({
+        getFences: () => fences, getCurrentGrid: () => currentGrid,
+        getLandUnlockedChunks: () => landUnlockedChunks, getGameMode: () => gameMode,
+        getPlayerGold: () => playerGold, deductGold: amount => { playerGold -= amount; },
+        updateGoldDisplay, showToast, requestRender, triggerAutoSave
+      }, tileId, row, col, flipped);
+    }
 
     // Erase cell logic
     function eraseCell(row, col) {
@@ -3202,6 +3212,7 @@ export function initIsometricStudio() {
     function tryPlaceContinuousBrush(row, col) {
       if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
       if (!activeBrush) return false;
+      if (isFenceTile(activeBrush)) return placeFence(activeBrush, row, col, brushFlipped);
       if (gameMode === "game" && !isCellUnlocked(row, col, landUnlockedChunks, gameMode)) return false;
       if (kingdomWondersManager && typeof kingdomWondersManager.getWonderAt === "function" &&
           kingdomWondersManager.getWonderAt(row, col)) return false;
@@ -3491,6 +3502,7 @@ export function initIsometricStudio() {
 
     // Input Handler Module (Mouse clicks, panning, zooming, continuous drag, hotkeys)
     const inputHandler = initInputHandler(container, {
+      getFences: () => fences,
       getCamera: () => camera,
       applyZoom,
       zoomIn,
@@ -3597,6 +3609,8 @@ export function initIsometricStudio() {
 
     // Canvas 2D Isometric Graphics Renderer Module
     canvasRenderer = createCanvasRenderer({
+      getTerrainMap: () => terrainMap,
+      getFences: () => fences,
       getCanvas: () => canvas,
       getContainer: () => container,
       getContext2D: () => ctx,
@@ -3640,6 +3654,14 @@ export function initIsometricStudio() {
       updateResourcesUI,
       onRequestRender: () => requestRender()
     });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key !== TERRAIN_MAP_KEY) return;
+      terrainMap = readTerrainMap(localStorage);
+      syncTerrainToGrid(currentGrid, terrainMap);
+      persistGameState();
+      requestRender();
+    }, { signal });
 
     function renderCanvas() {
       if (canvasRenderer) canvasRenderer.renderCanvas();

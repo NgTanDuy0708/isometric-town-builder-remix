@@ -2009,6 +2009,14 @@
       height: 36px;
     }
 
+    .shop-tab-icon {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      flex-shrink: 0;
+    }
+
     .shop-tab-btn:hover {
       background: #fdf4ff;
       border-color: #d97706;
@@ -8320,4 +8328,10 @@ body:has(#farm-tool-active-hud:not(.hidden)) .game-toast {
 .wheel-badge,
 .hud-event-card {
   animation: none !important;
+}
+
+/* Nút Xoay bị mờ khi vật phẩm có hình đối xứng (xoay không đổi gì) */
+.action-bar-btn.is-disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
 }

@@ -302,11 +302,11 @@ export class PetManager {
   /**
    * Render hoạt họa đàn thú cưng trên Canvas 2D
    */
-  render(ctx, originX, originY, halfW, quarterW, animTime, depthFilter = null) {
+  render(ctx, originX, originY, halfW, quarterW, animTime, depthFilter = null, onlyPet = null) {
     if (this.pets.length === 0) return;
 
     // Sắp xếp theo chiều sâu isometric (r + c)
-    const sorted = [...this.pets].sort((a, b) => (a.r + a.c) - (b.r + b.c));
+    const sorted = onlyPet ? [onlyPet] : [...this.pets].sort((a, b) => (a.r + a.c) - (b.r + b.c));
 
     for (const pet of sorted) {
       if (depthFilter !== null && pet.r + pet.c !== depthFilter) continue;
@@ -350,7 +350,7 @@ export class PetManager {
       ctx.restore();
     }
 
-    if (depthFilter === null) {
+    if (depthFilter === null && !onlyPet) {
       this.renderOverlays(ctx, originX, originY, halfW, quarterW);
     }
   }

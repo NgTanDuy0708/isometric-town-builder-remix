@@ -1,3 +1,5 @@
+import { placeFenceOnEdges } from "./fencePlacement.js";
+import { isFenceTile, getFenceSegments } from "../data/fenceConfig.js";
 import {
   ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W
 } from "./isoMath.js";
@@ -321,6 +323,9 @@ export function initInputHandler(container, ctx) {
       playErrorSound();
       ctx.showToast("🔒 Không thể đặt vào lãnh thổ chưa mở khóa!", "warning");
       return false;
+    }
+    if (isFenceTile(activeBrush)) {
+      return placeFenceOnEdges(ctx, activeBrush, cell.row, cell.col, ctx.getBrushFlipped());
     }
     if (isProtectedTile(cell.row, cell.col, currentGrid[cell.row]?.[cell.col])) {
       playErrorSound();
@@ -814,6 +819,25 @@ export function initInputHandler(container, ctx) {
     const buildingLevels = ctx.getBuildingLevels();
     const flippedGrid = ctx.getFlippedGrid();
 
+    if (e.button === 0 && activeBrush === "erase" && ctx.getFences) {
+      const fences = ctx.getFences();
+      const point = v => ({ x: ORIGIN_X + (v.col - v.row) * HALF_W + 64,
+        y: ORIGIN_Y + (v.row + v.col) * QUARTER_W + 64 });
+      const distance = (p, a, b) => {
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const t = Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy)/(dx*dx+dy*dy)));
+        return Math.hypot(p.x-a.x-t*dx, p.y-a.y-t*dy);
+      };
+      const index = fences.findLastIndex(f => getFenceSegments(f.tileId, f.row, f.col, f.flipped).some(([a,b]) => {
+        a = point(a); b = point(b);
+        return [0, 12, 31].some(height => distance(world, { x:a.x, y:a.y-height }, { x:b.x, y:b.y-height }) < 8);
+      }));
+      if (index >= 0) {
+        fences.splice(index, 1);
+        ctx.triggerAutoSave(); ctx.requestRender(); return;
+      }
+    }
+
     // Active Seed Brush Direct Action
     if (e.button === 0 && activeSeedBrush && cell) {
       ctx.tryApplySeedBrush(cell.row, cell.col);
@@ -966,7 +990,9 @@ export function initInputHandler(container, ctx) {
     // 7. Ưu tiên 7: Bấm vào Biển / Bờ Nước -> Mở Bến Câu Cá (Fishing Spot)
     if (e.button === 0 && !activeBrush && !movingBuilding && cell) {
       const curTid = currentGrid[cell.row]?.[cell.col];
-      if (curTid && (curTid.startsWith("w01_") || curTid.startsWith("w02_") || curTid.startsWith("w03_") || curTid.includes("water") || curTid.includes("pier"))) {
+      // Công trình có "water" trong ID (như cối xay nước) vẫn dùng thao tác chọn/nâng cấp.
+      if (curTid && tileMap[curTid]?.category !== "building" &&
+          (curTid.startsWith("w01_") || curTid.startsWith("w02_") || curTid.startsWith("w03_") || curTid.includes("water") || curTid.includes("pier"))) {
         if (ctx.openFishingModal) {
           ctx.openFishingModal();
           return;

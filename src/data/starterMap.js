@@ -9,6 +9,8 @@
  * - Nông trại, luống đất, nhà dân, đài phun nước và cây cối bố trí hài hòa xung quanh.
  */
 
+import { applyCoastTerrainLayout } from './terrainConfig.js';
+
 export function createStarterTownMap32() {
   const ROWS = 32;
   const COLS = 32;
@@ -21,19 +23,8 @@ export function createStarterTownMap32() {
     grid.push(row);
   }
 
-  // Dải biển phía Tây: cols 0..3, mọi hàng.
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c <= 3; c++) {
-      grid[r][c] = "m30_sea_var2_coral_reef";
-    }
-  }
-
-  // Dải cát ven biển: cols 4..5, mọi hàng.
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 4; c <= 5; c++) {
-      grid[r][c] = "s13_sand_ground";
-    }
-  }
+  // Biển cols 0..3, bờ biển col 4, cát cols 5..6, mọi hàng.
+  applyCoastTerrainLayout(grid);
 
   // Bản đồ trống: chỉ giữ tòa thị chính, khuôn viên và trục đường đá.
   applyTownCenterLayout(grid);

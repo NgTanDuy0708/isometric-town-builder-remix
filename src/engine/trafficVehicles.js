@@ -213,12 +213,13 @@ export class VehicleManager {
   /**
    * Vẽ tất cả phương tiện và thuyền bè lên canvas (Được gọi bên trong camera transform)
    */
-  render(ctx, originX, originY, halfW, quarterW, camera, isNight = false) {
+  render(ctx, originX, originY, halfW, quarterW, camera, isNight = false, opts = {}) {
     const now = performance.now();
 
     // 1. Vẽ Thuyền Đánh Cá trên biển
     // 1. Vẽ Thuyền Đánh Cá ngoài biển
     for (const b of this.boats) {
+      if (opts.only && opts.only !== b) continue;
       const worldX = originX + (b.c - b.r) * halfW + 64;
       const worldY = originY + (b.r + b.c) * quarterW + 90;
       const bob = Math.sin(b.bobTimer) * 3.5;
@@ -276,6 +277,7 @@ export class VehicleManager {
 
     // 2. Vẽ Xe Kéo & Xe Ngựa trên đường làng
     for (const v of this.vehicles) {
+      if (opts.only && opts.only !== v) continue;
       const worldX = originX + (v.c - v.r) * halfW + 64;
       const worldY = originY + (v.r + v.c) * quarterW + 90;
       const hop = Math.abs(Math.sin((v.r + v.c) * 6)) * 2;
@@ -366,37 +368,45 @@ export class VehicleManager {
         ctx.fillRect(9, -15, 4, 1.5);
       }
 
-      // Speech bubble khi người chơi nhấp vào xe
-      if (this.speechBubble && this.speechBubble.vehicleId === v.id) {
-        const bubbleW = 140;
-        const bubbleH = 24;
-        const bX = 0;
-        const bY = -24;
+      const drawOverlay = () => {
+        ctx.save();
+        // Reapply the actor transform when the overlay is deferred to the UI pass.
+        if (opts.deferOverlay) ctx.translate(worldX, worldY - hop);
+        // Speech bubble khi người chơi nhấp vào xe
+        if (this.speechBubble && this.speechBubble.vehicleId === v.id) {
+          const bubbleW = 140;
+          const bubbleH = 24;
+          const bX = 0;
+          const bY = -24;
 
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = "#f59e0b";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(bX - bubbleW / 2, bY - bubbleH, bubbleW, bubbleH, 6);
-        ctx.fill();
-        ctx.stroke();
+          ctx.fillStyle = "#ffffff";
+          ctx.strokeStyle = "#f59e0b";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect(bX - bubbleW / 2, bY - bubbleH, bubbleW, bubbleH, 6);
+          ctx.fill();
+          ctx.stroke();
 
-        // Mũi tên trỏ
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.moveTo(-3, bY);
-        ctx.lineTo(3, bY);
-        ctx.lineTo(0, bY + 4);
-        ctx.closePath();
-        ctx.fill();
+          // Mũi tên trỏ
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.moveTo(-3, bY);
+          ctx.lineTo(3, bY);
+          ctx.lineTo(0, bY + 4);
+          ctx.closePath();
+          ctx.fill();
 
-        ctx.font = "600 8.5px system-ui, -apple-system, sans-serif";
-        ctx.fillStyle = "#1e293b";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(this.speechBubble.text, bX, bY - bubbleH / 2);
-      }
+          ctx.font = "600 8.5px system-ui, -apple-system, sans-serif";
+          ctx.fillStyle = "#1e293b";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(this.speechBubble.text, bX, bY - bubbleH / 2);
+        }
 
+        ctx.restore();
+      };
+      if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+      else drawOverlay();
       ctx.restore();
     }
   }

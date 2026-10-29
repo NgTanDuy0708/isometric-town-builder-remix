@@ -47,3 +47,14 @@ test('migration thay Barn/Silo bằng Kho Tổng Hợp 2x2, không đụng Hầm
   assert.equal(grid[11][11], 'b60_combined_warehouse');
   assert.equal(grid[12][12], 'b60_combined_warehouse');
 });
+
+test('edge fences survive save/load independently of farmland in the same cell', () => {
+  store.clear();
+  const state = getDefaultSaveState();
+  state.grid[20][20] = 'd13_farmland_plot';
+  state.fences = [{ tileId: 'd34_wooden_fence_corner_upper', row: 20, col: 20, flipped: false }];
+  assert.equal(saveGameSave(state), true);
+  const loaded = loadGameSave();
+  assert.deepEqual(loaded.fences, state.fences);
+  assert.equal(loaded.grid[20][20], 'd13_farmland_plot');
+});

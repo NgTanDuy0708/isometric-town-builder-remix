@@ -386,11 +386,11 @@ export class VillagerManager {
   /**
    * Render villagers on the isometric canvas
    */
-  render(ctx, originX, originY, halfW, quarterW, animTime, zoom) {
+  render(ctx, originX, originY, halfW, quarterW, animTime, zoom, opts = {}) {
     if (this.villagers.length === 0) return;
 
     // Sort villagers by isometric depth (r + c) so they occlude correctly
-    const sorted = [...this.villagers].sort((a, b) => (a.r + a.c) - (b.r + b.c));
+    const sorted = opts.only ? [opts.only] : [...this.villagers].sort((a, b) => (a.r + a.c) - (b.r + b.c));
 
     for (const v of sorted) {
       // Screen coordinates in isometric 2:1 dimetric space
@@ -441,92 +441,98 @@ export class VillagerManager {
         ctx.fill();
       }
 
-      // Biểu tượng hoạt động vị trí (cụng ly 🍻, ngắm đài phun nước ⛲, ngồi ghế đá 🪑, giếng làng 💧)
-      if (v.activityIcon && (!this.speechBubble || this.speechBubble.villagerId !== v.id)) {
-        const floatY = charY - 52 + Math.sin(performance.now() * 0.005 + v.id) * 2.5;
-        // Bong bóng tròn nổi bật
+      const drawOverlay = () => {
         ctx.save();
-        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-        ctx.strokeStyle = "#f59e0b";
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = "rgba(0, 0, 0, 0.25)";
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.arc(screenX, floatY, 9.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        // Biểu tượng hoạt động vị trí (cụng ly 🍻, ngắm đài phun nước ⛲, ngồi ghế đá 🪑, giếng làng 💧)
+        if (v.activityIcon && (!this.speechBubble || this.speechBubble.villagerId !== v.id)) {
+          const floatY = charY - 52 + Math.sin(performance.now() * 0.005 + v.id) * 2.5;
+          // Bong bóng tròn nổi bật
+          ctx.save();
+          ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+          ctx.strokeStyle = "#f59e0b";
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = "rgba(0, 0, 0, 0.25)";
+          ctx.shadowBlur = 4;
+          ctx.beginPath();
+          ctx.arc(screenX, floatY, 9.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
 
-        // Mũi tên nhỏ trỏ xuống đầu cư dân
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.moveTo(screenX - 2.5, floatY + 9);
-        ctx.lineTo(screenX + 2.5, floatY + 9);
-        ctx.lineTo(screenX, floatY + 12);
-        ctx.closePath();
-        ctx.fill();
+          // Mũi tên nhỏ trỏ xuống đầu cư dân
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.moveTo(screenX - 2.5, floatY + 9);
+          ctx.lineTo(screenX + 2.5, floatY + 9);
+          ctx.lineTo(screenX, floatY + 12);
+          ctx.closePath();
+          ctx.fill();
 
-        ctx.font = "12px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(v.activityIcon, screenX, floatY);
-        ctx.restore();
-      }
-
-      // Selected villager indicator ring
-      if (this.selectedVillager && this.selectedVillager.id === v.id) {
-        ctx.strokeStyle = "#f59e0b";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.ellipse(screenX, screenY + 1, 9, 4.5, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // Dialogue speech bubble if active
-      if (this.speechBubble && this.speechBubble.villagerId === v.id) {
-        const bubbleW = 140;
-        const bubbleH = 26;
-        const bX = screenX;
-        const bY = charY - 52;
-
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = "#f59e0b";
-        ctx.lineWidth = 1.5;
-
-        // Bubble rounded box
-        ctx.beginPath();
-        ctx.roundRect(bX - bubbleW / 2, bY - bubbleH, bubbleW, bubbleH, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // Little pointer arrow
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.moveTo(bX - 4, bY);
-        ctx.lineTo(bX + 4, bY);
-        ctx.lineTo(bX, bY + 5);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.strokeStyle = "#f59e0b";
-        ctx.beginPath();
-        ctx.moveTo(bX - 4, bY);
-        ctx.lineTo(bX, bY + 5);
-        ctx.lineTo(bX + 4, bY);
-        ctx.stroke();
-
-        // Dialogue text
-        ctx.font = "600 8.5px system-ui, -apple-system, sans-serif";
-        ctx.fillStyle = "#1e293b";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        let displayText = this.speechBubble.text;
-        if (displayText.length > 28) {
-          displayText = displayText.slice(0, 26) + "...";
+          ctx.font = "12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(v.activityIcon, screenX, floatY);
+          ctx.restore();
         }
-        ctx.fillText(displayText, bX, bY - bubbleH / 2);
-      }
 
+        // Selected villager indicator ring
+        if (this.selectedVillager && this.selectedVillager.id === v.id) {
+          ctx.strokeStyle = "#f59e0b";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.ellipse(screenX, screenY + 1, 9, 4.5, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Dialogue speech bubble if active
+        if (this.speechBubble && this.speechBubble.villagerId === v.id) {
+          const bubbleW = 140;
+          const bubbleH = 26;
+          const bX = screenX;
+          const bY = charY - 52;
+
+          ctx.fillStyle = "#ffffff";
+          ctx.strokeStyle = "#f59e0b";
+          ctx.lineWidth = 1.5;
+
+          // Bubble rounded box
+          ctx.beginPath();
+          ctx.roundRect(bX - bubbleW / 2, bY - bubbleH, bubbleW, bubbleH, 6);
+          ctx.fill();
+          ctx.stroke();
+
+          // Little pointer arrow
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.moveTo(bX - 4, bY);
+          ctx.lineTo(bX + 4, bY);
+          ctx.lineTo(bX, bY + 5);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = "#f59e0b";
+          ctx.beginPath();
+          ctx.moveTo(bX - 4, bY);
+          ctx.lineTo(bX, bY + 5);
+          ctx.lineTo(bX + 4, bY);
+          ctx.stroke();
+
+          // Dialogue text
+          ctx.font = "600 8.5px system-ui, -apple-system, sans-serif";
+          ctx.fillStyle = "#1e293b";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          let displayText = this.speechBubble.text;
+          if (displayText.length > 28) {
+            displayText = displayText.slice(0, 26) + "...";
+          }
+          ctx.fillText(displayText, bX, bY - bubbleH / 2);
+        }
+
+        ctx.restore();
+      };
+      if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+      else drawOverlay();
       ctx.restore();
     }
   }

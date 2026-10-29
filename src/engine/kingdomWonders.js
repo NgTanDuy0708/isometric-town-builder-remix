@@ -784,7 +784,7 @@ export class KingdomWondersManager {
     }
   }
 
-  renderSite(ctx, site, originX, originY, halfW, quarterW, animTime = 0) {
+  renderSite(ctx, site, originX, originY, halfW, quarterW, animTime = 0, opts = {}) {
     const wonder = WONDERS_CONFIG[site.id] || WONDERS_CONFIG.royal_palace;
     const curStage = this.wondersState[site.id] || 0;
 
@@ -945,31 +945,37 @@ export class KingdomWondersManager {
       }
     }
 
-    // 4. Bảng hiệu & Huy hiệu nổi trên nóc kỳ quan (Nhấp để mở)
-    const floatY = spriteY - 14 + Math.sin(animTime * 3) * 2.5;
-    const badgeText = curStage >= 4
-      ? "👑 " + wonder.name + " (Hoàn Thành)"
-      : (curStage === 0 ? "🏛️ " + wonder.name + " (Nhấp Khởi Công)" : "🔨 " + wonder.name + " (GĐ " + curStage + "/4)");
+    const drawOverlay = () => {
+      ctx.save();
+      // 4. Bảng hiệu & Huy hiệu nổi trên nóc kỳ quan (Nhấp để mở)
+      const floatY = spriteY - 14 + Math.sin(animTime * 3) * 2.5;
+      const badgeText = curStage >= 4
+        ? "👑 " + wonder.name + " (Hoàn Thành)"
+        : (curStage === 0 ? "🏛️ " + wonder.name + " (Nhấp Khởi Công)" : "🔨 " + wonder.name + " (GĐ " + curStage + "/4)");
 
-    ctx.font = "700 11px system-ui, -apple-system, sans-serif";
-    const textW = ctx.measureText(badgeText).width;
-    const padX = 8;
-    const bW = textW + padX * 2;
-    const bH = 20;
+      ctx.font = "700 11px system-ui, -apple-system, sans-serif";
+      const textW = ctx.measureText(badgeText).width;
+      const padX = 8;
+      const bW = textW + padX * 2;
+      const bH = 20;
 
-    ctx.fillStyle = curStage >= 4 ? "#15803d" : "#78350f";
-    ctx.strokeStyle = "#fef08a";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.roundRect(cx - bW / 2, floatY - bH / 2, bW, bH, 5);
-    ctx.fill();
-    ctx.stroke();
+      ctx.fillStyle = curStage >= 4 ? "#15803d" : "#78350f";
+      ctx.strokeStyle = "#fef08a";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(cx - bW / 2, floatY - bH / 2, bW, bH, 5);
+      ctx.fill();
+      ctx.stroke();
 
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(badgeText, cx - textW / 2, floatY);
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(badgeText, cx - textW / 2, floatY);
 
+      ctx.restore();
+    };
+    if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+    else drawOverlay();
     ctx.restore();
   }
 }

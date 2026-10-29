@@ -5,6 +5,9 @@ import {
 import { getTileCost, getTilePopulation } from "../data/gameEconomy.js";
 import { RESOURCES_CONFIG } from "../data/resourcesConfig.js";
 import { TILE_DATA_URIS } from "../data/sprites.js";
+import { getBuildingSpriteUri } from "../data/buildingSprites.js";
+import { AESTHETIC_TILE_URIS } from "../data/aestheticTileIcons.js";
+import { FENCE_ROTATIONS } from "../data/fenceConfig.js";
 import { playModalOpenSound, playModalCloseSound } from "./audioEngine.js";
 
 /**
@@ -44,6 +47,7 @@ export function calculateDemolishRefund(tileId, category = "building", curLevel 
 }
 
 export const TILE_ROTATION_MAP = {
+  ...FENCE_ROTATIONS,
   // Straight roads (NS <-> EW)
   "r01_road_straight_ns": "r02_road_straight_ew",
   "r02_road_straight_ew": "r01_road_straight_ns",
@@ -155,6 +159,13 @@ export const TILE_ROTATION_MAP = {
  * @param {boolean} currentFlipped
  * @returns {{ nextId: string, nextFlip: boolean }}
  */
+// Vật phẩm có hình đối xứng gương: lật/xoay không làm đổi hình nhìn thấy -> báo rõ cho người chơi thay vì im lặng.
+// (Luống đất: ảnh mặt đất gần như đối xứng hoàn toàn, đo được ~3% điểm ảnh khác nhau khi lật.)
+export const ROTATION_NO_EFFECT_TILES = new Set(["d13_farmland_plot", "d12_meadow_wildflowers"]);
+export function isRotationVisible(tileId) {
+  return !ROTATION_NO_EFFECT_TILES.has(tileId);
+}
+
 export function getRotatedTileIdAndFlip(tileId, currentFlipped) {
   if (TILE_ROTATION_MAP[tileId]) {
     return {
@@ -303,9 +314,7 @@ export function createUpgradeManager(ctx) {
 
     if (upgradeModalTitle) upgradeModalTitle.textContent = `${t.label} (Ô ${row}, ${col})`;
     if (upgradeModalThumb) {
-      upgradeModalThumb.src = (typeof TILE_DATA_URIS !== 'undefined' && TILE_DATA_URIS[tid])
-        ? TILE_DATA_URIS[tid]
-        : ('tiles/' + tid + '_128.png');
+      upgradeModalThumb.src = getBuildingSpriteUri(tid, curLvl) || AESTHETIC_TILE_URIS[tid] || TILE_DATA_URIS[tid] || TILE_DATA_URIS.d12_meadow_wildflowers;
     }
 
     if (upgradeModalStars) {

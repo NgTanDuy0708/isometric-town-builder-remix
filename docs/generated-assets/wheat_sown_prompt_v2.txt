@@ -1,0 +1,42 @@
+Wheat just-sown overlay — preview v2
+Generated and edited with the built-in imagegen tool.
+Asset: assets-source/crop-seeds/wheat_sown_preview_v2.png
+Actual output: 1254x1254 RGBA with transparent alpha; source preserved.
+Use: sowing stage on top of the existing soil layer. Preview for review.
+
+INITIAL GENERATION PROMPT
+Use case: stylized-concept.
+Asset type: transparent just-sown wheat seed overlay sprite for ONE farmland tile in a medieval isometric farming game.
+
+Draw only the visible WHEAT KERNELS immediately after sowing, before germination. These are small warm tan-gold elongated oval grains lying flat on an invisible ground plane, each with a short dark central crease and gently pointed ends. They are resting where they were planted, not falling through the air. No roots, shoots, green sprouts, stalks or mature ears.
+
+Composition: twelve small separate kernels in FOUR tidy parallel planting rows, three kernels per row, all belonging to ONE shared 1x1 tile. Rows run upper-left to lower-right, along an isometric grid axis with slope +1 vertical for every +2 horizontal. Leave ample transparent gaps between grains so the existing furrows underneath remain visible. The ground-plane arrangement is a strict 2:1 isometric diamond viewed from above at a three-quarter angle. This diamond is VIRTUAL ONLY; never draw its outline, fill or boundary.
+For a 1024 square image, the invisible tile has top (512,320), left (128,512), right (896,512), bottom (512,704).
+Approximate grain centres:
+row 1: (520,393), (635,450), (750,508);
+row 2: (439,433), (554,490), (669,548);
+row 3: (355,476), (470,533), (585,591);
+row 4: (274,516), (389,573), (504,630).
+Do not render these coordinates or any guides. Each grain is only about 36 pixels long and 20 pixels thick, with its long axis roughly along the planting row. Make all twelve the same natural seed size, with only restrained variations. No central oversized grain, no pile, no grain touching another grain. Preserve the open spacing and virtual 2:1 ground projection.
+
+Art direction: crisp warm fantasy PIXEL ART compatible with a medieval town-builder and muted olive-green terrain. Small readable silhouettes, stepped pixel edges, simple clean clusters, flat discrete colours, dark-brown thin outlines, upper-left light. Minimal detail suitable for a 128px in-game tile. Use a restrained palette: #67231b #855c22 #ba9745 #ccb45c #e8cd97 #e6dfa1. No smooth gradients, antialiasing, blurred edges, glossy 3D or photorealistic textures.
+
+Output: exactly 1024x1024 PNG with genuine transparent alpha. Pixels outside the twelve wheat kernels, including ALL empty spaces between them, must be truly transparent. It is intentional that most of the image is transparent. The soil is an existing separate game layer and MUST NOT be drawn. This image contains only seeds to overlay on that layer.
+
+Avoid: bag, pouch, sack, seed packet, inventory icon, wheat-ear emblem, logos, text, letters, numbers, watermark, border, comparison chart, sprite sheet, separate panels, ground, soil, dirt, mud, furrows, dirt patch, soil clods, stones, grass, tile surface, terrain diamond, visible diamond outline, ground plane fill, tile platform, cast shadow, drop shadow, background scenery, checkerboard pattern, opaque background, hands, tools, people, plants, sprouts, green shoots, leaves, roots, wheat stalks, tied sheaf, harvested grain pile, grain bowl, perspective distortion.
+
+FINAL EDIT PROMPT (input: the initial generated sowing overlay)
+Edit this wheat-seed overlay into a clean final game sprite. Keep ONLY separate wheat kernels and real transparent alpha; preserve the pixel-art style and warm tan/brown grain colours.
+
+Correct the layout and scale: it must be a LOW, WIDE 2:1 ISOMETRIC arrangement, twice as wide as tall across the grain centres, not a tall diamond. Make the kernels smaller, about half their current size, so they look like seeds on a 1x1 farmland tile. Arrange exactly 12 grains in FOUR parallel diagonal sowing rows, with THREE grains per row, clearly separated. Every sowing row slopes down toward the right at exactly 1 vertical per 2 horizontal. The four rows are offset down toward the left along the opposite isometric axis. The whole set is centred. Preserve plenty of transparent margins and transparent space between grains.
+
+Use these approximate kernel centres on a 1024 square canvas:
+row 1: (520,393), (635,450), (750,508)
+row 2: (439,433), (554,490), (669,548)
+row 3: (355,476), (470,533), (585,591)
+row 4: (274,516), (389,573), (504,630).
+Each grain should be approximately 42px long and 22px thick. It lies flat and follows the same +1:2 sowing-row axis. All grains have the same scale, and a simple crease to identify wheat.
+
+Clean the outlines to dark brown only. No reddish, orange-red or neon edge fringes, no glow, no red marks. Use a very small set of flat beige, ochre and brown shades; crisp stepped pixels, restrained grain shading, upper-left light.
+
+Do not add a drawn diamond, soil, ground, furrows, stones, shadow, bag, pouch, wheat plant, sprouts, roots, foliage, labels, numbers, frames or guide lines. Every non-grain pixel is fully transparent. Output a 1024x1024 transparent PNG.

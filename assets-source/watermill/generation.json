@@ -1,0 +1,91 @@
+{
+  "mode": "built-in image_gen",
+  "prompt_file": "docs/WATERMILL_IMAGE_PROMPTS.md",
+  "levels": [
+    {
+      "level": 1,
+      "generated_file": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185de-b379-77f0-8a32-34290fd4e9e9\\exec-c461bf15-6d84-4abf-b893-816d451d9bfe.png",
+      "source_file": "watermill_lv1_source.png",
+      "game_file": "public/assets/buildings/watermill_lv1.png",
+      "world_width": 144,
+      "render_geometry": {
+        "width": 1254,
+        "height": 1254,
+        "visibleWidth": 1098,
+        "anchorX": 601,
+        "anchorY": 1148,
+        "worldWidth": 144
+      },
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_bounds": [
+        81,
+        169,
+        1179,
+        1149
+      ],
+      "sha256": "452c99676984bcadb6885d8b30361858a638105da316aec74c04f76620ad552b"
+    },
+    {
+      "level": 2,
+      "generated_file": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185de-b379-77f0-8a32-34290fd4e9e9\\exec-aad85c05-9409-43e7-b141-15f2c94b4691.png",
+      "source_file": "watermill_lv2_source.png",
+      "game_file": "public/assets/buildings/watermill_lv2.png",
+      "world_width": 168,
+      "render_geometry": {
+        "width": 1254,
+        "height": 1254,
+        "visibleWidth": 1169,
+        "anchorX": 531,
+        "anchorY": 1104,
+        "worldWidth": 168
+      },
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_bounds": [
+        52,
+        199,
+        1221,
+        1118
+      ],
+      "sha256": "874b4a173bdcac89ea698d005900ff0b727f775dceef9f21b14d9cea48756667"
+    },
+    {
+      "level": 3,
+      "generated_file": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185de-b379-77f0-8a32-34290fd4e9e9\\exec-0c0c1d3b-96ba-403e-bd68-58d3e08c1773.png",
+      "source_file": "watermill_lv3_source.png",
+      "game_file": "public/assets/buildings/watermill_lv3.png",
+      "world_width": 192,
+      "render_geometry": {
+        "width": 1254,
+        "height": 1254,
+        "visibleWidth": 1172,
+        "anchorX": 438,
+        "anchorY": 1221,
+        "worldWidth": 192
+      },
+      "source_size": [
+        1254,
+        1254
+      ],
+      "source_bounds": [
+        48,
+        47,
+        1220,
+        1221
+      ],
+      "sha256": "c1d3392d1ca222e04400bade3bb8648b647c8ac9d1a5411824291dc6d943b050"
+    }
+  ],
+  "postprocess": {
+    "mode": "original_png_byte_for_byte",
+    "resize": false,
+    "palette_reduction": false,
+    "pixel_block_upscale": false,
+    "alpha_preserved": true
+  }
+}

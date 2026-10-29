@@ -1,0 +1,50 @@
+# Herbalist image generation — Levels 1–3
+
+Mode: built-in `image_gen`, transparent PNG output. Subject progression from `UPGRADE_PROMPTS.md`, section `b07 — Vườn Ươm Thảo Dược`.
+
+Quality: runtime files are byte-for-byte copies of the original generated PNGs. No palette reduction, low-resolution pixel mosaic, 4x block upscale, alpha conversion or offline resizing. Only Canvas draw dimensions and source-space ground anchors are adjusted, following the user's request to preserve generated quality.
+
+Level 1: low timber shed, thatch roof, herb beds, drying rack and clay pots. Level 2: half-glass timber greenhouse, water barrel, racks and small chimney. Level 3: stone-and-glass orangery, domed glass roof, herb beds, drying loft and leaf sign without text.
+
+Source images: `../assets-source/herbalist/`. Runtime images: `../public/assets/buildings/herbalist_lv1.png`, `herbalist_lv2.png`, `herbalist_lv3.png`. Geometry is registered for `b07_apothecary` in `BUILDING_SOURCE_GEOMETRY` (`src/data/buildingSprites.js`). The generation manifest records geometry and SHA-256 hashes.
+
+The first image uses existing generated bakery art only as a style reference. Each later level uses the preceding herbalist level as a family reference. No Forest Pack asset image is uploaded. Original references remain unchanged.
+
+## Level 1
+
+```text
+Use case: stylized-concept.
+Asset: ONE original-quality detailed pixel-art PNG building sprite for a medieval isometric town-builder game.
+Style: match the reference game's warm oak timber, cream plaster, muted grey stone, crisp dark contours, small stepped shading and readable compact architecture. Golden straw for thatch, forest-green herbal foliage, warm terracotta pots; glass on later levels has restrained pale blue reflections with green plants visible beneath. Preserve native-resolution detail and clean material edges. Do not reduce to a coarse pixel mosaic, enlarge artificial 4x blocks, quantize the palette or blur. Upper-left lighting; no glossy plastic, no photorealism.
+Projection: strict 2:1 dimetric isometric three-quarter view showing front and right side. Logical footprint a compact 1x1 tile. All structural feet, planters, steps and props meet one shared ground plane; frontmost base corner near horizontal canvas centre.
+Framing/output: square canvas, genuine transparent PNG alpha. Exactly one complete building; entire roof, attached racks, pots and all feet FULLY VISIBLE with ample transparent padding on every side. Artwork in central 75–80 percent; no comparison sheet.
+Avoid: ground diamond, terrain slab, lawn, dirt patch, landscape, cast shadow, background, text, letters, numbers, watermark, people, animals, floating props. Herb beds must be compact attached wooden raised planter boxes, not a disconnected field or large patch of ground. No bakery oven, bread counter, water wheel or windmill sails.
+Input image 1 is ONLY a STYLE REFERENCE for materials, camera and rendering; it is not an edit target. Do not copy its bakery structure, chimney or bread.
+Subject: LEVEL 1 SMALL HERBALIST GARDEN AND SHED. A modest LOW, one-storey timber shed with a simple golden THATCH ROOF, small plank entrance door and tiny window. Its compact attached work garden contains two shallow wooden raised HERB BEDS with distinct dense green medicinal leaves, one modest wooden DRYING RACK carrying tied herb bundles, and three warm terracotta CLAY POTS beside the entrance. Low timber corner feet / low stone entrance step; no tall foundation. The rustic roof and practical plants must dominate the silhouette, cozy early-village simplicity. No greenhouse glass, no upper storey, no big dome and no chimney at this level. Clear individual timber beams, straw edges and leaves, matching the existing game's original detailed pixel-art quality.
+```
+
+## Level 2
+
+```text
+Use case: stylized-concept.
+Asset: ONE original-quality detailed pixel-art PNG building sprite for a medieval isometric town-builder game.
+Style: match the reference game's warm oak timber, cream plaster, muted grey stone, crisp dark contours, small stepped shading and readable compact architecture. Golden straw for thatch, forest-green herbal foliage, warm terracotta pots; glass on later levels has restrained pale blue reflections with green plants visible beneath. Preserve native-resolution detail and clean material edges. Do not reduce to a coarse pixel mosaic, enlarge artificial 4x blocks, quantize the palette or blur. Upper-left lighting; no glossy plastic, no photorealism.
+Projection: strict 2:1 dimetric isometric three-quarter view showing front and right side. Logical footprint a compact 1x1 tile. All structural feet, planters, steps and props meet one shared ground plane; frontmost base corner near horizontal canvas centre.
+Framing/output: square canvas, genuine transparent PNG alpha. Exactly one complete building; entire roof, attached racks, pots and all feet FULLY VISIBLE with ample transparent padding on every side. Artwork in central 75–80 percent; no comparison sheet.
+Avoid: ground diamond, terrain slab, lawn, dirt patch, landscape, cast shadow, background, text, letters, numbers, watermark, people, animals, floating props. Herb beds must be compact attached wooden raised planter boxes, not a disconnected field or large patch of ground. No bakery oven, bread counter, water wheel or windmill sails.
+Input image 1 is the LEVEL 1 HERBALIST family and style reference. Generate a separate NEW LEVEL 2 upgrade of this same business; do not include the reference alongside it.
+Subject: LEVEL 2 APOTHECARY GREENHOUSE. A compact low timber-and-cream-plaster apothecary workroom combined with an attached HALF-GLASS TIMBER GREENHOUSE; roughly half the total roof/wall area is genuine glass panes supported by warm oak beams, with visible rows of green herbs INSIDE. Keep a small golden thatch-covered workroom section at the front/left to connect with level 1, and a pale-blue-glass pitched greenhouse roof and side at the right/rear. This should clearly read as a greenhouse upgrade rather than an ordinary cottage. Small front wooden door with low stone steps; two compact herb planter boxes, practical drying racks with tied green herb bundles, one WATER BARREL and three terracotta pots. Add one SMALL STONE CHIMNEY to the opaque workroom section. Coherent simple roof junction and structure; no tall second storey and NO domed roof yet. Botanical leaves and stems are visible through the glass without obscuring all the pale-blue glazing. Maintain the same camera, warm wood, forest greens and original detailed pixel-art finish as level 1, slightly more developed but still compact. All feet and planters on one flat shared ground plane; keep full silhouette inside transparent margins. No terrain base and no text.
+```
+
+## Level 3
+
+```text
+Use case: stylized-concept.
+Asset: ONE original-quality detailed pixel-art PNG building sprite for a medieval isometric town-builder game.
+Style: match the reference game's warm oak timber, cream plaster, muted grey stone, crisp dark contours, small stepped shading and readable compact architecture. Golden straw for thatch, forest-green herbal foliage, warm terracotta pots; glass on later levels has restrained pale blue reflections with green plants visible beneath. Preserve native-resolution detail and clean material edges. Do not reduce to a coarse pixel mosaic, enlarge artificial 4x blocks, quantize the palette or blur. Upper-left lighting; no glossy plastic, no photorealism.
+Projection: strict 2:1 dimetric isometric three-quarter view showing front and right side. Logical footprint a compact 1x1 tile. All structural feet, planters, steps and props meet one shared ground plane; frontmost base corner near horizontal canvas centre.
+Framing/output: square canvas, genuine transparent PNG alpha. Exactly one complete building; entire roof, attached racks, pots and all feet FULLY VISIBLE with ample transparent padding on every side. Artwork in central 75–80 percent; no comparison sheet.
+Avoid: ground diamond, terrain slab, lawn, dirt patch, landscape, cast shadow, background, text, letters, numbers, watermark, people, animals, floating props. Herb beds must be compact attached wooden raised planter boxes, not a disconnected field or large patch of ground. No bakery oven, bread counter, water wheel or windmill sails.
+Input image 1 is the LEVEL 2 HERBALIST family and style reference. Generate one separate NEW LEVEL 3 upgrade; no reference image beside it.
+Subject: LEVEL 3 ROYAL HERBAL DISPENSARY. A clearly more prestigious, TALLER stone-and-glass ORANGERY, still compact and belonging to this same herb-growing business. Replace most of the rustic shed with warm-grey dressed STONE PIERS, an oak-framed glazed hall and a prominent elegant DOMED GLASS ROOF in pale-blue segmented panes with warm timber/bronze-coloured ribs. The dome is visibly curved, not just a gable. Rows of rich green HERB BEDS in clay pots are visible through tall glass windows. Keep warm oak trim, cream infill on a small front apothecary bay, and just a little golden-thatch canopy above the wooden entrance to recall earlier levels. Above the entrance is a small timber DRYING LOFT with an open slatted bay holding hanging bundles of medicinal herbs; coherent attached architecture, not a separate building. Front low stone steps, two compact attached herb planters, neatly grouped terracotta pots, one wooden water barrel, and a SMALL WOODEN HANGING SIGN showing only a simple painted green leaf silhouette, NO letters. More vertical glass and stone structure than level 2, with the domed roof as the crown, not an oversized palace or a sprawling landscape. Maintain strict shared ground plane and the same front/right isometric camera, upper-left lighting, warm wood, golden straw accents, forest greens and crisp original detailed pixel-art quality as the reference. Entire dome, sign, attached herb beds, pots and all structural feet visible, well inside transparent margins. No big plinth, no ground slab, no flat dirt garden, no text.
+```

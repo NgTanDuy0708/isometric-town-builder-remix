@@ -3,11 +3,24 @@
  * Standard 128x128 dimetric isometric projection matching the town builder grid.
  */
 
+import { getBuildingSpriteUri } from "./buildingSprites.js";
+import { FENCE_ITEMS } from "./fenceConfig.js";
+
 export const AESTHETIC_TILE_URIS = {
+  ...Object.fromEntries(FENCE_ITEMS.map(item => [item.id, item.uri])),
+  b01_cottage_red: getBuildingSpriteUri("b01_cottage_red"),
+  b02_tudor_inn: getBuildingSpriteUri("b02_tudor_inn"),
+  b03_blacksmith_forge: getBuildingSpriteUri("b03_blacksmith_forge"),
+  b04_windmill: getBuildingSpriteUri("b04_windmill"),
+  b05_watermill: getBuildingSpriteUri("b05_watermill"),
+  b06_bakery: getBuildingSpriteUri("b06_bakery"),
+  b07_apothecary: getBuildingSpriteUri("b07_apothecary"),
+  b08_watchtower: getBuildingSpriteUri("b08_watchtower"),
+  b09_chapel: getBuildingSpriteUri("b09_chapel"),
   // Sprite toàn cảnh: ảnh được căn giữa tại ô neo và phủ theo footprint 3x3.
   d01_plaza_fountain: "/assets/buildings/royal_plaza.png",
   // Sprite toàn cảnh tòa thị chính, căn giữa tại ô neo với footprint 2x3.
-  b14_town_hall: "/assets/buildings/town_hall_royal.png",
+  b14_town_hall: getBuildingSpriteUri("b14_town_hall"),
 
   // Kho Tổng Hợp: sprite duy nhất phủ footprint 2x2.
   b60_combined_warehouse: "/assets/buildings/combined_warehouse.png",
