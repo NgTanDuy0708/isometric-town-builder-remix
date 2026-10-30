@@ -2760,7 +2760,7 @@
     "status": "generated_pending_art_review",
     "remaining": 0,
     "previousLimitReset": "2026-10-30T02:13:18+07:00",
-    "integration": "44 subjects are registered in the shop; see docs/EXPANSION_INTEGRATION.md. New plant lifecycle art is stored separately and does not yet replace the existing harvest system.",
+    "integration": "44 subjects are registered in the shop; see docs/EXPANSION_INTEGRATION.md. All 40 plant sprites now drive the eight harvestable species, with grounded lifecycle rendering; see src/engine/fruitTreeLifecycle.js.",
     "notes": "Native 1254x1254 PNG retained per source document rule 9. Working-box coordinates, anchors and relative scale still need runtime calibration. Some native cutout edges show coloured fringe; inspect against game backgrounds before integration."
   },
   "sourceHistory": [

@@ -1,15 +1,18 @@
+import {FRUIT_TREES_CONFIG} from "./fruitTreeConfig.js";
 // Configuration for Order Board, NPC Customers, and Order Generation Logic
 import { RESOURCES_CONFIG } from "./resourcesConfig.js";
 import { getTileRequiredLevel } from './gameEconomy.js';
 import { CROPS_CONFIG } from './cropsConfig.js';
 
 export const RESOURCE_PRODUCERS = {
+  wood:'b11_carpenter_sawmill', stone:'b65_stone_quarry', ironOre:'b66_iron_mine',
+  plank:'b11_carpenter_sawmill', buildingStone:'b65_stone_quarry', ironIngot:'b03_blacksmith_forge',
   egg: 'b21_chicken_coop', milk: 'b22_cow_pasture', meat: 'd33_pig_pen_barn',
   roastPork: 'b64_bbq_restaurant', bread: 'b06_bakery', ironTools: 'b03_blacksmith_forge', wool: 'b57_sheep_pasture',
   fabric: 'b58_textile_mill', butter: 'b59_dairy_factory', wine: 'b47_winery_press_barn_sw',
-  apple: 'd21_apple_tree', coconut: 'd22_coconut_palm', tamarind: 'd23_tamarind_tree'
+  ...Object.fromEntries(Object.entries(FRUIT_TREES_CONFIG).map(([id,cfg])=>[cfg.fruitId,id]))
 };
-const RESOURCE_INPUTS = { egg: ['wheat'], milk: ['corn'], meat: ['corn'], bread: ['wheat'], wool: ['carrot'], fabric: ['wool'], butter: ['milk'], wine: ['grapes'], roastPork: ['meat', 'carrot'] };
+const RESOURCE_INPUTS = { plank:['wood'], buildingStone:['stone'], ironIngot:['ironOre','wood'], ironTools:['ironIngot','plank'], egg: ['wheat'], milk: ['corn'], meat: ['corn'], bread: ['wheat'], wool: ['carrot'], fabric: ['wool'], butter: ['milk'], wine: ['grapes'], roastPork: ['meat', 'carrot'] };
 export function getResourceUnlockLevel(id) {
   return Math.max(CROPS_CONFIG[id]?.requiredLevel || 1,
     RESOURCE_PRODUCERS[id] ? getTileRequiredLevel(RESOURCE_PRODUCERS[id]) : 1,

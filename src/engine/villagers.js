@@ -1,6 +1,8 @@
 // Villager Simulation, Living World Entities, and A* Path Walking for Isometric Kingdom
 
 import { findPathAStar, findAdjacentRoadCells, getAllWalkableRoads, getRandomConnectedRoadCell } from './pathfinding.js';
+import { drawAnimatedCharacter, getCharacterImage } from './characterAnimation.js';
+import { CHARACTER_SHEETS } from '../data/characterSheetsData.js';
 
 export const VILLAGER_NAMES_BY_ROLE = {
   farmer: ["Bác Pierre", "Jean Nông Dân", "Bác Tám Lúa", "Marie Vựa Thóc"],
@@ -56,15 +58,10 @@ const ROLE_COLORS = {
 
 const EXTRA_CITIZEN_COLORS = ["#7c3aed", "#db2777", "#0d9488", "#4f46e5", "#c026d3"];
 
-// Bộ sprite dân làng (đã crop sát viền + chuẩn hoá cao 200px).
-export const VILLAGER_SPRITES = {
-  farmer_young: "/assets/villagers/farmer_young.png",
-  farmer_old: "/assets/villagers/farmer_old.png",
-  farmer_girl: "/assets/villagers/farmer_girl.png",
-  woman: "/assets/villagers/woman.png",
-  blacksmith: "/assets/villagers/blacksmith.png",
-  merchant: "/assets/villagers/merchant.png"
-};
+// Sáu thiết kế mới, mỗi mẫu dùng một sheet 20 khung ở độ phân giải gốc.
+export const VILLAGER_SPRITES = Object.fromEntries(
+  Object.entries(CHARACTER_SHEETS.villager).map(([key, asset]) => [key, asset.uri])
+);
 
 const ROLE_SPRITE_POOL = {
   farmer: ["farmer_young", "farmer_old", "farmer_girl", "woman"],
@@ -86,11 +83,8 @@ export class VillagerManager {
     this.lastGridVersion = 0;
 
     // Preload sprite dân làng (canvas sẽ tự vẽ lại khi ảnh decode xong).
-    this.spriteImages = {};
-    for (const [key, src] of Object.entries(VILLAGER_SPRITES)) {
-      const img = new Image();
-      img.src = src;
-      this.spriteImages[key] = img;
+    for (const key of Object.keys(VILLAGER_SPRITES)) {
+      getCharacterImage('villager', key);
     }
   }
 
@@ -405,25 +399,15 @@ export class VillagerManager {
       ctx.ellipse(screenX, screenY + 1, 6.5, 3.2, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Walking bounce & click bounce
-      const walkBob = (v.state === "walking") ? Math.abs(Math.sin(v.walkPhase)) * 2.2 : 0;
+      // Click bounce remains; walking motion comes from the actual animation frames.
       const clickBounce = v.bounce > 0 ? Math.sin(v.bounce * Math.PI) * 10 : 0;
-      const charY = screenY - walkBob - clickBounce;
+      const charY = screenY - clickBounce;
+      const animated = drawAnimatedCharacter(ctx, 'villager', v.spriteKey, screenX, charY, {
+        height: VILLAGER_SPRITE_HEIGHT, facing: v.facing,
+        walking: v.state === 'walking', phase: (v.walkPhase || 0) * 1.6
+      });
 
-      // Sprite dân làng (thay cho hình vẽ procedural trước đây)
-      const spriteImg = this.spriteImages ? this.spriteImages[v.spriteKey] : null;
-      const spriteReady = spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0;
-
-      if (spriteReady) {
-        const spriteH = VILLAGER_SPRITE_HEIGHT;
-        const spriteW = spriteH * (spriteImg.naturalWidth / spriteImg.naturalHeight);
-        const faceLeft = v.facing === "NW" || v.facing === "SW";
-        ctx.save();
-        ctx.translate(screenX, charY);
-        if (faceLeft) ctx.scale(-1, 1);
-        ctx.drawImage(spriteImg, -spriteW / 2, -spriteH, spriteW, spriteH);
-        ctx.restore();
-      } else {
+      if (!animated) {
         // Fallback khi ảnh chưa decode xong: silhouette tối giản để dân không bị vô hình.
         ctx.fillStyle = "#27272a";
         ctx.fillRect(screenX - 3, charY - 16, 6, 16);

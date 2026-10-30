@@ -97,5 +97,8 @@
   "/assets/farm/pig.png": "1538c83a05dd934ef15df810b5af95392664bda66888772e8fd86ca992f6877b",
   "/assets/farm/pig_pen_v2.png": "b46a07a3ed1da91be8d7b0d2e5c7e88c913a3c6c2dfb0849003a2e0b5c3654e1",
   "/assets/farm/sheep.png": "ba29569f0ce389fd5b31dcd04e72ffa6fda0465aaeaf6416e573b2634a93a337",
-  "/assets/farm/sheep_barn_v2.png": "90b9c5d5b8c8d039f837c1674fd6f1fc0e306fbc61ec7245e765fea04169c5c0"
+  "/assets/farm/sheep_barn_v2.png": "90b9c5d5b8c8d039f837c1674fd6f1fc0e306fbc61ec7245e765fea04169c5c0",
+  "/assets/buildings/stone_quarry_lv1.png": "47ba3b2a0792a88412688313ec4e1ac6e47dda0a1a42e1f6eda78393b6b0cc5a",
+  "/assets/buildings/stone_quarry_lv2.png": "d3d690e471812d1c65f07e8ba4e3d98c28a4bf48b67e2b699d97456ddb8a6ebd",
+  "/assets/buildings/stone_quarry_lv3.png": "f1664d9ac81567b7a25aeadaa80be10585db46ec03fa8cb40e57e0791c42fc8d"
 }

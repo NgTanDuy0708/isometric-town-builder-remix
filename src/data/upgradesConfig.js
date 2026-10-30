@@ -1,15 +1,27 @@
 // Building upgrades configuration (Levels 1 to 3)
 import { EXPANSION_UPGRADES } from './expansionCatalog.js';
+import { isHousingTile } from './housingConfig.js';
 
 export const MAX_BUILDING_LEVEL = 3;
 
 export const UPGRADES_CONFIG = {
+  b66_iron_mine: { maxLevel:3,
+    2:{costGold:160,costResources:{plank:2,buildingStone:2,ironTools:1},durationSec:90,desc:'Gia cố hầm mỏ, mở chỗ làm việc thứ 3.'},
+    3:{costGold:320,costResources:{plank:4,buildingStone:4,ironTools:2},durationSec:150,desc:'Mở rộng hầm mỏ, mở chỗ làm việc thứ 4.'} },
+  b65_stone_quarry: { maxLevel:3,
+    2:{costGold:120,costResources:{plank:2,buildingStone:2,ironTools:1},durationSec:90,desc:'Mở chỗ làm việc thứ 3; chế biến đá nhanh hơn 30%.'},
+    3:{costGold:240,costResources:{plank:4,buildingStone:4,ironTools:2,bread:2},durationSec:150,desc:'Mở chỗ làm việc thứ 4; chế biến đá nhanh hơn 60%.'} },
   b64_bbq_restaurant: {
     maxLevel: 3,
     2: { costGold:240,costResources:{ironTools:2,bread:3},durationSec:90,population:3,desc:'Mở rộng bếp nướng và quầy phục vụ. Nhà hàng cấp 2, tốc độ chế biến tăng 30%.' },
     3: { costGold:480,costResources:{ironTools:4,bread:6},durationSec:150,population:4,desc:'Nhà hàng hai tầng với ban công và ba tầng bếp nướng. Tốc độ chế biến tăng 60%.' }
   },
   ...EXPANSION_UPGRADES,
+  b11_carpenter_sawmill: {
+    ...EXPANSION_UPGRADES.b11_carpenter_sawmill,
+    2:{...EXPANSION_UPGRADES.b11_carpenter_sawmill[2],desc:'Mở chỗ làm việc thứ 3 cho công nhân khai thác gỗ.'},
+    3:{...EXPANSION_UPGRADES.b11_carpenter_sawmill[3],desc:'Mở chỗ làm việc thứ 4 cho công nhân khai thác gỗ.'}
+  },
   // Nhà tranh ấm cúng
   "b01_cottage_red": {
     maxLevel: 3,
@@ -103,7 +115,7 @@ export const UPGRADES_CONFIG = {
       durationSec: 14,
       resourceYield: 2, // 2 Dụng cụ mỗi 30s
       goldBonus: 30,
-      desc: "Trang bị bễ thổi lửa thủy lực: Chế tác 2 bộ Dụng cụ sắt ⚒️ + 30 🪙 / 30s."
+      desc: "Trang bị bễ thổi lửa thủy lực: luyện thỏi và chế tác dụng cụ nhanh hơn 30%. Mỗi mẻ vẫn cần nguyên liệu."
     },
     3: {
       costGold: 320,
@@ -111,7 +123,7 @@ export const UPGRADES_CONFIG = {
       durationSec: 24,
       resourceYield: 3, // 3 Dụng cụ mỗi 30s
       goldBonus: 50,
-      desc: "Xưởng rèn thép vũ khí vương triều: Sản xuất 3 bộ Dụng cụ sắt ⚒️ + 50 🪙 / 30s."
+      desc: "Xưởng rèn vương triều: luyện thỏi và chế tác dụng cụ nhanh hơn 60%. Mỗi mẻ vẫn cần nguyên liệu."
     }
   },
 
@@ -199,14 +211,14 @@ export const UPGRADES_CONFIG = {
       costResources: { ironTools: 1 },
       durationSec: 8,
       population: 4,
-      desc: "Gia cố chòi canh & cung tên: Đồn trú 4 👥 vệ binh giữ gìn an ninh."
+      desc: "Gia cố cung tên: sát thương tăng từ 18 lên 24/giây, tầm bắn tăng từ 4 lên 4,5 ô. Tháp tự phòng thủ, chưa thuê lính."
     },
     3: {
       costGold: 180,
       costResources: { ironTools: 2 },
       durationSec: 14,
       population: 8,
-      desc: "Pháo đài tiền tiêu kiên cố: Đồn trú 8 👥 hiệp sĩ hoàng gia bảo vệ vương quốc."
+      desc: "Pháo đài tiền tiêu: sát thương 30/giây, tầm bắn 5 ô. Tháp tự phòng thủ, chưa thuê lính."
     }
   },
 
@@ -364,6 +376,7 @@ export function getNextUpgrade(tileId, currentLevel = 1) {
  * Get population provided by building taking level into account
  */
 export function getBuildingLevelPopulation(tileId, level = 1, basePop = 2) {
+  if (!isHousingTile(tileId)) return 0;
   const cfg = UPGRADES_CONFIG[tileId];
   if (level > 1 && cfg && cfg[level] && typeof cfg[level].population === "number") {
     return cfg[level].population;

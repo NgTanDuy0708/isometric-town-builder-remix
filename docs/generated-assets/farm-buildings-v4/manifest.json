@@ -1,0 +1,406 @@
+[
+  {
+    "id": "b21_chicken_coop",
+    "uri": "/assets/farm/chicken_coop_v4.png",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "8dd6f47a7748559ab81736d853f8ad97df4335a15dfbaf757e449b6c167e78c5",
+    "bounds": {
+      "minX": 61,
+      "minY": 120,
+      "maxX": 1133,
+      "maxY": 1087
+    },
+    "visibleWidth": 1073,
+    "foot": {
+      "x": 892,
+      "y": 1088
+    },
+    "transparentFraction": 0.580291074939778,
+    "profile": [
+      [
+        61,
+        441
+      ],
+      [
+        150,
+        881
+      ],
+      [
+        239,
+        810
+      ],
+      [
+        328,
+        862
+      ],
+      [
+        417,
+        915
+      ],
+      [
+        506,
+        917
+      ],
+      [
+        595,
+        1082
+      ],
+      [
+        684,
+        928
+      ],
+      [
+        773,
+        952
+      ],
+      [
+        862,
+        1055
+      ],
+      [
+        951,
+        1057
+      ],
+      [
+        1040,
+        918
+      ],
+      [
+        1129,
+        565
+      ]
+    ],
+    "anchor": {
+      "x": 590,
+      "y": 1088
+    },
+    "worldWidth": 128,
+    "footprint": {
+      "rows": 1,
+      "cols": 2
+    },
+    "groundIncluded": false,
+    "gridFence": true,
+    "animalSlots": [
+      [
+        48,
+        102
+      ],
+      [
+        75,
+        91
+      ],
+      [
+        100,
+        99
+      ],
+      [
+        63,
+        116
+      ],
+      [
+        89,
+        111
+      ]
+    ]
+  },
+  {
+    "id": "b22_cow_pasture",
+    "uri": "/assets/farm/cow_barn_v4.png",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "294b5239f1b49642429d491114ce01f6d4c7bd8581d95f07b88c06aa4009301c",
+    "bounds": {
+      "minX": 38,
+      "minY": 141,
+      "maxX": 1178,
+      "maxY": 1075
+    },
+    "visibleWidth": 1141,
+    "foot": {
+      "x": 558,
+      "y": 1076
+    },
+    "transparentFraction": 0.5930496096701083,
+    "profile": [
+      [
+        38,
+        512
+      ],
+      [
+        133,
+        840
+      ],
+      [
+        228,
+        856
+      ],
+      [
+        323,
+        949
+      ],
+      [
+        418,
+        974
+      ],
+      [
+        513,
+        1049
+      ],
+      [
+        608,
+        1020
+      ],
+      [
+        703,
+        1011
+      ],
+      [
+        798,
+        702
+      ],
+      [
+        893,
+        662
+      ],
+      [
+        988,
+        900
+      ],
+      [
+        1083,
+        853
+      ],
+      [
+        1178,
+        579
+      ]
+    ],
+    "anchor": {
+      "x": 558,
+      "y": 1076
+    },
+    "worldWidth": 128,
+    "footprint": {
+      "rows": 1,
+      "cols": 2
+    },
+    "groundIncluded": false,
+    "gridFence": true,
+    "animalSlots": [
+      [
+        40,
+        96
+      ],
+      [
+        91,
+        96
+      ],
+      [
+        67,
+        111
+      ]
+    ]
+  },
+  {
+    "id": "b57_sheep_pasture",
+    "uri": "/assets/farm/sheep_barn_v4.png",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "b0fe31c831e2fda29f65d3a416f4479708e32ca5e9f739d5e07c90728cbd9271",
+    "bounds": {
+      "minX": 36,
+      "minY": 154,
+      "maxX": 1161,
+      "maxY": 1045
+    },
+    "visibleWidth": 1126,
+    "foot": {
+      "x": 575,
+      "y": 1046
+    },
+    "transparentFraction": 0.6299528907813975,
+    "profile": [
+      [
+        36,
+        552
+      ],
+      [
+        129,
+        805
+      ],
+      [
+        222,
+        852
+      ],
+      [
+        315,
+        823
+      ],
+      [
+        408,
+        882
+      ],
+      [
+        501,
+        987
+      ],
+      [
+        594,
+        1036
+      ],
+      [
+        687,
+        1002
+      ],
+      [
+        780,
+        719
+      ],
+      [
+        873,
+        684
+      ],
+      [
+        966,
+        903
+      ],
+      [
+        1059,
+        799
+      ],
+      [
+        1152,
+        603
+      ]
+    ],
+    "anchor": {
+      "x": 575,
+      "y": 1046
+    },
+    "worldWidth": 128,
+    "footprint": {
+      "rows": 1,
+      "cols": 2
+    },
+    "groundIncluded": false,
+    "gridFence": true,
+    "animalSlots": [
+      [
+        40,
+        95
+      ],
+      [
+        91,
+        95
+      ],
+      [
+        65,
+        111
+      ]
+    ]
+  },
+  {
+    "id": "d33_pig_pen_barn",
+    "uri": "/assets/farm/pig_pen_v4.png",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "0dd89c723d617535ace99bbc156e371fe3468b70a72129d17d0c1d014c2bd0a4",
+    "bounds": {
+      "minX": 33,
+      "minY": 155,
+      "maxX": 1219,
+      "maxY": 1075
+    },
+    "visibleWidth": 1187,
+    "foot": {
+      "x": 569,
+      "y": 1076
+    },
+    "transparentFraction": 0.5883113430960321,
+    "profile": [
+      [
+        33,
+        537
+      ],
+      [
+        131,
+        823
+      ],
+      [
+        229,
+        866
+      ],
+      [
+        327,
+        911
+      ],
+      [
+        425,
+        969
+      ],
+      [
+        523,
+        1028
+      ],
+      [
+        621,
+        1035
+      ],
+      [
+        719,
+        981
+      ],
+      [
+        817,
+        945
+      ],
+      [
+        915,
+        703
+      ],
+      [
+        1013,
+        877
+      ],
+      [
+        1111,
+        841
+      ],
+      [
+        1209,
+        605
+      ]
+    ],
+    "anchor": {
+      "x": 569,
+      "y": 1076
+    },
+    "worldWidth": 128,
+    "footprint": {
+      "rows": 1,
+      "cols": 2
+    },
+    "groundIncluded": false,
+    "gridFence": true,
+    "animalSlots": [
+      [
+        38,
+        91
+      ],
+      [
+        89,
+        91
+      ],
+      [
+        46,
+        110
+      ],
+      [
+        85,
+        110
+      ]
+    ]
+  }
+]

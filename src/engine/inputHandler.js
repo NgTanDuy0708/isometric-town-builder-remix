@@ -1,4 +1,9 @@
+import {createFruitTreeState,getFruitTreeVisual,resolveFruitTreeState} from "./fruitTreeLifecycle.js";
+import { checkFarmWorkforce } from './workforce.js';
+import { EXTRACTION_WORKSHOPS, EXTRACTION_NODES } from '../data/extractionConfig.js';
 import { isLivestockTile } from "../data/livestockConfig.js";
+import { getLivestockAnchor, reserveLivestockCells, clearLivestockParts, LIVESTOCK_UI_OFFSET_Y } from '../data/livestockFootprint.js';
+import { canPlaceLivestock } from './livestockFootprint.js';
 import { placeFenceOnEdges } from "./fencePlacement.js";
 import { isFenceTile, getFenceSegments, FENCE_ITEM_BY_ID, canAddFence } from "../data/fenceConfig.js";
 import {
@@ -77,7 +82,7 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
         const ox = ORIGIN_X + (c - r) * HALF_W;
         const oy = ORIGIN_Y + (r + c) * QUARTER_W;
         const bubbleX = ox + 64;
-        const bubbleY = oy + 6;
+        const bubbleY = oy + 6 + LIVESTOCK_UI_OFFSET_Y;
         // Bắt trúng cả bong bóng nổi lẫn chuồng trại (bán kính rộng 38px)
         if (Math.hypot(wx - bubbleX, wy - bubbleY) <= 38 || (isReady && Math.hypot(wx - (ox + 64), wy - (oy + 50)) <= 38)) {
           return { type: "livestock", row: r, col: c, state: isReady ? "ready" : ls.state };
@@ -112,7 +117,7 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
     const c = parseInt(cStr, 10);
     if (!currentGrid[r]) continue;
     const tid = currentGrid[r][c];
-    if (!PRODUCTION_BUILDINGS[tid]) continue;
+    if (!PRODUCTION_BUILDINGS[tid] || FRUIT_TREES_CONFIG[tid]) continue;
 
     const ox = ORIGIN_X + (c - r) * HALF_W;
     const oy = ORIGIN_Y + (r + c) * QUARTER_W;
@@ -135,7 +140,7 @@ export function findHitBubble(wx, wy, farmlandState, productionState, currentGri
         const pKey = `${r}_${c}`;
         const p = productionState ? productionState[pKey] : null;
         const tState = fruitTreesState ? fruitTreesState[pKey] : null;
-        const isReady = p ? p.ready : ((Date.now() - (tState ? tState.lastHarvest || 0 : 0)) / 1000 >= cfg.intervalSec);
+        const isReady=getFruitTreeVisual(tid,resolveFruitTreeState(p,tState)).ready;
 
         if (isReady) {
           const ox = ORIGIN_X + (c - r) * HALF_W;
@@ -229,11 +234,27 @@ export function initInputHandler(container, ctx) {
     if (!titleEl || !activeActionTarget) return;
     const fenceItem = FENCE_ITEM_BY_ID[activeActionTarget.tid];
     const tt = fenceItem || ctx.getTileMap()[activeActionTarget.tid];
-    titleEl.textContent = tt ? tt.label : "Công trình";
+    const tree=FRUIT_TREES_CONFIG[activeActionTarget.tid];
+    const key=activeActionTarget.row+"_"+activeActionTarget.col;
+    const visual=tree?getFruitTreeVisual(activeActionTarget.tid,resolveFruitTreeState(ctx.getProductionState()?.[key],ctx.getFruitTreesState?.()?.[key])):null;
+    titleEl.textContent = (tt ? tt.label : "Công trình")+(visual?.exhausted?" · Héo (3/3)":"");
+    if(objActionDemolishBtn){
+      const label=objActionDemolishBtn.querySelector?.(".action-bar-label");
+      if(label)label.textContent=visual?.exhausted?"Đào cây":"Gỡ";
+      objActionDemolishBtn.title=visual?.exhausted?"Đào cây héo để trồng cây mới":"Gỡ bỏ (hoàn lại 50% 🪙)";
+    }
   }
 
   function showObjectActionOverlay(row, col, tid, level, flipped, isFence = false) {
     if (!objectActionOverlay) return;
+    if(!isFence) {
+      const anchor=getLivestockAnchor(ctx.getCurrentGrid(),row,col,ctx.getConstructions());
+      if(anchor) {
+        ({row,col}=anchor);tid=ctx.getCurrentGrid()[row][col];
+        level=ctx.getBuildingLevels()[`${row}_${col}`] || 1;
+        flipped=!!ctx.getFlippedGrid()[`${row}_${col}`];
+      }
+    }
     activeActionTarget = { row, col, tid, level, flipped, isFence };
     // Làm mờ công trình đang được chọn + hiện thanh Xoay / Di chuyển / Gỡ ở dưới màn hình
     if (ctx.setSelectedObjectCell) ctx.setSelectedObjectCell({ row, col });
@@ -292,7 +313,7 @@ export function initInputHandler(container, ctx) {
         fromCol = minC + 1;
         footprint = 2;
       }
-      ctx.setMovingBuilding({
+      const moveResult = ctx.setMovingBuilding({
         fromRow,
         fromCol,
         tileId: tid,
@@ -300,6 +321,7 @@ export function initInputHandler(container, ctx) {
         flipped: flipped,
         footprint
       });
+      if (moveResult === false) return;
       playBuildSound();
       const t = ctx.getTileMap()[tid];
       ctx.showToast(`🚚 Đang di chuyển ${t ? t.label : "vật phẩm"}! Kéo bóng mờ tới vị trí mới rồi bấm ✓ Tích.`, "info");
@@ -368,6 +390,11 @@ export function initInputHandler(container, ctx) {
     const productionState = ctx.getProductionState();
     const key = `${cell.row}_${cell.col}`;
 
+    if (isLivestockTile(activeBrush) && !canPlaceLivestock(ctx,activeBrush,cell.row,cell.col,ctx.getBrushFlipped())) {
+      ctx.showToast('🚫 Chuồng trại cần hai ô đất trống liền nhau, đã mở khóa.', 'warning');
+      return false;
+    }
+
     if (!isCellUnlocked(cell.row, cell.col, ctx.getLandUnlockedChunks(), gameMode)) {
       playErrorSound();
       ctx.showToast("🔒 Không thể đặt vào lãnh thổ chưa mở khóa!", "warning");
@@ -426,6 +453,15 @@ export function initInputHandler(container, ctx) {
 
     if (curCellTid === activeBrush) return false;
 
+    if (activeBrush === 'd13_farmland_plot') {
+      const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, ctx.getBuildingLevels(), ctx.getExtractionState?.());
+      if (!labor.allowed) {
+        playErrorSound();
+        ctx.showToast(labor.message, 'warning');
+        return false;
+      }
+    }
+
     const t = tileMap[activeBrush];
     const cost = (gameMode === "game" && t) ? getTileCost(activeBrush, t.category) : 0;
     const durSec = (gameMode === "game" && t) ? getTileBuildDuration(activeBrush, t.category) : 0;
@@ -455,6 +491,7 @@ export function initInputHandler(container, ctx) {
         startTime: Date.now(),
         durationMs: durSec * 1000
       };
+      if (isLivestockTile(activeBrush)) reserveLivestockCells(currentGrid,cell.row,cell.col,brushFlipped);
       ctx.saveConstructionsState();
       playBuildSound();
       if (ctx.onTutorialAction) ctx.onTutorialAction("build_tile", { tileId: activeBrush });
@@ -466,6 +503,7 @@ export function initInputHandler(container, ctx) {
     ctx.pushUndo();
     playBuildSound();
     currentGrid[cell.row][cell.col] = activeBrush;
+    if (isLivestockTile(activeBrush)) reserveLivestockCells(currentGrid,cell.row,cell.col,brushFlipped);
     if (brushFlipped) {
       flippedGrid[key] = true;
     } else {
@@ -474,16 +512,16 @@ export function initInputHandler(container, ctx) {
     ctx.saveFlippedGrid();
     if (ctx.onTutorialAction) ctx.onTutorialAction("build_tile", { tileId: activeBrush });
 
-    // Cây ăn quả: khởi tạo quả chín ngay đợt đầu
+    // A new tree starts small and grows before its first harvest.
     if (FRUIT_TREES_CONFIG[activeBrush]) {
       const fruitTreesState = ctx.getFruitTreesState ? ctx.getFruitTreesState() : null;
       if (fruitTreesState) {
-        fruitTreesState[key] = { lastHarvest: 0 };
+        fruitTreesState[key] = createFruitTreeState();
       }
       if (productionState) {
-        productionState[key] = { lastHarvest: 0, ready: true };
+        productionState[key] = {...(fruitTreesState?.[key] || createFruitTreeState())};
       }
-      ctx.showToast(`🌱 Đã trồng ${t ? t.label : "Cây ăn quả"}! Hãy nhấp rung cây thu hoạch quả chín nhé.`, "success");
+      ctx.showToast(`🌱 Đã trồng ${t ? t.label : "Cây ăn quả"}! Hạt sẽ nảy mầm và lớn dần. Mỗi cây thu hoạch 3 lần.`, "success");
     }
     ctx.updateVillageStatsUI();
     ctx.checkQuestsProgress();
@@ -591,7 +629,8 @@ export function initInputHandler(container, ctx) {
       return false;
     }
 
-    if (targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol) {
+    if (targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol &&
+        (!isLivestockTile(movingBuilding.tileId) || !!movingBuilding.flipped===!!flippedGrid[`${targetRow}_${targetCol}`])) {
       ctx.setMovingBuilding(null);
       ctx.showToast("Đã giữ nguyên vị trí vật phẩm.", "info");
       ctx.requestRender();
@@ -621,6 +660,7 @@ export function initInputHandler(container, ctx) {
         ctx.showToast("🔒 Không thể đặt hàng rào vào lãnh thổ chưa mở khóa!", "warning");
         return false;
       }
+      if (getLivestockAnchor(currentGrid,targetRow,targetCol,constructions)) return false;
 
       const remainingFences = fences.filter((_, idx) => idx !== targetOldIdx);
       if (!canAddFence(remainingFences, movingBuilding.tileId, targetRow, targetCol, !!movingBuilding.flipped)) {
@@ -718,7 +758,9 @@ export function initInputHandler(container, ctx) {
       return false;
     }
 
-    if (!canPlaceOnSurface(movingBuilding.tileId, currentGrid[targetRow][targetCol])) {
+    const movingPen=isLivestockTile(movingBuilding.tileId);
+    if (movingPen ? !canPlaceLivestock(ctx,movingBuilding.tileId,targetRow,targetCol,!!movingBuilding.flipped,
+      {row:movingBuilding.fromRow,col:movingBuilding.fromCol}) : !canPlaceOnSurface(movingBuilding.tileId, currentGrid[targetRow][targetCol])) {
       ctx.showToast("⚠️ Ô này đã có công trình hoặc cây cối! Hãy chọn ô cỏ hoa trống.", "warning");
       return false;
     }
@@ -726,13 +768,23 @@ export function initInputHandler(container, ctx) {
     const targetKey = `${targetRow}_${targetCol}`;
     const upgrades = ctx.getUpgradesInProgress ? ctx.getUpgradesInProgress() : {};
     const wonders = ctx.getKingdomWondersManager?.();
-    if (constructions[targetKey] || upgrades[targetKey] || wonders?.getWonderAt(targetRow, targetCol)) {
+    const samePenAnchor=movingPen && targetRow===movingBuilding.fromRow && targetCol===movingBuilding.fromCol;
+    if (constructions[targetKey] || (upgrades[targetKey]&&!samePenAnchor) || wonders?.getWonderAt(targetRow, targetCol)) {
       ctx.showToast("🏗️ Vị trí này đang thi công hoặc có Đại Kỳ Quan!", "warning");
       return false;
     }
 
     const oldKey = `${movingBuilding.fromRow}_${movingBuilding.fromCol}`;
     const newKey = `${targetRow}_${targetCol}`;
+
+    if (movingPen) {
+      clearLivestockParts(currentGrid,movingBuilding.fromRow,movingBuilding.fromCol,ctx.getTerrainMap?.());
+      if (oldKey===newKey) {
+        if(movingBuilding.flipped)flippedGrid[newKey]=true;else delete flippedGrid[newKey];
+        reserveLivestockCells(currentGrid,targetRow,targetCol,!!movingBuilding.flipped);
+        ctx.setMovingBuilding(null);ctx.persistGameState();ctx.requestRender();return true;
+      }
+    }
 
     if (upgrades[oldKey]) {
       upgrades[newKey] = { ...upgrades[oldKey], row: targetRow, col: targetCol };
@@ -770,6 +822,7 @@ export function initInputHandler(container, ctx) {
     }
 
     currentGrid[targetRow][targetCol] = movingBuilding.tileId;
+    if (movingPen) reserveLivestockCells(currentGrid,targetRow,targetCol,!!movingBuilding.flipped);
     if (movingBuilding.level > 1) buildingLevels[newKey] = movingBuilding.level;
     if (movingBuilding.flipped) flippedGrid[newKey] = true;
 
@@ -933,7 +986,7 @@ export function initInputHandler(container, ctx) {
     }
 
     const world = ctx.screenToWorldCoords(mouseX, mouseY);
-    const cell = ctx.worldToCell(world.x, world.y);
+    let cell = ctx.worldToCell(world.x, world.y);
 
     const activeSeedBrush = ctx.getActiveSeedBrush();
     const activeBrush = ctx.getActiveBrush();
@@ -1167,6 +1220,10 @@ export function initInputHandler(container, ctx) {
     }
 
     if (e.button === 0) {
+      if (!activeBrush && !movingBuilding) {
+        const anchor=getLivestockAnchor(currentGrid,cell.row,cell.col,constructions);
+        if(anchor)cell=anchor;
+      }
       const pKey = `${cell.row}_${cell.col}`;
       const curTid = currentGrid[cell.row][cell.col];
 
@@ -1204,7 +1261,7 @@ export function initInputHandler(container, ctx) {
 
       // B. Ready production building harvest
       const prod = PRODUCTION_BUILDINGS[curTid];
-      if (prod && productionState[pKey] && productionState[pKey].ready) {
+      if (prod && !FRUIT_TREES_CONFIG[curTid] && productionState[pKey] && productionState[pKey].ready) {
         ctx.harvestProductionBuilding(cell.row, cell.col);
         return;
       }
@@ -1219,18 +1276,15 @@ export function initInputHandler(container, ctx) {
         return;
       }
 
-      // C. Fruit tree direct click harvest / check timer (Táo 🍎, Dừa 🥥, Me 🍈)
-      if (FRUIT_TREES_CONFIG[curTid]) {
-        const prod = PRODUCTION_BUILDINGS[curTid];
-        const p = productionState[pKey];
-        if (p && p.ready) {
-          ctx.harvestProductionBuilding(cell.row, cell.col);
-          return;
-        }
-        const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-        const elapsedSec = (Date.now() - lastHarvest) / 1000;
-        const waitSec = Math.max(1, Math.ceil((prod ? prod.intervalSec : 45) - elapsedSec));
-        ctx.showToast(`⏳ ${prod ? prod.name : 'Cây ăn quả'} đang kết trái... Chờ thêm ${waitSec}s nữa nhé! (⚡ Bấm nút sấm sét để làm chín ngay)`, "info");
+      // Fruit trees keep a permanent exhausted state until the player digs.
+      if(FRUIT_TREES_CONFIG[curTid]){
+        const treeState=resolveFruitTreeState(productionState[pKey],ctx.getFruitTreesState?.()?.[pKey]);
+        const visual=getFruitTreeVisual(curTid,treeState);
+        if(visual.exhausted){
+          showObjectActionOverlay(cell.row,cell.col,curTid,1,!!ctx.getFlippedGrid()[pKey]);
+          ctx.showToast("🍂 Cây đã thu hoạch 3/3 lần. Bấm Đào cây để trồng cây mới.","info");
+        }else if(visual.ready)ctx.harvestProductionBuilding(cell.row,cell.col);
+        else ctx.showToast(`🌱 Cây đang phát triển, còn ${Math.ceil(FRUIT_TREES_CONFIG[curTid].intervalSec*(1-visual.progress))}s · Đã hái ${visual.harvestCount}/3.`,"info");
         return;
       }
 
@@ -1239,7 +1293,11 @@ export function initInputHandler(container, ctx) {
         longPressOrigin = { x: mouseX, y: mouseY, row: cell.row, col: cell.col };
         isLongPressPicked = false;
 
-        if (curTid === "b60_combined_warehouse") {
+        if (curTid==='b08_watchtower') {
+          pendingSpecialClick={type:'defense',row:cell.row,col:cell.col};
+        } else if (EXTRACTION_WORKSHOPS[curTid] || EXTRACTION_NODES[curTid]) {
+          pendingSpecialClick = { type: 'extraction', row: cell.row, col: cell.col, node: !!EXTRACTION_NODES[curTid] };
+        } else if (curTid === "b60_combined_warehouse") {
           pendingSpecialClick = { type: "warehouse", row: cell.row, col: cell.col };
         } else if (curTid === "b13_barn_silo") {
           pendingSpecialClick = { type: "silo", row: cell.row, col: cell.col };
@@ -1355,7 +1413,7 @@ export function initInputHandler(container, ctx) {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      if (isPlacementMode()) {
+      if (isPlacementMode() && !FRUIT_TREES_CONFIG[ctx.getActiveBrush()]) {
         initAudio();
         if (!getAudioState().isMuted) startBGM();
         hideObjectActionOverlay();
@@ -1373,7 +1431,7 @@ export function initInputHandler(container, ctx) {
 
       // Công cụ Phá dỡ / Gieo hạt ngoài luống đất: chạm = thực hiện khi nhả tay, kéo = di chuyển bản đồ
       const seedBrush = ctx.getActiveSeedBrush();
-      let defer = ctx.getActiveBrush() === "erase";
+      let defer = ctx.getActiveBrush() === "erase" || !!FRUIT_TREES_CONFIG[ctx.getActiveBrush()];
       let c0 = null;
       if (seedBrush) {
         const w0 = ctx.screenToWorldCoords(x, y);
@@ -1548,10 +1606,9 @@ export function initInputHandler(container, ctx) {
         if (cell && currentGrid[cell.row]) {
           const tid = currentGrid[cell.row][cell.col];
           if (FRUIT_TREES_CONFIG[tid]) {
-            const tState = fruitTreesState ? fruitTreesState[`${cell.row}_${cell.col}`] : null;
-            const cfg = FRUIT_TREES_CONFIG[tid];
-            const elapsedSec = (Date.now() - (tState ? tState.lastHarvest || 0 : 0)) / 1000;
-            if (elapsedSec >= cfg.intervalSec) {
+            const treeKey=`${cell.row}_${cell.col}`;
+            const state=resolveFruitTreeState(productionState?.[treeKey],fruitTreesState?.[treeKey]);
+            if (getFruitTreeVisual(tid,state).ready) {
               ctx.harvestFruitTree(cell.row, cell.col);
             }
           }
@@ -1564,11 +1621,13 @@ export function initInputHandler(container, ctx) {
       const currentGrid = ctx.getCurrentGrid();
       const tileMap = ctx.getTileMap();
       const farmlandState = ctx.getFarmlandState();
-      const tid = currentGrid[cell.row][cell.col];
+      const anchor=getLivestockAnchor(currentGrid,cell.row,cell.col,ctx.getConstructions());
+      const statusCell=anchor || cell;
+      const tid = currentGrid[statusCell.row][statusCell.col];
       const t = tileMap[tid];
       let statusStr = `Ô [${cell.row}, ${cell.col}] • ${t ? t.label : tid}`;
       const constructions = ctx.getConstructions();
-      const bKey = `${cell.row}_${cell.col}`;
+      const bKey = `${statusCell.row}_${statusCell.col}`;
       if (constructions && constructions[bKey]) {
         const cData = constructions[bKey];
         const elapsed = Date.now() - cData.startTime;
@@ -1592,12 +1651,13 @@ export function initInputHandler(container, ctx) {
       } else if (FRUIT_TREES_CONFIG[tid]) {
         const fruitTreesState = ctx.getFruitTreesState ? ctx.getFruitTreesState() : null;
         const tKey = `${cell.row}_${cell.col}`;
-        const tData = fruitTreesState ? fruitTreesState[tKey] : null;
+        const tData = resolveFruitTreeState(ctx.getProductionState()?.[tKey],fruitTreesState?.[tKey]);
         const cfg = FRUIT_TREES_CONFIG[tid];
-        const elapsedSec = (Date.now() - (tData ? tData.lastHarvest || 0 : 0)) / 1000;
-        const remaining = Math.max(0, Math.ceil(cfg.intervalSec - elapsedSec));
-        if (remaining > 0) {
-          statusStr += ` (${cfg.icon} Đang kết trái: Còn ${formatTimeCountdown(remaining)})`;
+        const visual=getFruitTreeVisual(tid,tData);
+        const remaining = Math.max(0, Math.ceil(cfg.intervalSec*(1-visual.progress)));
+        if (!visual.ready) {
+          const label={seed:'Đã gieo hạt',sprout:'Mầm',seedling:'Cây con',young:'Cây non',flowering:'Trổ hoa',withered:'Đã hái 3/3 · Héo vĩnh viễn, chạm để đào cây'}[visual.stage];
+          statusStr += visual.exhausted?` (${label})`:` (${cfg.icon} ${label}: Còn ${formatTimeCountdown(remaining)} · ${visual.harvestCount}/3 lần)`;
         } else {
           statusStr += ` (${cfg.icon} Quả đã chín mọng! Nhấp để rung cây thu hoạch)`;
         }
@@ -1643,7 +1703,12 @@ export function initInputHandler(container, ctx) {
     }
 
     if (pendingSpecialClick) {
-      if (pendingSpecialClick.type === "market") {
+      if (pendingSpecialClick.type === 'defense') {
+        ctx.openDefenseModal?.(pendingSpecialClick.row,pendingSpecialClick.col);
+      } else if (pendingSpecialClick.type === 'extraction') {
+        if(pendingSpecialClick.node)ctx.openExtractionModal?.();
+        else ctx.openExtractionModal?.(pendingSpecialClick.row,pendingSpecialClick.col);
+      } else if (pendingSpecialClick.type === "market") {
         ctx.openMarketModal();
       } else if (pendingSpecialClick.type === "achievements") {
         if (ctx.openAchievementsModal) ctx.openAchievementsModal();

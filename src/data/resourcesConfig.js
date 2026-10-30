@@ -1,6 +1,8 @@
 // Configuration for resources, storage capacity, market trading, and production chains
 
 import { ADDITIONAL_CROPS } from "./additionalCrops.js";
+import {FRUIT_TREES_CONFIG} from "./fruitTreeConfig.js";
+export {FRUIT_TREES_CONFIG};
 
 export const RESOURCE_MAX_CAPACITY = 999;
 export const INITIAL_STORAGE_CAPACITY = 300; // Sức chứa khởi đầu Kho Tổng Hợp
@@ -9,16 +11,16 @@ export const INITIAL_STORAGE_CAPACITY = 300; // Sức chứa khởi đầu Kho T
 export const SILO_RESOURCE_IDS = [
   "wheat", "carrot", "tomato", "strawberry", "corn",
   "cabbage", "pumpkin", "watermelon", "grapes", "sunflower",
-  "apple", "coconut", "tamarind", ...ADDITIONAL_CROPS.map(crop => crop.id)
+  "apple", "coconut", "tamarind", ...Object.values(FRUIT_TREES_CONFIG).filter(c=>c.sellPrice).map(c=>c.fruitId), ...ADDITIONAL_CROPS.map(crop => crop.id)
 ];
 
 // Danh mục sản phẩm chăn nuôi & thành phẩm nhà máy chứa trong Kho Barn
 export const BARN_RESOURCE_IDS = [
-  "egg", "milk", "meat", "roastPork", "wool", "bread", "butter", "fabric", "ironTools", "wine"
+  "egg", "milk", "meat", "roastPork", "wool", "bread", "butter", "fabric", "ironTools", "wine", "wood", "stone", "ironOre", "plank", "buildingStone", "ironIngot"
 ];
 
 // Kho Tổng Hợp chứa toàn bộ tài nguyên mà Silo và Barn cũ từng tách riêng.
-export const WAREHOUSE_RESOURCE_IDS = [...SILO_RESOURCE_IDS, ...BARN_RESOURCE_IDS];
+export const WAREHOUSE_RESOURCE_IDS = [...new Set([...SILO_RESOURCE_IDS, ...BARN_RESOURCE_IDS])];
 
 export function isSiloResource(resId) {
   return SILO_RESOURCE_IDS.includes(resId);
@@ -44,6 +46,12 @@ export function getWarehouseUsed(resources) {
 }
 
 export const RESOURCES_CONFIG = {
+  ironOre: { id:'ironOre', name:'Quặng sắt', category:'material', icon:'⛏️', sellPrice:6, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'cục', desc:'Công nhân Mỏ sắt mang về; luyện tại Lò rèn để lấy thỏi sắt.' },
+  plank: { id:'plank', name:'Ván gỗ', category:'material', icon:'🪵', sellPrice:10, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'tấm', desc:'Chế biến 2 gỗ nguyên liệu tại Xưởng mộc.' },
+  buildingStone: { id:'buildingStone', name:'Đá xây dựng', category:'material', icon:'🧱', sellPrice:12, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'khối', desc:'Gia công 2 đá nguyên liệu tại Xưởng khai thác đá.' },
+  ironIngot: { id:'ironIngot', name:'Thỏi sắt', category:'material', icon:'🔩', sellPrice:16, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'thỏi', desc:'Luyện 2 quặng sắt và 1 gỗ tại Lò rèn; dùng chế tác dụng cụ.' },
+  wood: { id:'wood', name:'Gỗ nguyên liệu', category:'material', icon:'🪵', sellPrice:4, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'khúc', desc:'Công nhân Xưởng mộc mang từ rừng khai thác về kho.' },
+  stone: { id:'stone', name:'Đá nguyên liệu', category:'material', icon:'🪨', sellPrice:5, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'khối', desc:'Công nhân Xưởng khai thác đá mang từ bãi đá về kho.' },
   ...Object.fromEntries(ADDITIONAL_CROPS.map(crop => [crop.id, {
     id: crop.id, name: crop.name, icon: crop.icon, category: "crop",
     sellPrice: crop.sellPrice, unitName: crop.unitName, maxCapacity: RESOURCE_MAX_CAPACITY,
@@ -170,7 +178,7 @@ export const RESOURCES_CONFIG = {
     sellPrice: 50,
     maxCapacity: RESOURCE_MAX_CAPACITY,
     unitName: "bộ dụng cụ",
-    desc: "Chế tác từ Lò rèn. Dùng cho nâng cấp công trình kiên cố và bán cho thương nhân vương quốc."
+    desc: "Chế tác tại Lò rèn từ 1 thỏi sắt và 1 ván gỗ. Dùng nâng cấp công trình hoặc bán cho thương nhân."
   },
 
   // === Chăn nuôi chuồng trại phong cách Hay Day ===
@@ -271,38 +279,9 @@ export const RESOURCES_CONFIG = {
 };
 
 // Cấu hình cây ăn quả độc lập trồng trên bãi cỏ
-export const FRUIT_TREES_CONFIG = {
-  "d21_apple_tree": {
-    name: "Cây Táo Đỏ",
-    fruitId: "apple",
-    fruitName: "Táo đỏ giòn",
-    icon: "🍎",
-    intervalSec: 45,
-    yieldQty: 3,
-    rewardGold: 20,
-    rewardXP: 15
-  },
-  "d22_coconut_palm": {
-    name: "Cây Dừa Xiêm",
-    fruitId: "coconut",
-    fruitName: "Dừa xiêm ngọt",
-    icon: "🥥",
-    intervalSec: 60,
-    yieldQty: 2,
-    rewardGold: 32,
-    rewardXP: 22
-  },
-  "d23_tamarind_tree": {
-    name: "Cây Me Chua Ngọt",
-    fruitId: "tamarind",
-    fruitName: "Trái me chua ngọt",
-    icon: "🍈",
-    intervalSec: 50,
-    yieldQty: 3,
-    rewardGold: 25,
-    rewardXP: 18
-  }
-};
+for(const cfg of Object.values(FRUIT_TREES_CONFIG).filter(c=>c.sellPrice)){
+  RESOURCES_CONFIG[cfg.fruitId]={id:cfg.fruitId,name:cfg.fruitName,category:"fruit",icon:cfg.icon,sellPrice:cfg.sellPrice,maxCapacity:RESOURCE_MAX_CAPACITY,unitName:"quả",desc:"Thu hoạch từ "+cfg.name+"."};
+}
 
 // Production rules for specific buildings
 export const RESOURCE_CHAINS = {
@@ -337,14 +316,16 @@ export const RESOURCE_CHAINS = {
     warningIcon: "⚠️🌾",
     warningText: "Thiếu Lúa mì"
   },
-  // Lò rèn: sản xuất dụng cụ sắt
+  // Multi-recipe processors use PRODUCTION_RECIPES instead of an automatic input.
   "b03_blacksmith_forge": {
-    type: "producer",
+    type: "processor",
+    manualQueue: true,
+    recipes: ["ironIngot", "ironTools"],
     consumes: null,
     produces: {
       resourceId: "ironTools",
       amount: 1,
-      goldBonus: 15
+      goldBonus: 0
     },
     intervalSec: 90,
     icon: "⚒️",
@@ -501,3 +482,8 @@ export const RESOURCE_CHAINS = {
     productName: "Trái me chua ngọt"
   }
 };
+
+// Shared fruit-tree producer rules for all eight species.
+for(const [id,cfg] of Object.entries(FRUIT_TREES_CONFIG)){
+ RESOURCE_CHAINS[id]={type:"producer",consumes:null,produces:{resourceId:cfg.fruitId,amount:cfg.yieldQty,goldBonus:cfg.rewardGold},intervalSec:cfg.intervalSec,icon:cfg.icon,productName:cfg.fruitName};
+}

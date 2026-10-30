@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nhân vật và phương tiện — Animation</title>
+<style>
+body{margin:0;background:#202e25;color:#f1e8ce;font:16px system-ui}main{max-width:1280px;margin:auto;padding:28px}h1{font-size:26px;margin:0 0 8px}p{color:#bcc8b5}header{position:sticky;top:0;background:#202e25ee;padding:12px 0;z-index:2}button,select{background:#435d46;color:white;border:1px solid #819576;border-radius:8px;padding:9px 14px;margin:0 8px 12px 0}section{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.card{background:#314735;border:1px solid #58705a;border-radius:12px;padding:12px}.views{display:grid;grid-template-columns:1fr 1fr}.view{text-align:center;font-size:12px;color:#cbd5bf}canvas{display:block;width:100%;height:132px;background:radial-gradient(ellipse at 50% 83%,#536748 0,transparent 48%)}a{color:#e8c76e;font-size:12px}h2{font-size:16px;margin:4px 0 10px}
+</style>
+<main><header><h1>Nhân vật và phương tiện</h1><p>6 dân làng · 10 khách · 2 xe kèm người · 4 hướng · đứng và chuyển động</p><button id="play">Tạm dừng</button><select id="mode"><option value="walking">Chuyển động</option><option value="idle">Đứng</option></select><label>Tốc độ <input id="speed" type="range" min="2" max="12" value="7"></label></header><section id="gallery"></section></main>
+<script type="module">
+const atlas=await fetch('/assets/characters/v1/atlas.json').then(r=>r.json());
+atlas.vehicle=await fetch('/assets/vehicles/v1/atlas.json').then(r=>r.json());
+const labels={farmer_young:'Nông dân trẻ',farmer_old:'Lão nông',farmer_girl:'Nữ nông dân',woman:'Nữ dân làng',blacksmith:'Thợ rèn',merchant:'Thương nhân',npc_marie:'Bà Marie',npc_angus:'Bác Angus',npc_lily:'Bé Lily',npc_marco:'Marco',npc_lancelot:'Lancelot',npc_rosalind:'Rosalind',npc_elric:'Elric',npc_giles:'Giles',npc_pierre:'Pierre',npc_jack:'Jack'};
+const rows=[['SE','Trước phải'],['SW','Trước trái'],['NW','Sau trái'],['NE','Sau phải']],views=[];
+labels.wheat_cart='Xe lúa mì + người kéo';labels.horse_carriage='Xe ngựa + người đánh xe';
+for(const [group,assets] of Object.entries(atlas))for(const [id,asset]of Object.entries(assets)){
+ const card=document.createElement('article');card.className='card';
+ const title=document.createElement('h2');title.textContent=labels[id]||id;card.append(title);
+ const holder=document.createElement('div');holder.className='views';card.append(holder);
+ const image=new Image();image.src=asset.uri;
+ for(const [direction,label]of rows){const view=document.createElement('div');view.className='view';const canvas=document.createElement('canvas');canvas.width=256;canvas.height=264;view.append(canvas,document.createTextNode(label));holder.append(view);views.push({ctx:canvas.getContext('2d'),asset,image,direction,group});}
+ const link=document.createElement('a');link.href=asset.uri;link.textContent='PNG gốc · 20 khung';link.target='_blank';card.append(link);document.querySelector('#gallery').append(card);
+}
+let playing=true,phase=0,last=performance.now();document.querySelector('#play').onclick=e=>{playing=!playing;e.target.textContent=playing?'Tạm dừng':'Tiếp tục'};
+function animate(now){if(playing)phase+=(now-last)/1000*Number(document.querySelector('#speed').value);last=now;
+ const index=document.querySelector('#mode').value==='walking'?1+Math.floor(phase)%4:0;
+ for(const{ctx,asset,image,direction,group}of views){ctx.clearRect(0,0,256,264);if(!image.complete||!image.naturalWidth)continue;const f=asset.directions[direction][index],s=group==='vehicle'?220/asset.referenceWidth:195/asset.referenceHeight;ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(image,f.x,f.y,f.w,f.h,128-f.anchorX*s,242-f.anchorY*s,f.w*s,f.h*s);}
+ requestAnimationFrame(animate);
+}requestAnimationFrame(animate);
+</script>
+</html>

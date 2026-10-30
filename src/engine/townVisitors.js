@@ -1,3 +1,6 @@
+import {drawRuntimeActor,drawResourceIcon} from './runtimeArt.js';
+import { drawAnimatedCharacter, characterDirection } from './characterAnimation.js';
+import {resourceIconHtml,visitorPortraitHtml} from '../data/resourceIcons.js';
 /**
  * townVisitors.js - Khách Bộ Hành NPC Ghé Thăm Tòa Thị Chính Mua Nông Sản
  * 
@@ -144,6 +147,8 @@ export class TownVisitorManager {
 
     for (let i = this.visitors.length - 1; i >= 0; i--) {
       const v = this.visitors[i];
+      const previousRow = v.row;
+      const previousCol = v.col;
 
       if (v.heartsAnim > 0) {
         v.heartsAnim -= dt * 1.5;
@@ -183,6 +188,10 @@ export class TownVisitorManager {
           this.visitors.splice(i, 1);
         }
       }
+      const dr = v.row - previousRow;
+      const dc = v.col - previousCol;
+      v.facing = characterDirection(dr, dc, v.facing || (v.state === 'walking_out' ? 'SW' : 'NE'));
+      v.walkPhase = (Number.isFinite(v.walkPhase) ? v.walkPhase : 0) + Math.hypot(dr, dc) * 8;
     }
   }
 
@@ -211,11 +220,11 @@ export class TownVisitorManager {
     const req = visitor.requestedItem.amount;
     const hasEnough = owned >= req;
 
-    if (avatarEl) avatarEl.textContent = visitor.npc.avatar;
+    if (avatarEl) avatarEl.innerHTML = visitorPortraitHtml(visitor.npc.id,visitor.npc.name,80,visitor.npc.avatar);
     if (nameEl) nameEl.textContent = visitor.npc.name;
     if (roleEl) roleEl.textContent = visitor.npc.role;
     if (dialogueEl) dialogueEl.textContent = `"${visitor.dialogue}"`;
-    if (itemIcoEl) itemIcoEl.textContent = visitor.requestedItem.icon;
+    if (itemIcoEl) itemIcoEl.innerHTML = resourceIconHtml(visitor.requestedItem.resourceId,visitor.requestedItem.name,48,visitor.requestedItem.icon);
     if (itemNameEl) itemNameEl.textContent = visitor.requestedItem.name;
     if (itemStockEl) {
       itemStockEl.textContent = `(Kho có: ${owned}/${req}) ${hasEnough ? '✔️' : '❌'}`;
@@ -332,23 +341,17 @@ export class TownVisitorManager {
       const walkBob = isWalking ? Math.abs(Math.sin(animTime * 8.0)) * 2.5 : 0;
       const charY = screenY - 14 - walkBob;
 
-      // Thân nhân vật
-      c2d.fillStyle = v.npc.accentColor || "#3b82f6";
-      c2d.beginPath();
-      c2d.arc(screenX, charY + 5, 5.5, 0, Math.PI * 2);
-      c2d.fill();
-
-      // Đầu nhân vật
-      c2d.fillStyle = "#ffedd5";
-      c2d.beginPath();
-      c2d.arc(screenX, charY - 2, 4.5, 0, Math.PI * 2);
-      c2d.fill();
-
-      // Nón / Tóc
-      c2d.fillStyle = "#78350f";
-      c2d.beginPath();
-      c2d.arc(screenX, charY - 4.5, 4, Math.PI, Math.PI * 2);
-      c2d.fill();
+      // Native full-body art shares the original fractional position and walking bob.
+      const animated = drawAnimatedCharacter(c2d, 'visitor', v.npc.id, screenX, screenY, {
+        height: v.npc.id === 'npc_lily' ? 32 : 40,
+        facing: v.facing || (v.state === 'walking_out' ? 'SW' : 'NE'),
+        walking: isWalking, phase: v.walkPhase || 0,
+        onLoad: () => this.ctx.requestRender?.()
+      });
+      if (!animated) drawRuntimeActor(c2d,'visitor',v.npc.id,screenX,screenY-walkBob,{
+        height:v.npc.id==='npc_lily'?32:40,flipped:v.state==='walking_out',
+        onLoad:()=>this.ctx.requestRender?.()
+      });
 
       const drawOverlay = () => {
         c2d.save();
@@ -388,7 +391,8 @@ export class TownVisitorManager {
           c2d.textAlign = "center";
           c2d.textBaseline = "middle";
           c2d.fillStyle = "#1e293b";
-          c2d.fillText(`${v.requestedItem.icon}×${v.requestedItem.amount}`, bubbleX, bubbleY);
+          const hasIcon=drawResourceIcon(c2d,v.requestedItem.resourceId,bubbleX-7,bubbleY,16,()=>this.ctx.requestRender?.());
+          c2d.fillText((hasIcon?'':v.requestedItem.icon)+'×'+v.requestedItem.amount,hasIcon?bubbleX+9:bubbleX,bubbleY);
         }
 
         c2d.restore();
@@ -412,7 +416,9 @@ export class TownVisitorManager {
         targetCol: v.targetCol,
         state: v.state,
         walkSpeed: v.walkSpeed,
-        waitingTime: v.waitingTime
+        waitingTime: v.waitingTime,
+        facing: v.facing,
+        walkPhase: v.walkPhase
       })),
       nextSpawnTimer: this.nextSpawnTimer
     };

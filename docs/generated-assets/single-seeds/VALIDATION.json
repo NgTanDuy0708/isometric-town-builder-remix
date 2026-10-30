@@ -1,0 +1,20 @@
+{
+  "mode": "built-in ImageGen",
+  "nativePngs": 19,
+  "fieldCrops": 18,
+  "fruitTreeReplacement": "blueberry_bush",
+  "visualReview": "All 19 subjects inspected in review.png; each has one visible seed or one mushroom spawn unit, on a compact dark soil pinch.",
+  "sourceBytesPreserved": true,
+  "trueAlpha": true,
+  "cropGroundAnchor": [64, 96],
+  "cropMaximumVisibleWidth": 18,
+  "cropMaximumVisibleHeight": 12,
+  "previewMatchesPlantedSprite": true,
+  "lint": "passed",
+  "build": "passed",
+  "fullSuite": {"passed": 182, "failed": 2, "total": 184},
+  "unrelatedFailures": [
+    "tests/characterAnimation.test.mjs: visitor animation sheets are absent from CHARACTER_SHEETS.visitors",
+    "tests/characterAnimation.test.mjs: rendering all animated visitors reads the absent sheet URI"
+  ]
+}

@@ -37,7 +37,7 @@ function screenVertex({ row, col }, originX, originY) {
 
 // Both corner shapes reuse the exact same pixels and dimensions. The image
 // remains untouched; Canvas samples its left post and the rail interiors.
-export function drawFencePart(c2d, texture, part, originX, originY) {
+export function drawFencePart(c2d, texture, part, originX, originY, {postWidth=15,postHeight=40} = {}) {
   if (!texture?.complete || !texture.naturalWidth) return;
   c2d.save();
   c2d.imageSmoothingEnabled = false;
@@ -45,8 +45,8 @@ export function drawFencePart(c2d, texture, part, originX, originY) {
   if (part.kind === "post") {
     const p = screenVertex(part.vertex, originX, originY);
     // Shared 15px-wide, 40px-high post, anchored at the bottom tip.
-    c2d.translate(p.x - 7.5, p.y - 40);
-    c2d.scale(15 / 194, 40 / 518);
+    c2d.translate(p.x - postWidth/2, p.y - postHeight);
+    c2d.scale(postWidth / 194, postHeight / 518);
     c2d.beginPath();
     c2d.moveTo(2, 46);
     c2d.lineTo(100, 2);
@@ -64,10 +64,10 @@ export function drawFencePart(c2d, texture, part, originX, originY) {
     // for the other slope; the common post keeps its top-left lighting.
     const start = a.y > b.y ? a : b;
     const end = start === a ? b : a;
-    const sy = 0.074;
+    const sy = 0.074 * postHeight/40;
     c2d.transform((end.x - start.x) / 695,
       ((end.y - start.y) + 333 * sy) / 695, 0, sy,
-      start.x, start.y - 34 - 650 * sy);
+      start.x, start.y - postHeight*.85 - 650 * sy);
     c2d.drawImage(texture, 300, 0, 695, 1254, 0, 0, 695, 1254);
   }
   c2d.restore();

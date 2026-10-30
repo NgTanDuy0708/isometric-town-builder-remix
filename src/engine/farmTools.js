@@ -178,7 +178,7 @@ export function createFarmToolsManager(ctx) {
       });
       ctx.spawnFlyingCoin(c, r, 3);
       ctx.spawnFlyingXP(c, r, xpGained);
-      ctx.spawnFlyingProduce(c, r, cropCfg.icon);
+      ctx.spawnFlyingProduce(c,r,cropCfg.icon,farmData.seedId);
     }
 
     if (ctx.checkAndFeedBakeries) ctx.checkAndFeedBakeries();

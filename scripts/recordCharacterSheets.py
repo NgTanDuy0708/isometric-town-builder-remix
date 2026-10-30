@@ -1,0 +1,162 @@
+"""Record untouched imagegen sheets and measure source rectangles, never resize art."""
+from pathlib import Path
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import statistics
+
+import numpy as np
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parents[1]
+ARCHIVE = ROOT / 'assets-source/character-sheets-v1'
+PUBLIC = ROOT / 'public/assets/characters/v1'
+MANIFEST = ARCHIVE / 'generation.json'
+DIRECTIONS = ['SE', 'SW', 'NW', 'NE']
+
+
+def cuts(mask, count, axis):
+    """Find transparent gutters near the regular grid, including imperfect AI spacing."""
+    projection = mask.sum(axis=axis)
+    length = len(projection)
+    step = length / count
+    result = [0]
+    for index in range(1, count):
+        centre = step * index
+        start = max(result[-1] + 1, int(centre - step * .19))
+        end = min(length, int(centre + step * .19))
+        gaps = []
+        run_start = None
+        for pos in range(start, end + 1):
+            empty = pos < end and projection[pos] == 0
+            if empty and run_start is None:
+                run_start = pos
+            elif not empty and run_start is not None:
+                gaps.append((run_start, pos))
+                run_start = None
+        if not gaps:
+            raise ValueError(f'No transparent gutter around grid boundary {index}/{count}')
+        left, right = max(gaps, key=lambda g: (g[1] - g[0]) - .05 * abs((g[0] + g[1]) / 2 - centre))
+        result.append((left + right) // 2)
+    return result + [length]
+
+
+def measure(path):
+    im = Image.open(path)
+    if im.mode != 'RGBA':
+        raise ValueError(f'Expected original RGBA PNG: {path}')
+    alpha = np.array(im)[:, :, 3]
+    if int(alpha.min()) != 0:
+        raise ValueError('Sheet must have genuine transparent alpha')
+    mask = alpha >= 32
+    try:
+        cols = cuts(mask, 5, 0)
+        # Boots in one column can be lower than another row's head.
+        row_sets = [cuts(mask[:, cols[col]:cols[col + 1]], 4, 1) for col in range(5)]
+        cells = [[(cols[col], row_sets[col][row], cols[col + 1], row_sets[col][row + 1])
+                  for col in range(5)] for row in range(4)]
+        gutters = {'rowsPerColumn': row_sets, 'columns': cols}
+    except ValueError:
+        # Wide vehicles can stagger columns between direction rows. Separate
+        # rows first, then find each row's own transparent column gutters.
+        rows = cuts(mask, 4, 1)
+        col_sets = [cuts(mask[rows[row]:rows[row + 1], :], 5, 0) for row in range(4)]
+        cells = [[(col_sets[row][col], rows[row], col_sets[row][col + 1], rows[row + 1])
+                  for col in range(5)] for row in range(4)]
+        gutters = {'rows': rows, 'columnsPerRow': col_sets}
+    directions = {}
+    heights = []
+    for row, direction in enumerate(DIRECTIONS):
+        frames = []
+        for col in range(5):
+            cell_left, cell_top, cell_right, cell_bottom = cells[row][col]
+            cell = mask[cell_top:cell_bottom, cell_left:cell_right]
+            yy, xx = np.where(cell)
+            if len(xx) < 400:
+                raise ValueError(f'Missing pose: {direction}/{col}')
+            left, top = int(xx.min()) + cell_left, int(yy.min()) + cell_top
+            right, bottom = int(xx.max()) + cell_left + 1, int(yy.max()) + cell_top + 1
+            height = bottom - top
+            # Track stable head/upper torso, rather than swinging arms or a forward boot.
+            body = mask[top + int(height * .15):top + int(height * .52), left:right]
+            anchor_x = left + float(np.median(np.where(body)[1]))
+            x0, y0 = max(cell_left, left - 2), max(cell_top, top - 2)
+            x1, y1 = min(cell_right, right + 2), min(cell_bottom, bottom + 2)
+            frames.append({'x': x0, 'y': y0, 'w': x1 - x0, 'h': y1 - y0,
+                           'anchorX': anchor_x - x0, 'anchorY': bottom - y0})
+            heights.append(height)
+        directions[direction] = frames
+    reference_height = statistics.median(heights)
+    if min(heights) < reference_height * .7 or max(heights) > reference_height * 1.3:
+        raise ValueError(f'Inconsistent pose scale: {heights}')
+    return {'width': im.width, 'height': im.height, 'referenceHeight': reference_height,
+            'directions': directions, 'gutters': gutters}
+
+
+def write_indexes(manifest):
+    # Independent image generation jobs can finish together. Per-asset records
+    # let a final rebuild merge all results without losing another job's update.
+    for job in manifest['jobs']:
+        record = ARCHIVE / f"{job['group']}_{job['id']}.json"
+        if record.exists():
+            job.update(json.loads(record.read_text(encoding='utf-8')))
+    atlas = {'villager': {}, 'visitor': {}}
+    for job in manifest['jobs']:
+        if job.get('atlas'):
+            atlas[job['group']][job['id']] = job['atlas']
+    payload = json.dumps(atlas, ensure_ascii=False, indent=2)
+    (ROOT / 'src/data/characterSheetsData.js').write_text(
+        '// Generated by scripts/recordCharacterSheets.py. Native PNGs remain untouched.\n'
+        'export const CHARACTER_SHEETS = ' + payload + ';\n', encoding='utf-8')
+    PUBLIC.mkdir(parents=True, exist_ok=True)
+    (PUBLIC / 'atlas.json').write_text(payload + '\n', encoding='utf-8')
+    complete = sum(len(group) for group in atlas.values())
+    manifest['status'] = 'complete' if complete == len(manifest['jobs']) else 'in_progress'
+    MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    sections = ['# Character animation sheets\n',
+                'Mode: built-in `image_gen`. Six redesigned villagers and ten existing visitor identities.\n',
+                'Each untouched native PNG contains 4 direction rows (SE, SW, NW, NE) and '
+                '5 columns (idle, four walking poses). Source rectangles and foot anchors are measured '
+                'at draw time metadata; originals are never resized, recoloured or quantized.\n',
+                'Originals: `../assets-source/character-sheets-v1/`. Runtime: '
+                '`../public/assets/characters/v1/`. Gallery: `../public/character-animation-preview.html`.\n']
+    for job in manifest['jobs']:
+        sections += [f"## {job['group']} / {job['id']}\n", '```text\n' + job['prompt'] + '\n```\n']
+    (ROOT / 'docs/CHARACTER_ANIMATION_PROMPTS.md').write_text('\n'.join(sections), encoding='utf-8')
+    print(f'Recorded {complete}/{len(manifest["jobs"])} character sheets')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--record', nargs=3, metavar=('GROUP', 'ID', 'GENERATED_PNG'))
+    args = parser.parse_args()
+    manifest = json.loads(MANIFEST.read_text(encoding='utf-8'))
+    if args.record:
+        group, key, generated = args.record
+        job = next(j for j in manifest['jobs'] if j['group'] == group and j['id'] == key)
+        source = Path(generated)
+        measured = measure(source)
+        stem = f'{group}_{key}'
+        archived = ARCHIVE / f'{stem}.png'
+        runtime = PUBLIC / f'{stem}.png'
+        PUBLIC.mkdir(parents=True, exist_ok=True)
+        for destination in [archived, runtime]:
+            if destination.exists() and destination.read_bytes() != source.read_bytes():
+                raise FileExistsError(f'Refusing to overwrite a different sheet: {destination}')
+            shutil.copyfile(source, destination)
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        job.update(generated_file=str(source), source_file=archived.relative_to(ROOT).as_posix(),
+                   game_file=runtime.relative_to(ROOT).as_posix(), sha256=digest,
+                   atlas={'uri': '/' + runtime.relative_to(ROOT / 'public').as_posix() + '?v=' + digest[:12],
+                          'sha256': digest, **measured})
+        record = ARCHIVE / f'{stem}.json'
+        temporary = record.with_suffix('.json.tmp')
+        temporary.write_text(json.dumps(job, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        os.replace(temporary, record)
+    write_indexes(manifest)
+
+
+if __name__ == '__main__':
+    main()

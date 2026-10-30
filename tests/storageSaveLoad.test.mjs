@@ -12,6 +12,25 @@ globalThis.localStorage = {
 
 const { getDefaultSaveState, saveGameSave, loadGameSave } = await import('../src/engine/storage.js');
 const { migrateLegacyWarehouseLayout } = await import('../src/data/starterMap.js');
+const {FRUIT_TREES_CONFIG} = await import('../src/data/fruitTreeConfig.js');
+const {createFruitTreeState,getFruitTreeVisual} = await import('../src/engine/fruitTreeLifecycle.js');
+
+test('all fruit resources and seven-stage lifecycle metadata survive save/load',()=>{
+  store.clear();const state=getDefaultSaveState(),now=Date.now();
+  Object.entries(FRUIT_TREES_CONFIG).forEach(([id,cfg],i)=>{
+    const key='20_'+(10+i);state.grid[20][10+i]=id;state.resources[cfg.fruitId]=i+1;
+    const tree=i%2?{lastHarvest:now,hasHarvested:true,harvestCount:3,exhausted:true,ready:false}:createFruitTreeState(now);
+    state.fruitTreesState[key]={...tree};state.productionState[key]={...tree};
+  });
+  assert.equal(saveGameSave(state),true);const loaded=loadGameSave();
+  Object.entries(FRUIT_TREES_CONFIG).forEach(([id,cfg],i)=>{
+    const key='20_'+(10+i);assert.equal(loaded.grid[20][10+i],id);
+    assert.equal(loaded.resources[cfg.fruitId],i+1);
+    assert.deepEqual(loaded.fruitTreesState[key],state.fruitTreesState[key]);
+    assert.deepEqual(loaded.productionState[key],state.productionState[key]);
+    assert.equal(getFruitTreeVisual(id,loaded.productionState[key],now).stage,i%2?'withered':'seed');
+  });
+});
 
 test('sức chứa Kho Tổng Hợp sống sót qua save/load', () => {
   store.clear();

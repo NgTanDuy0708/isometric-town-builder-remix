@@ -1,0 +1,30 @@
+{
+  "mode": "built-in imagegen",
+  "checkedAt": "2026-10-30T07:54:42.003Z",
+  "total": 66,
+  "completed": 66,
+  "allVisualsReviewed": true,
+  "sourceBytesPreserved": true,
+  "realAlpha": true,
+  "allSubjectsUnclipped": true,
+  "publicAssetBytes": 53374272,
+  "tests": "npm test",
+  "gallery": "/assets/runtime-art/index.html",
+  "cabbageStages": [
+    "sown",
+    "sprout",
+    "grow",
+    "ripe"
+  ],
+  "integrationChecks": {
+    "lint": "passed",
+    "build": "passed",
+    "cabbageTestsPassed": 6,
+    "fullSuiteMissingResourceIcons": [
+      "ironOre",
+      "plank",
+      "buildingStone",
+      "ironIngot"
+    ]
+  }
+}

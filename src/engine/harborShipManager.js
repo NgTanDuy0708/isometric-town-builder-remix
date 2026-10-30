@@ -1,3 +1,4 @@
+import {resourceIconHtml} from '../data/resourceIcons.js';
 import { getHarborLayout, isShipCell, isHarborCell } from '../data/harborLayout.js';
 /**
  * harborShipManager.js - Quản Lý Bến Cảng Đường Thủy & Tàu Buôn Giao Thương (Cargo Boat)
@@ -182,7 +183,7 @@ export class HarborShipManager {
     playCoinSound();
 
     if (this.ctx.spawnFlyingProduce) {
-      this.ctx.spawnFlyingProduce(SHIP_WATER_COL, SHIP_WATER_ROW, crate.resIcon || "📦");
+      this.ctx.spawnFlyingProduce(SHIP_WATER_COL,SHIP_WATER_ROW,crate.resIcon||"📦",crate.resId);
     }
     if (this.ctx.spawnFlyingCoin) {
       this.ctx.spawnFlyingCoin(SHIP_WATER_COL, SHIP_WATER_ROW, 4);
@@ -478,7 +479,7 @@ export class HarborShipManager {
             <span class="gr-chip gem">💎 +${gr.gems} Ruby</span>
             <span class="gr-chip gold">🪙 +${gr.gold.toLocaleString()} Vàng</span>
             <span class="gr-chip xp">⭐ +${gr.xp} XP</span>
-            <span class="gr-chip supply">${supplyCfg.icon} +${gr.supplyQty} ${supplyCfg.name}</span>
+            <span class="gr-chip supply">${resourceIconHtml(gr.supplyId,supplyCfg.name,22,supplyCfg.icon)} +${gr.supplyQty} ${supplyCfg.name}</span>
           </div>
         </div>
         <button type="button" class="ship-castoff-btn ${packedCount === 9 ? 'ready' : ''}" id="btn-ship-castoff">

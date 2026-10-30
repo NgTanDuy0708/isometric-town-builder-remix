@@ -1,0 +1,167 @@
+{
+  "mode": "built-in imagegen",
+  "date": "2026-10-30",
+  "purpose": "Seed and sprout additions for seven-stage finite fruit tree lifecycle",
+  "items": [
+    {
+      "stem": "apple_tree",
+      "title": "Táo",
+      "species": "apple",
+      "stage": "seed",
+      "filename": "apple_tree_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of apple for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one small glossy dark chestnut-brown teardrop apple pip half pressed into earth. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-e6acc753-0314-4ec0-a6cf-b03b9687b2ce.png"
+    },
+    {
+      "stem": "apple_tree",
+      "title": "Táo",
+      "species": "apple",
+      "stage": "sprout",
+      "filename": "apple_tree_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of apple for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: a very short pale-green shoot with two tiny oval cotyledons. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-7d390e59-7121-4e17-a7f5-d9368506c011.png"
+    },
+    {
+      "stem": "coconut_palm",
+      "title": "Dừa",
+      "species": "coconut palm",
+      "stage": "seed",
+      "filename": "coconut_palm_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of coconut palm for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one fibrous brown coconut seed resting on its side, lower half shallowly buried, three subtle germination eyes. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/coconut_palm_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-5b8c0bfc-92dd-40b4-8769-afde27a89433.png"
+    },
+    {
+      "stem": "coconut_palm",
+      "title": "Dừa",
+      "species": "coconut palm",
+      "stage": "sprout",
+      "filename": "coconut_palm_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of coconut palm for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one brown coconut with a single short green spear emerging and its very first two narrow folded blades, no trunk. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/coconut_palm_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-39b69495-f893-4c22-8631-11de99bf2a98.png"
+    },
+    {
+      "stem": "tamarind_tree",
+      "title": "Me",
+      "species": "tamarind",
+      "stage": "seed",
+      "filename": "tamarind_tree_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of tamarind for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one rounded polished dark-brown tamarind seed shallowly tucked into earth. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-45ebbdec-8486-462b-9f27-323a7061ceca.png"
+    },
+    {
+      "stem": "tamarind_tree",
+      "title": "Me",
+      "species": "tamarind",
+      "stage": "sprout",
+      "filename": "tamarind_tree_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of tamarind for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one thin green shoot carrying two tiny opposite pairs of tamarind leaflets. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-7cc4864e-d7ce-4266-81ab-b1fc6aebb314.png"
+    },
+    {
+      "stem": "cacao_tree",
+      "title": "Ca cao",
+      "species": "cacao",
+      "stage": "seed",
+      "filename": "cacao_tree_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of cacao for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one plump reddish-brown cacao bean shallowly tucked into earth. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-07b719ac-effa-4ef4-be70-675a4d3d25a9.png"
+    },
+    {
+      "stem": "cacao_tree",
+      "title": "Ca cao",
+      "species": "cacao",
+      "stage": "sprout",
+      "filename": "cacao_tree_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of cacao for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one short pale green cacao shoot with two small soft elongated oval leaves. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-d00f138f-e655-44f6-89b1-828f5ea62b39.png"
+    },
+    {
+      "stem": "cherry_tree",
+      "title": "Cherry",
+      "species": "cherry",
+      "stage": "seed",
+      "filename": "cherry_tree_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of cherry for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one small warm tan cherry pit with subtle central seam half embedded in earth. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-088183f0-3bea-46a9-b96f-5f00e629aed5.png"
+    },
+    {
+      "stem": "cherry_tree",
+      "title": "Cherry",
+      "species": "cherry",
+      "stage": "sprout",
+      "filename": "cherry_tree_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of cherry for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one short green cherry shoot with two tiny oval cotyledons and a small central bud. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-49a124c1-75c1-43c4-9a80-4051c5914456.png"
+    },
+    {
+      "stem": "blueberry_bush",
+      "title": "Việt quất",
+      "species": "blueberry",
+      "stage": "seed",
+      "filename": "blueberry_bush_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of blueberry for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: three tiny tan blueberry seeds grouped tightly at a single freshly sown spot, no berries. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/blueberry_bush_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-497d344b-db8b-4839-8b98-f1b93d4a0ffd.png"
+    },
+    {
+      "stem": "blueberry_bush",
+      "title": "Việt quất",
+      "species": "blueberry",
+      "stage": "sprout",
+      "filename": "blueberry_bush_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of blueberry for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one miniature blueberry sprout with a thin green stem and two very small rounded green leaves. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/blueberry_bush_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-ac7d115f-8234-49f2-b64c-b83095578db9.png"
+    },
+    {
+      "stem": "durian_tree",
+      "title": "Sầu riêng",
+      "species": "durian",
+      "stage": "seed",
+      "filename": "durian_tree_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of durian for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one smooth chestnut-brown oval durian seed with a pale cream scar, lower half in earth, not a spiky fruit. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-8754166f-6185-4b56-a7a8-d00082a50ca2.png"
+    },
+    {
+      "stem": "durian_tree",
+      "title": "Sầu riêng",
+      "species": "durian",
+      "stage": "sprout",
+      "filename": "durian_tree_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of durian for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one short light-green durian shoot with two tiny narrow elongated leaves, no woody trunk. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-8e34bf10-1b86-4dd8-a5d0-010b40ab2660.png"
+    },
+    {
+      "stem": "orange_tree",
+      "title": "Cam",
+      "species": "orange",
+      "stage": "seed",
+      "filename": "orange_tree_seed.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE freshly planted seed of orange for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one pale cream almond-shaped orange seed partly embedded in earth, not an orange fruit. This is the exact instant the player has sown a seed: no germination, shoot, stem, leaves, roots or plant yet.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 70px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-5fa2acc2-4906-4449-8e5d-effd47894e96.png"
+    },
+    {
+      "stem": "orange_tree",
+      "title": "Cam",
+      "species": "orange",
+      "stage": "sprout",
+      "filename": "orange_tree_sprout.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE newly germinating sprout of orange for the same medieval isometric farming game. The attached reference is STYLE ONLY: match its polished crisp detailed pixel-art clusters, muted olive greens, warm browns and upper-left lighting. It is a later sapling, so do NOT copy its size, woody trunk or branches.\nRequested subject: one short orange-tree shoot with two small shiny oval green cotyledons and a tiny central bud. This is the FIRST GERMINATION stage before a sapling: ONE very short soft shoot with only its first leaves, no branching, no bark, no adult foliage, no flowers or fruit.\nAt its base, at most a tiny low 2:1 oval pinch of loose rich-brown soil with 3-5 restrained chunky clods to indicate fresh planting. Never a whole soil tile, ground diamond, raised planter, soil block, thick pedestal, grass or terrain patch. No external roots, no cast shadow.\nONE isolated complete subject, roughly 150px wide and 150px high, much smaller than the reference sapling. Retain a square 1254x1254 canvas with generous genuine transparent padding, ground-contact bottom at about (627,1120). Crisp readable stepped pixel contours, controlled discrete shading; no photo, glossy 3D, blur, huge pixel mosaic or painted checkerboard. Everything outside seed/sprout and the tiny soil pinch is real alpha transparency. No seed packet, bag, label, text, logo, icon frame, multiple versions or sprite sheet. One requested lifecycle stage only.",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/assets-source/expansion/plants/apple_tree_seedling.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-dab00f98-0b81-4c13-b951-746feb144479.png"
+    }
+  ]
+}

@@ -1,4 +1,7 @@
+import {FRUIT_TREES_CONFIG} from "./fruitTreeConfig.js";
+import { isHousingTile } from './housingConfig.js';
 import { isLivestockTile } from "./livestockConfig.js";
+import { isLivestockPart } from './livestockFootprint.js';
 // Game economy configuration: gold prices, build durations, and production yields
 import { UPGRADES_CONFIG } from "./upgradesConfig.js";
 import { FENCE_PRICE_OVERRIDES, FENCE_DURATIONS } from "./fenceConfig.js";
@@ -19,6 +22,8 @@ export function getGemSpeedupCost(secondsRemaining) {
 
 // Specific price overrides for distinctive buildings and landmarks
 export const TILE_PRICE_OVERRIDES = {
+  b65_stone_quarry: 140,
+  b66_iron_mine: 180,
   b64_bbq_restaurant: 300,
   ...EXPANSION_PRICE_OVERRIDES,
   ...FENCE_PRICE_OVERRIDES,
@@ -75,6 +80,8 @@ export const TILE_PRICE_OVERRIDES = {
 
 // Tile unlock requirement by player level
 export const TILE_REQUIRED_LEVELS = {
+  b65_stone_quarry: 4,
+  b66_iron_mine: 4,
   b64_bbq_restaurant: 5,
   ...EXPANSION_REQUIRED_LEVELS,
   // Cấp 1 (Khởi điểm)
@@ -387,6 +394,8 @@ export const TILE_BUILD_DURATIONS = {
 
 // Specific build duration overrides (in seconds)
 export const DURATION_OVERRIDES = {
+  b65_stone_quarry: 30,
+  b66_iron_mine: 45,
   b64_bbq_restaurant: 90,
   ...EXPANSION_DURATIONS,
   ...FENCE_DURATIONS,
@@ -424,6 +433,8 @@ export const DURATION_OVERRIDES = {
 
 // Productive buildings that generate gold/resources periodically
 export const PRODUCTION_BUILDINGS = {
+  b11_carpenter_sawmill: { name:'Xưởng mộc',productName:'Ván gỗ',icon:'🪵',intervalSec:20,rewardGold:0,rewardXP:5,yieldResource:'plank',yieldQty:1,manualQueue:true },
+  b65_stone_quarry: { name:'Xưởng khai thác đá',productName:'Đá xây dựng',icon:'🧱',intervalSec:20,rewardGold:0,rewardXP:5,yieldResource:'buildingStone',yieldQty:1,manualQueue:true },
   b64_bbq_restaurant: { name:'Nhà Hàng Thịt Nướng',productName:'Thịt heo nướng',icon:'🍖',intervalSec:90,rewardGold:35,rewardXP:25,requiredResource:'meat',requiredQty:2,yieldResource:'roastPork',yieldQty:1,manualQueue:true },
   "b04_windmill": {
     name: "Cối xay gió",
@@ -447,6 +458,7 @@ export const PRODUCTION_BUILDINGS = {
     rewardGold: 75
   },
   "b03_blacksmith_forge": {
+    manualQueue: true,
     name: "Lò rèn",
     productName: "Dụng cụ sắt",
     icon: "⚒️",
@@ -560,10 +572,15 @@ export const PRODUCTION_BUILDINGS = {
   }
 };
 
+for(const [id,cfg] of Object.entries(FRUIT_TREES_CONFIG)){
+ PRODUCTION_BUILDINGS[id]={name:cfg.name,productName:cfg.fruitName,icon:cfg.icon,intervalSec:cfg.intervalSec,rewardGold:cfg.rewardGold,rewardXP:cfg.rewardXP,yieldResource:cfg.fruitId,yieldQty:cfg.yieldQty};
+}
+
 /**
  * Lấy số lượng nông sản / vật phẩm thu hoạch theo cấp độ công trình (Cấp 1-3)
  */
 export function getBuildingYield(tileId, level = 1) {
+  if(FRUIT_TREES_CONFIG[tileId])return FRUIT_TREES_CONFIG[tileId].yieldQty;
   const bLvl = Math.max(1, Math.min(3, level || 1));
   if (tileId === "d21_apple_tree" || tileId === "d23_tamarind_tree") {
     return 3;
@@ -611,6 +628,7 @@ export function getTileCost(tileId, category = "building") {
  * Get construction duration in seconds
  */
 export function getTileBuildDuration(tileId, category = "building") {
+  if(FRUIT_TREES_CONFIG[tileId])return 0;
   if (DURATION_OVERRIDES[tileId] !== undefined) {
     return DURATION_OVERRIDES[tileId];
   }
@@ -641,6 +659,7 @@ export const BUILDING_POPULATION = {
 };
 
 export function getTilePopulation(tileId, category = "building") {
+  if (!isHousingTile(tileId)) return 0;
   if (BUILDING_POPULATION[tileId] !== undefined) {
     return BUILDING_POPULATION[tileId];
   }
@@ -668,6 +687,7 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const tileId = grid[r][c];
+      if(isLivestockPart(tileId))continue;
       const key = `${r}_${c}`;
       if (countedFootprints.has(key)) continue;
       let footprintLevel = buildingLevels[key] || 1;
@@ -694,7 +714,7 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
           completedBuildings++;
           const basePop = getTilePopulation(tileId, category);
           const cfg = UPGRADES_CONFIG[tileId];
-          const levelPop = (level > 1 && cfg && cfg[level] && typeof cfg[level].population === "number")
+          const levelPop = (isHousingTile(tileId) && level > 1 && cfg && cfg[level] && typeof cfg[level].population === "number")
             ? cfg[level].population
             : basePop;
           population += levelPop;
@@ -704,7 +724,7 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
           decorCount++;
         }
 
-        if (PRODUCTION_BUILDINGS[tileId]) {
+        if (PRODUCTION_BUILDINGS[tileId] && !PRODUCTION_BUILDINGS[tileId].manualQueue) {
           const pb = PRODUCTION_BUILDINGS[tileId];
           const levelMultiplier = level === 3 ? 2.5 : (level === 2 ? 1.6 : 1.0);
           productionPerMin += Math.round(pb.rewardGold * (60 / pb.intervalSec) * levelMultiplier);

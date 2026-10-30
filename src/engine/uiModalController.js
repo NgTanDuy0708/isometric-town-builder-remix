@@ -1,3 +1,4 @@
+import {resourceIconHtml} from '../data/resourceIcons.js';
 import { QUESTS_CONFIG, QUEST_CHAPTERS, isQuestUnlocked } from "../data/questsData.js";
 import { ACHIEVEMENTS_CONFIG } from "../data/achievementsConfig.js";
 import { RESOURCES_CONFIG, RESOURCE_MAX_CAPACITY, SILO_RESOURCE_IDS } from "../data/resourcesConfig.js";
@@ -167,7 +168,7 @@ export function createUIModalController(ctx) {
     for (const [id, qty] of Object.entries(q.rewardResources || {})) {
       const pill = document.createElement('span');
       pill.className = 'quest-reward-pill';
-      pill.textContent = `+${qty} ${RESOURCES_CONFIG[id]?.icon || '📦'}`;
+      pill.innerHTML = `+${qty} ${resourceIconHtml(id,RESOURCES_CONFIG[id]?.name,20,RESOURCES_CONFIG[id]?.icon)}`;
       rewardRow.appendChild(pill);
     }
 
@@ -717,8 +718,9 @@ export function createUIModalController(ctx) {
     }
 
     const categories = [
+      { key: 'material', title: '🪵 Nguyên liệu khai thác (Gỗ, Đá)' },
       { key: "crop", title: "🌾 Nông Sản Ruộng Đồng (Thu hoạch từ đất)" },
-      { key: "fruit", title: "🍎 Hoa Quả Đồng Cỏ (Táo đỏ, Dừa xiêm, Trái me)" },
+      { key: "fruit", title: "🍎 Hoa quả từ tám loài cây ăn trái" },
       { key: "livestock", title: "🐑 Chăn Nuôi Chuồng Trại (Trứng gà, Sữa tươi, Lông cừu)" },
       { key: "crafted", title: "🧵 Hàng Hóa Chế Tác & Xưởng Dệt (Vải dệt, Bánh mì, Dụng cụ, Rượu vang)" }
     ];

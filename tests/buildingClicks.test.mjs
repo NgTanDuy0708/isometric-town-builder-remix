@@ -54,6 +54,7 @@ function makeClickScene(t) {
     getVillagerManager: () => null,
     openFishingModal: () => events.push(['fishing']),
     openUpgradeModal: (row, col) => events.push(['upgrade', row, col]),
+    openDefenseModal: (row,col) => events.push(['defense',row,col]),
     openConstructionSpeedupModal: (row, col) => events.push(['construction', row, col]),
     requestRender() {}
   });
@@ -92,4 +93,12 @@ test('water and pier scenery still opens fishing, while waterworks remain select
   for (const tileId of ['b51_waterworks_pump_house_sw', 'b52_waterworks_pump_house_se']) {
     assert.deepEqual(scene.click(tileId), [['upgrade', 20, 20]]);
   }
+});
+
+test('a mouse or touch click on a finished watchtower opens defense, while construction keeps its existing action',t=>{
+  const scene=makeClickScene(t);
+  for(const pointerType of ['mouse','touch'])for(const level of [1,2,3])
+    assert.deepEqual(scene.click('b08_watchtower',level,pointerType),[['defense',20,20]]);
+  scene.constructions['20_20']={tileId:'b08_watchtower'};
+  assert.deepEqual(scene.click('b08_watchtower'),[['construction',20,20]]);
 });

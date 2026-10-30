@@ -1,3 +1,4 @@
+import {resourceIconHtml} from '../data/resourceIcons.js';
 import { getRecipesForBuilding, MAX_PRODUCTION_QUEUE } from '../data/productionRecipes.js';
 import { RESOURCES_CONFIG, getWarehouseUsed } from '../data/resourcesConfig.js';
 import { LIVESTOCK_RULES } from '../data/livestockConfig.js';
@@ -56,21 +57,24 @@ export function createProductionPanel(ctx) {
     const speed = level === 3 ? 1.6 : level === 2 ? 1.3 : 1;
     for (const recipe of recipes) {
       const rowEl = el('div', null); rowEl.className = 'production-panel-row';
-      el('span', `${recipe.icon} ${recipe.name} · ${Math.ceil(recipe.durationSec / speed)}s · ${Object.entries(recipe.inputs).map(([id, n]) => `${n} ${RESOURCES_CONFIG[id]?.name} (có ${owned[id] || 0})`).join(' + ')}`, rowEl);
+      const recipeLabel=el('span', `${recipe.name} · ${Math.ceil(recipe.durationSec / speed)}s · ${Object.entries(recipe.inputs).map(([id, n]) => `${n} ${RESOURCES_CONFIG[id]?.name} (có ${owned[id] || 0})`).join(' + ')}`, rowEl);
+      recipeLabel.innerHTML=resourceIconHtml(recipe.resource,recipe.name,24,recipe.icon)+' '+recipeLabel.textContent;
       const locked = ctx.getPlayerLevel() < recipe.requiredLevel;
+      const constructing = !!ctx.getConstructions()[key];
+      const queueFull = (p.queue?.length || 0) + (p.completedBatches?.length || 0) + (p.activeBatch ? 1 : 0) >= MAX_PRODUCTION_QUEUE;
       const missing = Object.entries(recipe.inputs).some(([id, n]) => (owned[id] || 0) < n);
-      button(locked ? `Cấp ${recipe.requiredLevel}` : '＋ Thêm mẻ', () => {
+      button(constructing ? 'Đang xây dựng' : locked ? `Cấp ${recipe.requiredLevel}` : queueFull ? 'Hàng đợi đầy' : '＋ Thêm mẻ', () => {
         const result = ctx.manager.enqueue(row, col, recipe.id);
         if (!result.ok) ctx.showToast(result.error, 'warning');
         render();
-      }, rowEl, locked || missing);
+      }, rowEl, constructing || locked || missing || queueFull);
     }
     if (p.queueMode) {
       el('h3', 'Hàng đợi');
-      if (p.activeBatch) el('p', `⏳ ${p.activeBatch.icon} ${p.activeBatch.name}: ${Math.max(0, Math.ceil((p.activeBatch.startedAt + p.activeBatch.durationMs - Date.now()) / 1000))}s`);
+      if(p.activeBatch){const active=el('p', `⏳ ${p.activeBatch.name}: ${Math.max(0,Math.ceil((p.activeBatch.startedAt+p.activeBatch.durationMs-Date.now())/1000))}s`);active.innerHTML=resourceIconHtml(p.activeBatch.resource,p.activeBatch.name,24,p.activeBatch.icon)+' '+active.textContent;}
       for (const [index, batch] of (p.queue || []).entries()) {
         const rowEl = el('div', null); rowEl.className = 'production-panel-row';
-        el('span', `${index + 1}. ${batch.icon} ${batch.name}`, rowEl);
+        const queued=el('span', `${index+1}. ${batch.name}`,rowEl);queued.innerHTML=resourceIconHtml(batch.resource,batch.name,24,batch.icon)+' '+queued.textContent;
         button('Hủy & hoàn nguyên liệu', () => { ctx.manager.cancelQueued(row, col, index); render(); }, rowEl);
       }
       el('p', `📦 ${p.completedBatches?.length || 0} mẻ đã xong`);

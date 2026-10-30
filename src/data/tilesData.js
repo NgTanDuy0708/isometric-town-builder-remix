@@ -3,6 +3,11 @@ import { FENCE_TILES } from "./fenceConfig.js";
 import { EXPANSION_TILES, EXPANSION_VARIANT_TILES } from "./expansionCatalog.js";
 
 export const TILES_DATA = [
+  { id:'b66_iron_mine', label:'Mỏ sắt', category:'building', shopCategory:'production', doc:'Thuê dân rảnh khai thác quặng sắt về Kho Tổng Hợp; dùng Lò rèn để luyện thỏi và chế tác dụng cụ.' },
+  { id:'n03_iron_deposit', label:'Mạch quặng sắt tự nhiên', category:'decoration', doc:'Điểm quặng cho công nhân Mỏ sắt; hồi phục sau khi cạn.' },
+  { id:'b65_stone_quarry', label:'Xưởng khai thác đá', category:'building', shopCategory:'production', doc:'Thuê dân rảnh khai thác đá rồi mang về Kho Tổng Hợp. Ban đầu có 2 chỗ làm việc.' },
+  { id:'n01_logging_grove', label:'Rừng khai thác tự nhiên', category:'decoration', doc:'Điểm gỗ tự nhiên cho công nhân Xưởng mộc; hồi phục sau khi cạn.' },
+  { id:'n02_stone_deposit', label:'Bãi đá tự nhiên', category:'decoration', doc:'Điểm đá tự nhiên cho công nhân khai thác; hồi phục sau khi cạn.' },
   {
     id: 'b64_bbq_restaurant', label: 'Nhà Hàng Thịt Nướng', category: 'building', shopCategory: 'production',
     doc: 'Nhà hàng thịt nướng có 3 cấp độ. Chế biến 2 thịt heo và 1 cà rốt thành 1 đĩa thịt heo nướng; nâng cấp để nấu nhanh hơn.'
@@ -29,7 +34,7 @@ export const TILES_DATA = [
     "id": "b03_blacksmith_forge",
     "label": "Lò Rèn Kim Loại",
     "category": "building",
-    "doc": "Xưởng rèn thủ công với lò nung đá, đe rèn đúc và ngọn lửa rực sáng (Chế tác Dụng cụ sắt ⚒️)."
+    "doc": "Luyện 2 quặng sắt và 1 gỗ thành thỏi sắt; dùng 1 thỏi sắt và 1 ván gỗ chế tác dụng cụ. Chọn công thức và thêm mẻ vào hàng đợi."
   },
   {
     "id": "b04_windmill",
@@ -59,7 +64,7 @@ export const TILES_DATA = [
     "id": "b08_watchtower",
     "label": "Tháp Canh Bảo An",
     "category": "building",
-    "doc": "Tháp canh đá và gỗ vững chắc với mái nhọn, thang dây và đuốc phòng thủ canh gác bờ cõi."
+    "doc": "Tháp tự bắn goblin trong tầm 4 ô; nâng cấp tăng sát thương và tầm bắn. Mở Phòng thủ làng để diễn tập từ cấp 6 và sửa tháp bị hư."
   },
   {
     "id": "b09_chapel",

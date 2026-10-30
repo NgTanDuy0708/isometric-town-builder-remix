@@ -5,7 +5,7 @@ Source prompts: docs/EXPANSION_ASSET_PROMPTS.md; original combined prompts and a
 
 Generated **94/94** PNGs; **0 remain**. Generation resumed on 30 October after the previous usage limit cleared. The orange fruiting image was regenerated to preserve the flowering silhouette; the discarded oversized output is archived under revisions.
 
-Native outputs are 1254×1254 RGBA, preserved byte-for-byte, consistent with rule 9 of the prompt document. Source and public copies have matching SHA-256 hashes. 44 subjects have shop registration; see docs/EXPANSION_INTEGRATION.md. The newly generated plant stages are source art and are not yet connected to a five-stage harvest lifecycle.
+Native outputs are 1254×1254 RGBA, preserved byte-for-byte, consistent with rule 9 of the prompt document. Source and public copies have matching SHA-256 hashes. 44 subjects have shop registration; see docs/EXPANSION_INTEGRATION.md. Forty core plant sprites plus sixteen seed/sprout PNGs drive eight species and seven stages. Each tree allows three harvests, then remains withered until dug up. See docs/FRUIT_TREE_LIFECYCLE.md. See docs/EXPANSION_INTEGRATION.md.
 
 ## Review before integration
 

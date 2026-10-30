@@ -1,0 +1,13 @@
+{
+  "mode": "built-in ImageGen",
+  "assets": ["iron_mine_lv1", "iron_mine_lv2", "iron_mine_lv3", "iron_deposit"],
+  "visualReview": "All four native PNGs inspected: coherent mine upgrade family, separate iron-bearing rock cluster, complete silhouettes with transparent margins.",
+  "originalBytesPreserved": true,
+  "trueAlpha": true,
+  "worldGroundAnchor": [64, 128],
+  "integration": "Level-specific PNGs in shop, upgrade, placed and moving views; ore node uses its own measured PNG. No SVG remains referenced for either tile.",
+  "focusedTests": {"passed": 56, "failed": 0},
+  "lint": "passed",
+  "build": "passed",
+  "productionPngsPresent": 4
+}

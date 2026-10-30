@@ -1,3 +1,5 @@
+import {EXPANSION_PLANTS,getFruitTreeRenderAdjustment} from "./fruitTreeSprites.js";
+export {EXPANSION_PLANTS};
 // Static catalog derived from assets-source/expansion/manifest.json (74 PNGs, 44 items).
 // No runtime prompt manifest or game-data imports: consumers may safely spread
 // these defaults first, then retain their historical overrides.
@@ -42,11 +44,11 @@ export const EXPANSION_TILES = [
   {"id":"a01_whale","label":"Cá voi","category":"decoration","shopCategory":"decor","doc":"Cá voi trang trí cảnh quan đại dương."},
   {"id":"l12_geothermal_hotspring_onsen","label":"Suối khoáng nóng","category":"decoration","shopCategory":"decor","doc":"Suối khoáng nóng trang trí với hồ nước và đá bao quanh."},
   {"id":"a02_flamingo_flock","label":"Đàn hồng hạc","category":"decoration","shopCategory":"decor","doc":"Đàn hồng hạc trang trí cảnh quan ven nước."},
-  {"id":"d35_cacao_tree","label":"Ca cao","category":"decoration","shopCategory":"farming","doc":"Cây ca cao trổ hoa trang trí nông trại, chưa cho thu hoạch."},
-  {"id":"d36_cherry_tree","label":"Cherry / cheri","category":"decoration","shopCategory":"farming","doc":"Cây cherry non trang trí nông trại, chưa cho thu hoạch."},
-  {"id":"d37_blueberry_bush","label":"Berry — việt quất","category":"decoration","shopCategory":"farming","doc":"Bụi việt quất non trang trí nông trại, chưa cho thu hoạch."},
-  {"id":"d38_durian_tree","label":"Sầu riêng","category":"decoration","shopCategory":"farming","doc":"Cây sầu riêng non trang trí nông trại, chưa cho thu hoạch."},
-  {"id":"d39_orange_tree","label":"Cam","category":"decoration","shopCategory":"farming","doc":"Cây cam non trang trí nông trại, chưa cho thu hoạch."},
+  {"id":"d35_cacao_tree","label":"Ca cao","category":"decoration","shopCategory":"farming","doc":"Cây ca cao cho thu hoạch ca cao định kỳ."},
+  {"id":"d36_cherry_tree","label":"Cherry / cheri","category":"decoration","shopCategory":"farming","doc":"Cây cherry non cho thu hoạch định kỳ."},
+  {"id":"d37_blueberry_bush","label":"Berry — việt quất","category":"decoration","shopCategory":"farming","doc":"Bụi việt quất non cho thu hoạch định kỳ."},
+  {"id":"d38_durian_tree","label":"Sầu riêng","category":"decoration","shopCategory":"farming","doc":"Cây sầu riêng non cho thu hoạch định kỳ."},
+  {"id":"d39_orange_tree","label":"Cam","category":"decoration","shopCategory":"farming","doc":"Cây cam non cho thu hoạch định kỳ."},
 ];
 
 // The three established fruit trees keep their productive legacy ripe sprites.
@@ -180,20 +182,8 @@ const GROUND_SOURCE_BOUNDS = {
   c17_stream_straight: [88,333,1083,698],
 };
 
-// Plants are keyed by tile ID: stages[stage] -> URI; geometry[stage] ->
-// {width,height,bounds}. Bounds retain manifest [left,top,right,bottom] form
-// with exclusive right/bottom. Only actually generated stages are listed.
-// All eight species belong in farming; the new five are decorative for now.
-export const EXPANSION_PLANTS = {
-  d21_apple_tree: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/apple_tree_seedling.png","young":"/assets/expansion/plants/apple_tree_young.png","flowering":"/assets/expansion/plants/apple_tree_flowering.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[498,812,745,1121]},"young":{"width":1254,"height":1254,"bounds":[413,572,899,1138]},"flowering":{"width":1254,"height":1254,"bounds":[188,229,1090,1183]}}},
-  d22_coconut_palm: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/coconut_palm_seedling.png","young":"/assets/expansion/plants/coconut_palm_young.png","flowering":"/assets/expansion/plants/coconut_palm_flowering.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[458,607,852,1121]},"young":{"width":1254,"height":1254,"bounds":[428,546,897,1131]},"flowering":{"width":1254,"height":1254,"bounds":[198,81,1057,1174]}}},
-  d23_tamarind_tree: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/tamarind_tree_seedling.png","young":"/assets/expansion/plants/tamarind_tree_young.png","flowering":"/assets/expansion/plants/tamarind_tree_flowering.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[392,737,863,1141]},"young":{"width":1254,"height":1254,"bounds":[304,591,908,1146]},"flowering":{"width":1254,"height":1254,"bounds":[113,294,1148,1177]}}},
-  d35_cacao_tree: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/cacao_tree_seedling.png","young":"/assets/expansion/plants/cacao_tree_young.png","flowering":"/assets/expansion/plants/cacao_tree_flowering.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[366,745,910,1120]},"young":{"width":1254,"height":1254,"bounds":[256,527,1006,1119]},"flowering":{"width":1254,"height":1254,"bounds":[198,371,1104,1128]}}},
-  d36_cherry_tree: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/cherry_tree_seedling.png","young":"/assets/expansion/plants/cherry_tree_young.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[493,823,763,1134]},"young":{"width":1254,"height":1254,"bounds":[431,565,872,1132]}}},
-  d37_blueberry_bush: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/blueberry_bush_seedling.png","young":"/assets/expansion/plants/blueberry_bush_young.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[550,966,699,1120]},"young":{"width":1254,"height":1254,"bounds":[470,784,795,1123]}}},
-  d38_durian_tree: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/durian_tree_seedling.png","young":"/assets/expansion/plants/durian_tree_young.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[429,675,884,1131]},"young":{"width":1254,"height":1254,"bounds":[316,451,993,1132]}}},
-  d39_orange_tree: {"shopCategory":"farming","stages":{"seedling":"/assets/expansion/plants/orange_tree_seedling.png","young":"/assets/expansion/plants/orange_tree_young.png"},"geometry":{"seedling":{"width":1254,"height":1254,"bounds":[509,873,740,1123]},"young":{"width":1254,"height":1254,"bounds":[439,678,866,1125]}}},
-};
+// Default shop art: ripe fruit, with the full five-stage art registered separately.
+for(const [id,data] of Object.entries(EXPANSION_PLANTS))EXPANSION_TILE_URIS[id]=data.stages.fruiting;
 
 export const EXPANSION_PRICE_OVERRIDES = {
   b10_wizard_tower: 350,
@@ -400,6 +390,7 @@ export const EXPANSION_UPGRADES = {
 
 /** Source-anchored draw rectangle, computed solely from geometry properties. */
 export function getExpansionRenderAdjustment(id, level = 1) {
+  const tree=getFruitTreeRenderAdjustment(id);if(tree)return tree;
   if (typeof id !== 'string') return undefined;
   const levels = Object.hasOwn(EXPANSION_BUILDING_GEOMETRY, id)
     ? EXPANSION_BUILDING_GEOMETRY[id] : undefined;

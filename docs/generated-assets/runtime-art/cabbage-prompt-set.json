@@ -1,0 +1,33 @@
+{
+  "mode": "built-in imagegen",
+  "items": [
+    {
+      "kind": "cabbage",
+      "id": "cabbage_sown",
+      "filename": "cabbage_sown.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/runtime-art/icon/cabbage.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE isolated sown growth stage for CABBAGE in the existing medieval isometric farming game.\nFour tiny spherical dark-brown cabbage seeds, half embedded in four tiny separate soil pinches arranged as a clean flat 2:1 isometric diamond. This is immediately after sowing: NO leaves or shoots. A small lower-centered group, with transparent space between all four pinches. No seed packet, loose lettuce seed shapes, soil tile or raised platform.\nMatch reference image's crisp detailed pixel-art clusters, muted green palette, warm cream leaf veins, dark green outlines and light from upper left. Reference image is harvested cabbage identity/style only; follow the requested plant growth stage instead of copying its maturity. Strict 2:1 dimetric camera, readable at 32 pixels, discrete pixel highlights, no smooth shading or blur. Square 1254x1254 PNG with genuine transparent alpha. Keep the whole subject fully visible with ample transparent padding, bottom ground-contact point about (627,1160). The seed diamond sits in the lower half of the canvas, roughly 700px wide and 350px high.\nNo ground tile, surrounding grass, thick soil base, planter, garden bed, cast shadow, unrelated objects, additional growth stages, sprite sheet, labels, text, logo, watermark, opaque background or painted checkerboard. Everything outside the subject is transparent."
+    },
+    {
+      "kind": "cabbage",
+      "id": "cabbage_sprout",
+      "filename": "cabbage_sprout.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/runtime-art/icon/cabbage.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE isolated sprout growth stage for CABBAGE in the existing medieval isometric farming game.\nONE newly germinated cabbage seedling with two small smooth round cotyledons and one tiny round true leaf, a very short pale-green stem. It is not yet a cabbage head. Low compact sprout, no long stalk, no grain heads, no root mass, no mature frilly lettuce.\nMatch reference image's crisp detailed pixel-art clusters, muted green palette, warm cream leaf veins, dark green outlines and light from upper left. Reference image is harvested cabbage identity/style only; follow the requested plant growth stage instead of copying its maturity. Strict 2:1 dimetric camera, readable at 32 pixels, discrete pixel highlights, no smooth shading or blur. Square 1254x1254 PNG with genuine transparent alpha. Keep the whole subject fully visible with ample transparent padding, bottom ground-contact point about (627,1160). Subject at lower center; small 350px-wide, 300px-high sprout.\nNo ground tile, surrounding grass, thick soil base, planter, garden bed, cast shadow, unrelated objects, additional growth stages, sprite sheet, labels, text, logo, watermark, opaque background or painted checkerboard. Everything outside the subject is transparent."
+    },
+    {
+      "kind": "cabbage",
+      "id": "cabbage_grow",
+      "filename": "cabbage_grow.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/runtime-art/icon/cabbage.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE isolated grow growth stage for CABBAGE in the existing medieval isometric farming game.\nONE young cabbage plant rooted in place: a low rosette of six broad smooth bluish olive-green waxy leaves with pale veins, inner leaves just beginning to cup tightly into a SMALL rounded cabbage head. Show clearly less developed than a harvestable cabbage. No loose curly lettuce, no wheat or grain, no sprawling vine.\nMatch reference image's crisp detailed pixel-art clusters, muted green palette, warm cream leaf veins, dark green outlines and light from upper left. Reference image is harvested cabbage identity/style only; follow the requested plant growth stage instead of copying its maturity. Strict 2:1 dimetric camera, readable at 32 pixels, discrete pixel highlights, no smooth shading or blur. Square 1254x1254 PNG with genuine transparent alpha. Keep the whole subject fully visible with ample transparent padding, bottom ground-contact point about (627,1160). Subject at lower center; mid-size 750px-wide rosette.\nNo ground tile, surrounding grass, thick soil base, planter, garden bed, cast shadow, unrelated objects, additional growth stages, sprite sheet, labels, text, logo, watermark, opaque background or painted checkerboard. Everything outside the subject is transparent."
+    },
+    {
+      "kind": "cabbage",
+      "id": "cabbage_ripe",
+      "filename": "cabbage_ripe.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/runtime-art/icon/cabbage.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE isolated ripe growth stage for CABBAGE in the existing medieval isometric farming game.\nONE fully mature harvest-ready green CABBAGE plant: a solid dense pale-green ROUND BALL-SHAPED cabbage head made of tightly overlapping curled-in leaves, surrounded by four to six broad dark olive-green outer wrapper leaves. The compact central spherical head dominates the silhouette. It must look unmistakably like a cabbage grown in soil, not an open frilly lettuce, cauliflower, broccoli, pumpkin or wheat.\nMatch reference image's crisp detailed pixel-art clusters, muted green palette, warm cream leaf veins, dark green outlines and light from upper left. Reference image is harvested cabbage identity/style only; follow the requested plant growth stage instead of copying its maturity. Strict 2:1 dimetric camera, readable at 32 pixels, discrete pixel highlights, no smooth shading or blur. Square 1254x1254 PNG with genuine transparent alpha. Keep the whole subject fully visible with ample transparent padding, bottom ground-contact point about (627,1160). Subject at lower center; mature 1000px-wide round cabbage plant.\nNo ground tile, surrounding grass, thick soil base, planter, garden bed, cast shadow, unrelated objects, additional growth stages, sprite sheet, labels, text, logo, watermark, opaque background or painted checkerboard. Everything outside the subject is transparent."
+    }
+  ]
+}

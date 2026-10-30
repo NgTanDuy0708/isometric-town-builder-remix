@@ -2,9 +2,14 @@ import React, { useEffect } from 'react';
 import { initIsometricStudio } from './studioEngine.js';
 import './styles.css';
 import './productionPanel.css';
+import './extraction.css';
+import './defense.css';
 import { FENCE_ITEMS } from './data/fenceConfig.js';
 
 const STUDIO_MARKUP = `
+  <div class="extraction-backdrop hidden" id="extraction-modal" role="dialog" aria-modal="true" aria-labelledby="extraction-title" style="display:none">
+    <div class="extraction-card"><div class="extraction-header"><h2 id="extraction-title">⛏️ Công nhân khai thác</h2><button type="button" id="extraction-close" aria-label="Đóng">×</button></div><div id="extraction-modal-body"></div></div>
+  </div>
   <!-- Canvas Container (Full Screen) -->
   <div id="canvas-container">
     <canvas id="builder-canvas"></canvas>
@@ -81,7 +86,7 @@ const STUDIO_MARKUP = `
     </div>
 
     <!-- Population & Villagers Widget -->
-    <div class="hud-card hud-pop-card" id="hud-pop-card" title="Dân số vương quốc và cư dân đang đi lại">
+    <div class="hud-card hud-pop-card" id="hud-pop-card" title="Nhà ở cung cấp dân. Mỗi luống đất cần 1 người phụ trách.">
       <div class="hud-stat-line">
         <span class="hud-stat-icon">👥</span>
         <span class="hud-stat-name">Dân số:</span>
@@ -92,6 +97,20 @@ const STUDIO_MARKUP = `
         <span class="hud-stat-name">Cư dân:</span>
         <span class="hud-stat-num highlight" id="builder-stat-villagers">0</span>
       </div>
+      <div class="hud-stat-line">
+        <span class="hud-stat-icon">🧑</span><span class="hud-stat-name">Dân rảnh:</span>
+        <span class="hud-stat-num highlight" id="builder-stat-free-workers">0</span>
+      </div>
+      <div class="hud-stat-line">
+        <span class="hud-stat-icon">🌾</span><span class="hud-stat-name">Làm nông:</span>
+        <span class="hud-stat-num" id="builder-stat-farmers">0</span>
+      </div>
+      <div class="hud-stat-line"><span class="hud-stat-icon">⛏️</span><span class="hud-stat-name">Công nhân:</span><span class="hud-stat-num" id="builder-stat-workers">0</span></div>
+      <div id="builder-stat-worker-food" style="font-size:11px;padding-top:4px;" role="status">🍞 Chưa có công nhân</div>
+      <button type="button" id="btn-open-extraction" class="hud-quick-storage-btn" title="Thuê hoặc cho công nhân khai thác nghỉ">⛏️ Quản lý công nhân</button>
+      <button type="button" id="btn-open-defense" class="hud-quick-storage-btn">🛡️ Phòng thủ làng</button>
+      <div id="builder-defense-status">🛡️ Diễn tập phòng thủ · cấp 6</div>
+      <div id="builder-stat-worker-shortage" hidden style="color:#b45309;font-size:11px;padding-top:4px;"> </div>
     </div>
 
     <!-- Kingdom Stats Widget (Chỉ giữ lại Số lượng Công trình) -->

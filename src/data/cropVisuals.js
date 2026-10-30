@@ -1,19 +1,24 @@
-export const SOWN_CROP_IDS = [
-  "wheat", "carrot", "radish", "tomato", "mushroom", "sunflower",
-  "onion", "chili", "cucumber", "cucumber_pickling", "pumpkin", "grapes",
-  "corn", "lettuce", "strawberry", "pear"
-];
+import {CROPS_CONFIG} from './cropsConfig.js';
+import {SINGLE_SEED_ART} from './singleSeedSpriteData.js';
+export const SOWN_CROP_IDS = Object.keys(CROPS_CONFIG);
 export const SOWN_CROP_SPRITES = Object.fromEntries(SOWN_CROP_IDS.map(id =>
-  [id, `/assets/crops/sown/${id}_sown.png`]));
+  [id, SINGLE_SEED_ART[id].uri]));
 
-// Legacy crops use the closest existing planting shape until their own art exists.
+// Each crop uses its own planting sprite.
 export function getSownCropSpriteId(id) {
-  return ({ cabbage: "lettuce", watermelon: "pumpkin" })[id] || id;
+  return id;
 }
 
-// Uniform transform for the approved 1254px canvas: the seed pattern sits on
-// the ground diamond, centred at (64,96), rather than on the upper sprite area.
-export const SOWN_CROP_DRAW = { dx: -32, dy: -4, dw: 192, dh: 192 };
+// Size the visible seed rather than its transparent canvas. The soil contact
+// shares the (64,96) root position used by every later growth stage.
+export function getSownCropRenderAdjustment(id) {
+  const frame = SINGLE_SEED_ART[id];
+  if (!frame) return undefined;
+  const [left, top, right, bottom] = frame.bounds;
+  const scale = Math.min(18 / (right - left), 12 / (bottom - top));
+  return {dx:64-frame.anchor.x*scale,dy:96-frame.anchor.y*scale,
+    dw:frame.width*scale,dh:frame.height*scale};
+}
 
 export function isCropJustSown(elapsedMs, durationMs) {
   return elapsedMs < Math.min(8000, durationMs * 0.2);

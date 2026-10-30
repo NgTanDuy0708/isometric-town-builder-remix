@@ -24,7 +24,9 @@
 
 ## Giới hạn ảnh hiện tại
 
-- 20 ảnh cây còn thiếu. Ba cây táo/dừa/me vẫn dùng bộ ảnh và chu kỳ thu hoạch hiện có; năm loài mới có nhãn **Cây trang trí**, chưa cho thu hoạch.
+- Đã ghép đủ 56 ảnh cho tám loài: hạt giống → mầm → cây con → cây non → trổ hoa/trái non → chín → héo. Gieo ngay khi bấm xuống đất, không thi công. Mỗi cây hái đúng ba lần: hai lần đầu trổ hoa lại; lần thứ ba héo vĩnh viễn, chờ người chơi bấm **Đào cây** rồi gieo hạt mới. Thời gian, sản lượng và phần thưởng từng loài được giữ nguyên. Xem `docs/FRUIT_TREE_LIFECYCLE.md`.
+- Năm loại quả mới (ca cao, cherry, việt quất, sầu riêng, cam) được tính sức chứa kho và có giá bán trong chợ. Cửa hàng dùng ảnh hạt giống và nhãn **3 lần thu hoạch**. Cây đã đặt và timer trong bản lưu cũ được giữ lại; trạng thái sinh trưởng mới được lưu cùng bản lưu.
+- Năm giai đoạn cây giữ một tỉ lệ trưởng thành; hạt/mầm được thu nhỏ thêm. Điểm gốc đo từ alpha từng PNG để chân cây không nhảy khi đổi ảnh. Xem thử bằng renderer game tại `/assets/expansion/orchard.html`; PNG gốc ở `/assets/expansion/plants.html`.
 - Chùa Lv3 tạm dùng hình Lv2 vì PNG Lv3 cắt mất móng; lợi ích nâng cấp vẫn áp dụng.
 - Bộ đường dùng chung mẫu đá và viền từ PNG đường thẳng đã duyệt. `roadGeometry.js` dựng hành lang rộng đúng 60% cạnh ô, đầu nối ở giữa cạnh, góc L vuông và bốn hướng có cùng diện tích. Không phóng/xén riêng từng PNG L/T/X vì cách đó làm cong phình góc và đổi cỡ đá.
 - `roadMaterial.js` lấy phần lát và đá viền từ ảnh gốc, giữ cùng tỉ lệ cho mọi loại đường, cache vật liệu và căn pha theo tọa độ bản đồ. Chỉ cạnh kín có viền; các đầu nối luôn mở. Ảnh PNG gốc không bị sửa.
@@ -39,3 +41,5 @@
 - `src/engine/placementSurface.js`: mặt nền hợp lệ và khôi phục nền nước.
 - `tests/expansion.test.mjs`, `tests/renderLayers.test.mjs`: kiểm tra catalog, mua/đặt, nâng cấp, layer và preview.
 - `tests/roadKit.test.mjs`: độ rộng, đầu nối giữa mọi cặp hướng, đối xứng bốn góc L và nguồn đá chung.
+- `src/data/fruitTreeConfig.js`, `fruitTreeSprites.js`, `fruitTreeSpriteData.js`: tám loài, ảnh theo giai đoạn và điểm neo; `scripts/syncFruitTreeSprites.mjs` cập nhật từ PNG gốc.
+- `src/engine/fruitTreeLifecycle.js`: chu kỳ, hợp nhất timer bản lưu, kiểm tra kho và thu hoạch; `tests/fruitTrees.test.mjs` kiểm tra cả đường thu hoạch thật của studio.

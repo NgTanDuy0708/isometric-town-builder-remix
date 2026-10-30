@@ -6,7 +6,9 @@ const sprite = (file, visibleWidth, anchorX, anchorY) => ({
 
 const barnSprite = (file, visibleWidth, anchorX, anchorY) => ({
   ...sprite(file, visibleWidth, anchorX, anchorY),
-  sourceFile: `assets-source/farm-buildings-v2/${file}.png`
+  worldWidth:128,worldAnchorX:0,worldAnchorY:96,
+  gridFence:true,animalSlotsAreWorld:true,
+  sourceFile: `public/assets/farm/${file}.png`
 });
 
 export const FARM_ANIMALS = {
@@ -22,27 +24,24 @@ export const FARM_ANIMALS = {
 
 export const FARM_BUILDINGS = {
   b21_chicken_coop: {
-    ...barnSprite('chicken_coop_v2', 951, 750, 1018), worldWidth: 144,
-    animalType: 'chicken', animalWidth: 11,
-    animalSlots: [[720, 820], [825, 825], [930, 830], [775, 890], [885, 895]],
-    foreground: [[350, 750], [750, 885], [1145, 700], [1170, 1040], [350, 1040]]
+    ...barnSprite('chicken_coop_v4', 1073, 590, 1088),
+    animalType: 'chicken', animalWidth: 14,
+    animalSlots: [[48,102],[75,91],[100,99],[63,116],[89,111]]
   },
   b22_cow_pasture: {
-    ...barnSprite('cow_barn_v2', 1006, 761, 1029), worldWidth: 144,
-    animalType: 'cow', animalWidth: 20,
-    animalSlots: [[850, 820], [730, 840], [850, 900]],
-    foreground: [[420, 770], [760, 890], [1155, 690], [1180, 1050], [420, 1050]]
+    ...barnSprite('cow_barn_v4', 1141, 558, 1076),
+    animalType: 'cow', animalWidth: 26,
+    animalSlots: [[40,96],[91,96],[67,111]]
   },
   b57_sheep_pasture: {
-    ...barnSprite('sheep_barn_v2', 1066, 760, 1053), worldWidth: 144,
-    animalType: 'sheep', animalWidth: 15,
-    animalSlots: [[880, 850], [730, 855], [850, 930]],
-    foreground: [[365, 770], [760, 900], [1190, 700], [1210, 1080], [365, 1080]]
+    ...barnSprite('sheep_barn_v4', 1126, 575, 1046),
+    animalType: 'sheep', animalWidth: 20,
+    animalSlots: [[40,95],[91,95],[65,111]]
   },
   d33_pig_pen_barn: {
-    ...barnSprite('pig_pen_v2', 1036, 732, 1064), worldWidth: 144,
-    animalType: 'pig', animalWidth: 21, animalSlots: [[770, 825], [900, 840], [720, 910], [860, 940]],
-    foreground: [[340, 750], [735, 890], [1165, 690], [1190, 1090], [340, 1090]]
+    ...barnSprite('pig_pen_v4', 1187, 569, 1076),
+    animalType: 'pig', animalWidth: 28,
+    animalSlots: [[38,91],[89,91],[46,110],[85,110]]
   }
 };
 

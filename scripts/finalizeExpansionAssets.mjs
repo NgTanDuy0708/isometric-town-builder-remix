@@ -48,7 +48,7 @@ manifest.generationState = {
   status: pending.length ? 'in_progress' : 'generated_pending_art_review',
   remaining: pending.length,
   previousLimitReset: '2026-10-30T02:13:18+07:00',
-  integration: '44 subjects are registered in the shop; see docs/EXPANSION_INTEGRATION.md. New plant lifecycle art is stored separately and does not yet replace the existing harvest system.',
+  integration: '44 subjects are registered in the shop; see docs/EXPANSION_INTEGRATION.md. The core 40 plant sprites plus 16 seed/sprout sprites in fruit-early-manifest.json drive eight species and seven stages, with three lifetime harvests; see docs/FRUIT_TREE_LIFECYCLE.md.',
   notes: 'Native 1254x1254 PNG retained per source document rule 9. Working-box coordinates, anchors and relative scale still need runtime calibration. Some native cutout edges show coloured fringe; inspect against game backgrounds before integration.'
 };
 fs.writeFileSync(`${root}/manifest.json`, JSON.stringify(manifest, null, 2));
@@ -64,21 +64,16 @@ const notes = `# Expansion asset generation — 2026-10-29\n\nBuilt-in imagegen 
 const currentNotes = notes
   .replace('# Expansion asset generation — 2026-10-29', '# Expansion asset generation — 2026-10-29 / 2026-10-30')
   .replace(/Generated \*\*[\s\S]*?No automatic retry is scheduled\./, `Generated **${generated.length}/94** PNGs; **${pending.length} remain**. Generation resumed on 30 October after the previous usage limit cleared. The orange fruiting image was regenerated to preserve the flowering silhouette; the discarded oversized output is archived under revisions.`)
-  .replace('No renderer/economy integration was performed.', '44 subjects have shop registration; see docs/EXPANSION_INTEGRATION.md. The newly generated plant stages are source art and are not yet connected to a five-stage harvest lifecycle.');
+  .replace('No renderer/economy integration was performed.', '44 subjects have shop registration; see docs/EXPANSION_INTEGRATION.md. The forty core plant stages plus sixteen seed/sprout PNGs are connected to the game: eight species, seven stages, three lifetime harvests, permanent withering and digging. See docs/FRUIT_TREE_LIFECYCLE.md. See docs/EXPANSION_INTEGRATION.md.');
 fs.writeFileSync(`${root}/README.md`, currentNotes);
 fs.writeFileSync(`${promptRoot}/GENERATION_NOTES.md`, currentNotes);
 
 let gallery = fs.readFileSync(`${publicRoot}/index.html`, 'utf8');
 gallery = gallery.replace(/<p>Công cụ báo hết hạn mức\.[\s\S]*?<\/p>/,
-  `<p>${pending.length ? `Còn ${pending.length} ảnh đang chờ tạo.` : 'Đã tạo đủ 94 PNG. Tám loại cây đều có năm giai đoạn.'} <a href="./plants.html">Xem bộ cây theo giai đoạn</a>.</p>`)
-  .replace('Đã lưu asset để duyệt, chưa đăng ký vào game.', 'Các vật phẩm đã có trong cửa hàng; ảnh cây mới được lưu riêng để ghép chu kỳ sinh trưởng.')
+  `<p>${pending.length ? `Còn ${pending.length} ảnh đang chờ tạo.` : 'Đã tạo đủ 94 PNG gốc và thêm 16 ảnh hạt/mầm. Tám loại cây đều có bảy giai đoạn.'} <a href="./plants.html">Xem bộ cây theo giai đoạn</a>.</p>`)
+  .replace('Đã lưu asset để duyệt, chưa đăng ký vào game.', 'Các vật phẩm đã có trong cửa hàng; đủ tám cây ăn trái đã dùng ảnh mới và cho thu hoạch trong game.')
   .replaceAll('Chưa tạo · hết hạn mức', 'Đang chờ tạo');
 fs.writeFileSync(`${publicRoot}/index.html`, gallery);
-const stageLabels = ['Cây con', 'Cây non', 'Trổ hoa', 'Kết trái', 'Héo sau thu hoạch'];
-const plantGroups = [...new Set(manifest.items.filter(i=>i.folder==='plants').map(i=>i.group))];
-const rows = plantGroups.map(group => {
-  const stages = manifest.items.filter(i=>i.group===group).sort((a,b)=>a.stage-b.stage);
-  return `<section><h2>${esc(stages[0].title)}</h2><div class="stages">${stages.map(i=>`<article><h3>${stageLabels[i.stage-1]}</h3><a href="./plants/${i.filename}" target="_blank"><img src="./plants/${i.filename}?v=${i.sha256.slice(0,12)}" alt="${esc(i.title)} — ${stageLabels[i.stage-1]}"></a><a href="./plants/${i.filename}" download>Tải PNG</a></article>`).join('')}</div></section>`;
-}).join('');
-fs.writeFileSync(`${publicRoot}/plants.html`, `<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Cây ăn trái · năm giai đoạn</title><style>body{margin:24px;color:#243d2e;background:#f3f1e8;font:14px system-ui}h1{font-size:26px}h2{font-size:19px;margin-top:30px}.stages{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;overflow:auto}article{background:white;border:1px solid #d9dfd1;border-radius:10px;text-align:center;padding-bottom:12px}h3{font-size:14px}img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:repeating-conic-gradient(#e0e5d9 0 25%,#fafbf8 0 50%) 0/16px 16px}a{color:#24614b}button{padding:8px;margin:8px 0}body.dark img{background:#213b2a}body.light img{background:#fff}</style><h1>Cây ăn trái · đủ năm giai đoạn</h1><p>Tám loài · 40 PNG gốc nền trong suốt, cùng khung hình. Các ảnh vẫn cần căn điểm neo khi đưa vào chu kỳ sinh trưởng trong game.</p><a href="./index.html">← Toàn bộ 94 ảnh</a><br><button id="bg">Đổi nền kiểm tra alpha</button>${rows}<script>let bg=0;document.querySelector('#bg').onclick=()=>{document.body.className=['','dark','light'][++bg%3]};</script></html>`);
+// The seed/sprout extension supplements the historical 94-asset manifest.
+await import('./updateFruitTreeGallery.mjs');
 console.log(JSON.stringify({generated:generated.length,pending:pending.length,counts,bytes,validation:'passed',gallery:`${publicRoot}/index.html`},null,2));

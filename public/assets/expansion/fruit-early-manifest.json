@@ -1,0 +1,407 @@
+{
+  "mode": "built-in imagegen",
+  "total": 16,
+  "completed": 16,
+  "items": [
+    {
+      "stem": "apple_tree",
+      "title": "Táo",
+      "species": "apple",
+      "stage": "seed",
+      "filename": "apple_tree_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          518,
+          1023,
+          737,
+          1144
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/apple_tree_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/apple_tree_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/apple_tree_seed.actual.txt",
+      "sha256": "7c54433f8a6cd9f23f4c40a9455df296f0dff903402ea9aeefe3070b008ecafa"
+    },
+    {
+      "stem": "apple_tree",
+      "title": "Táo",
+      "species": "apple",
+      "stage": "sprout",
+      "filename": "apple_tree_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          528,
+          937,
+          722,
+          1125
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/apple_tree_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/apple_tree_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/apple_tree_sprout.actual.txt",
+      "sha256": "0ffe24c4a5a5c956b1efc3a78f10cc173a84f78e6ea47c8755d5322aaef3c0ce"
+    },
+    {
+      "stem": "coconut_palm",
+      "title": "Dừa",
+      "species": "coconut palm",
+      "stage": "seed",
+      "filename": "coconut_palm_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          491,
+          948,
+          768,
+          1131
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/coconut_palm_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/coconut_palm_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/coconut_palm_seed.actual.txt",
+      "sha256": "1ff2aac5ee2f4adbfc1928592c83408f2e991c76fb2d513c26f31b9f937b75c5"
+    },
+    {
+      "stem": "coconut_palm",
+      "title": "Dừa",
+      "species": "coconut palm",
+      "stage": "sprout",
+      "filename": "coconut_palm_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          512,
+          807,
+          758,
+          1139
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/coconut_palm_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/coconut_palm_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/coconut_palm_sprout.actual.txt",
+      "sha256": "a6ead603b4b3f025694d85a9e29101432ced74bf3e1519459b445820ddddb4fc"
+    },
+    {
+      "stem": "tamarind_tree",
+      "title": "Me",
+      "species": "tamarind",
+      "stage": "seed",
+      "filename": "tamarind_tree_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          501,
+          1032,
+          754,
+          1144
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/tamarind_tree_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/tamarind_tree_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/tamarind_tree_seed.actual.txt",
+      "sha256": "d9288a5c7f7ad9a776ea2c235d2886ae0e78a5ff74b579beee6d2cafe897e4ab"
+    },
+    {
+      "stem": "tamarind_tree",
+      "title": "Me",
+      "species": "tamarind",
+      "stage": "sprout",
+      "filename": "tamarind_tree_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          553,
+          890,
+          714,
+          1124
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/tamarind_tree_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/tamarind_tree_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/tamarind_tree_sprout.actual.txt",
+      "sha256": "a99349e1efb4a68a058eb7b8a8fb6160edd68540519e2ecca6f233a619149706"
+    },
+    {
+      "stem": "cacao_tree",
+      "title": "Ca cao",
+      "species": "cacao",
+      "stage": "seed",
+      "filename": "cacao_tree_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          521,
+          1022,
+          740,
+          1152
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/cacao_tree_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/cacao_tree_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/cacao_tree_seed.actual.txt",
+      "sha256": "f90570bebe0e0cb41c9cdcdf9184091e0b59fe2d82dc00751c29a41836b57a30"
+    },
+    {
+      "stem": "cacao_tree",
+      "title": "Ca cao",
+      "species": "cacao",
+      "stage": "sprout",
+      "filename": "cacao_tree_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          521,
+          903,
+          764,
+          1113
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/cacao_tree_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/cacao_tree_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/cacao_tree_sprout.actual.txt",
+      "sha256": "83b6c8482588627896e479e5bc51c991f655b81e405887d1836e4fe417664f00"
+    },
+    {
+      "stem": "cherry_tree",
+      "title": "Cherry",
+      "species": "cherry",
+      "stage": "seed",
+      "filename": "cherry_tree_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          505,
+          1020,
+          740,
+          1132
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/cherry_tree_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/cherry_tree_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/cherry_tree_seed.actual.txt",
+      "sha256": "d3da1d9e7ed0b993ff4b9b6f37997da7c3c53cf116cf931166f0c9c7874904bc"
+    },
+    {
+      "stem": "cherry_tree",
+      "title": "Cherry",
+      "species": "cherry",
+      "stage": "sprout",
+      "filename": "cherry_tree_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          512,
+          887,
+          741,
+          1103
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/cherry_tree_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/cherry_tree_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/cherry_tree_sprout.actual.txt",
+      "sha256": "fe37ef5512fcf53baf659f768b99e42310f5a3849d441a190edb585583fa941c"
+    },
+    {
+      "stem": "blueberry_bush",
+      "title": "Việt quất",
+      "species": "blueberry",
+      "stage": "seed",
+      "filename": "blueberry_bush_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          525,
+          1044,
+          735,
+          1143
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/blueberry_bush_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/blueberry_bush_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/blueberry_bush_seed.actual.txt",
+      "sha256": "fe273ebfde4ff8c858df13e8f1e2fbe2ab6af108c5ebc4fa11a7a3e2739f7ce8"
+    },
+    {
+      "stem": "blueberry_bush",
+      "title": "Việt quất",
+      "species": "blueberry",
+      "stage": "sprout",
+      "filename": "blueberry_bush_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          565,
+          978,
+          705,
+          1116
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/blueberry_bush_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/blueberry_bush_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/blueberry_bush_sprout.actual.txt",
+      "sha256": "93dd299f0cd4f299a4ed335a3436cc070cefe1af0f14c8a3a4f5b7a53c1425af"
+    },
+    {
+      "stem": "durian_tree",
+      "title": "Sầu riêng",
+      "species": "durian",
+      "stage": "seed",
+      "filename": "durian_tree_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          512,
+          990,
+          744,
+          1141
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/durian_tree_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/durian_tree_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/durian_tree_seed.actual.txt",
+      "sha256": "fcb86421062a6bdfe9c185fa5024fcd53dcc92b4addd48f4e045706e5b096138"
+    },
+    {
+      "stem": "durian_tree",
+      "title": "Sầu riêng",
+      "species": "durian",
+      "stage": "sprout",
+      "filename": "durian_tree_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          555,
+          909,
+          743,
+          1110
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/durian_tree_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/durian_tree_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/durian_tree_sprout.actual.txt",
+      "sha256": "26e9b6a81b3364367cb264e26f6cc700ac453af416c1500531cc001fe8df1d70"
+    },
+    {
+      "stem": "orange_tree",
+      "title": "Cam",
+      "species": "orange",
+      "stage": "seed",
+      "filename": "orange_tree_seed.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          523,
+          1021,
+          730,
+          1133
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/orange_tree_seed.png",
+      "gameAssetPath": "public/assets/expansion/plants/orange_tree_seed.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/orange_tree_seed.actual.txt",
+      "sha256": "975f67b60e95ef1fed66f570ab0d146bd87a8789d63d93fdb51df5923e2062eb"
+    },
+    {
+      "stem": "orange_tree",
+      "title": "Cam",
+      "species": "orange",
+      "stage": "sprout",
+      "filename": "orange_tree_sprout.png",
+      "status": "generated",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          494,
+          885,
+          762,
+          1114
+        ]
+      },
+      "sourcePath": "assets-source/expansion/plants/orange_tree_sprout.png",
+      "gameAssetPath": "public/assets/expansion/plants/orange_tree_sprout.png",
+      "generationPromptPath": "docs/generated-assets/fruit-lifecycle/orange_tree_sprout.actual.txt",
+      "sha256": "6f405439b07b817d0d0168f03b3a1fb00bfcac3ba616f7a49c4758c2416ef94f"
+    }
+  ]
+}

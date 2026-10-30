@@ -96,9 +96,8 @@ test('multi-cell hall and warehouse count once, with the level of their anchor',
   const grid = createStarterTownMap32(); migrateLegacyWarehouseLayout(grid);
   const stats = calculateVillageStats(grid, {}, tiles, { '13_15':2 });
   assert.equal(stats.completedBuildings, 2);
-  const hall = getBuildingLevelPopulation('b14_town_hall', 2, 16);
-  const warehouse = calculateVillageStats(grid,{},tiles,{}).population - 16;
-  assert.equal(stats.population, hall + warehouse);
+  assert.equal(getBuildingLevelPopulation('b14_town_hall', 2, 16), 0);
+  assert.equal(stats.population, 0, 'Hall and warehouse are counted as buildings, not homes');
 });
 
 test('free coast never advances paid land pricing, even with duplicate/old chunk lists', () => {

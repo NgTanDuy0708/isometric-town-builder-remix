@@ -1,0 +1,28 @@
+{
+  "mode": "RGBA",
+  "tileId": "n02_stone_deposit",
+  "path": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-8f3baba0-c78c-40e7-8e7c-4789cac3770c.png",
+  "references": [
+    "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/buildings/iron_deposit.png",
+    "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/buildings/stone_quarry_lv1.png"
+  ],
+  "sourcePath": "assets-source/stone-deposit/stone_deposit.png",
+  "gameAssetPath": "public/assets/decorations/stone_deposit.png",
+  "generationPromptPath": "docs/generated-assets/stone-deposit/prompt.txt",
+  "uri": "/assets/decorations/stone_deposit.png?v=f828c23ddd22",
+  "sha256": "f828c23ddd228cd4a88b396ce34d5a64252895f6f1eb473b2fdbc3a6c1e02301",
+  "width": 1254,
+  "height": 1254,
+  "alphaMin": 0,
+  "alphaMax": 255,
+  "opaqueBounds": [
+    130,
+    312,
+    1152,
+    1058
+  ],
+  "anchor": {
+    "x": 662.2295454545455,
+    "y": 1057
+  }
+}

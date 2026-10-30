@@ -14,18 +14,30 @@ import { createHash } from 'node:crypto';
 import { CROPS_CONFIG } from '../src/data/cropsConfig.js';
 import { CROP_GROWTH_SPRITES, getCropGrowthRenderAdjustment } from '../src/data/cropGrowthSprites.js';
 import { CROP_GROWTH_GEOMETRY } from '../src/data/cropGrowthGeometry.js';
-import { SOWN_CROP_IDS, SOWN_CROP_SPRITES, SOWN_CROP_DRAW, isCropJustSown } from '../src/data/cropVisuals.js';
+import { SOWN_CROP_IDS, SOWN_CROP_SPRITES, getSownCropRenderAdjustment, isCropJustSown } from '../src/data/cropVisuals.js';
+import { SINGLE_SEED_ART } from '../src/data/singleSeedSpriteData.js';
 import { RESOURCES_CONFIG, WAREHOUSE_RESOURCE_IDS, getWarehouseUsed } from '../src/data/resourcesConfig.js';
 import { EXPANSION_BUILDING_LEVELS, EXPANSION_GROUND_IDS, getExpansionRenderAdjustment } from '../src/data/expansionCatalog.js';
 import { WORLD_OBJECT_SCALE } from '../src/data/renderScale.js';
 import { VehicleManager } from '../src/engine/trafficVehicles.js';
+import {EXPANSION_PLANTS,getFruitTreeRenderAdjustment} from '../src/data/fruitTreeSprites.js';
+import {FRUIT_TREES_CONFIG} from '../src/data/fruitTreeConfig.js';
+import {createFruitTreeState} from '../src/engine/fruitTreeLifecycle.js';
 import { HarborShipManager, ROYAL_SHIP_IMAGE_SRC, STONE_PIER_IMAGE_SRC } from '../src/engine/harborShipManager.js';
 import { HARBOR_FOOTPRINTS, getHarborOutline } from '../src/data/harborLayout.js';
+import { getLivestockCells, getLivestockOutline, reserveLivestockCells, LIVESTOCK_WORLD_WIDTH } from '../src/data/livestockFootprint.js';
+import {RUNTIME_ART} from '../src/data/runtimeArtData.js';
+import {IRON_MINE_ART} from '../src/data/ironMineArtData.js';
+import {STONE_DEPOSIT_ART} from '../src/data/stoneDepositArtData.js';
 
 // Digests were captured from the original PNGs after byte-for-byte comparison.
 // The original source archive is local-only; CI needs only the public assets.
 const originalAssetHashes = JSON.parse(readFileSync(new URL('./fixtures/original-asset-sha256.json', import.meta.url), 'utf8'));
 function assertOriginalAsset(uri, bytes) {
+  const seed=Object.values(SINGLE_SEED_ART).find(asset=>asset.uri===uri);
+  if(seed){assert.equal(createHash('sha256').update(bytes).digest('hex'),seed.sha256,'Preserve native single seed: '+uri);return;}
+  const runtimeAsset=Object.values(RUNTIME_ART).flatMap(group=>Object.values(group)).find(asset=>asset.uri===uri);
+  if(runtimeAsset){assert.equal(createHash('sha256').update(bytes).digest('hex'),runtimeAsset.sha256,'Preserve generated PNG: '+uri);return;}
   assert.ok(originalAssetHashes[uri], `Missing original asset digest: ${uri}`);
   assert.equal(createHash('sha256').update(bytes).digest('hex'), originalAssetHashes[uri], `Preserve original PNG: ${uri}`);
 }
@@ -114,7 +126,7 @@ test('expansion building levels and props use the same measured rectangle in the
     const a=getBuildingRenderAdjustment(id,level);
     assert.ok(events.some(e=>e.src===levels[level]&&Math.abs(e.args[0]-ORIGIN_X-a.dx)<1e-6&&Math.abs(e.args[1]-ORIGIN_Y-40*QUARTER_W-a.dy)<1e-6),id+' level '+level);
   }
-  for(const id of ['d02_village_well','d35_cacao_tree','a01_whale']) {
+  for(const id of ['d02_village_well','a01_whale']) {
     const a=getExpansionRenderAdjustment(id);
     const events=renderScene({traceAssets:true,setup({grid,ctx}){
       grid[20][20]=id;ctx.getHoverCell=()=>({row:21,col:20});ctx.getActiveBrush=()=>id;
@@ -145,8 +157,35 @@ test('expansion ground modules sample native source bounds and paint before rais
   }
 });
 
-test('all 16 sowing assets are registered, playable, stored and sellable', () => {
-  assert.equal(SOWN_CROP_IDS.length, 16);
+test('all mine levels and both resource deposits draw their PNG with the same measured ground pivot, including mirrored moves', () => {
+  for(const [id,level] of [['b66_iron_mine',1],['b66_iron_mine',2],['b66_iron_mine',3],['n03_iron_deposit',1],['n02_stone_deposit',1]])for(const flipped of [false,true]){
+    const uri=id==='b66_iron_mine'?getBuildingSpriteUri(id,level):id==='n02_stone_deposit'?STONE_DEPOSIT_ART.uri:IRON_MINE_ART.iron_deposit.uri;
+    const frame=BUILDING_SOURCE_GEOMETRY[id][level];
+    const events=renderScene({traceAssets:true,setup({grid,ctx}){
+      grid[20][20]=id;ctx.getBuildingLevels=()=>({'20_20':level});
+      ctx.getFlippedGrid=()=>({'20_20':flipped});
+      ctx.getHoverCell=()=>({row:21,col:20});
+      ctx.getMovingBuilding=()=>({tileId:id,fromRow:20,fromCol:20,level,flipped});
+    }});
+    const draws=events.filter(e=>e.src===uri);
+    assert.equal(draws.length,2,id+' has a placed and moving sprite');
+    for(const [index,sprite] of draws.entries()){
+      const [x,y,w,h]=sprite.args,[a,b,c,d,tx,ty]=sprite.matrix;
+      const px=x+w*frame.anchorX/frame.width,py=y+h*frame.anchorY/frame.height;
+      const row=index===0?20:21;
+      assert.ok(Math.abs(a*px+c*py+tx-(ORIGIN_X+(20-row)*HALF_W+64))<1e-6,id+' horizontal contact');
+      assert.ok(Math.abs(b*px+d*py+ty-(ORIGIN_Y+(row+20)*QUARTER_W+128))<1e-6,id+' vertical contact');
+    }
+    assert.ok(!events.some(e=>e.src?.endsWith('/iron_mine.svg')||e.src?.endsWith('/iron_deposit.svg')));
+    if(id==='n02_stone_deposit')assert.ok(!events.some(e=>e.src?.includes('/glacier_mountain.png')),'Stone resource never draws glacier art');
+  }
+});
+
+test('all 18 crops, including watermelon and cabbage, have dedicated playable sowing assets', () => {
+  assert.equal(SOWN_CROP_IDS.length, 18);
+  assert.deepEqual(SOWN_CROP_IDS.slice().sort(),Object.keys(CROPS_CONFIG).sort(),'Every purchasable crop needs its own planting art');
+  assert.ok(SOWN_CROP_IDS.includes('watermelon'));
+  assert.ok(SOWN_CROP_IDS.includes('cabbage'));
   for (const id of SOWN_CROP_IDS) {
     assert.ok(CROPS_CONFIG[id]);
     assert.ok(RESOURCES_CONFIG[id]?.sellPrice > 0);
@@ -161,14 +200,29 @@ test('all 16 sowing assets are registered, playable, stored and sellable', () =>
     const seedIndex = events.findIndex(e => e.src === SOWN_CROP_SPRITES[id]);
     const groundIndex = events.findIndex(e => e.src?.endsWith('/farmland_plot.png'));
     assert.ok(groundIndex >= 0 && seedIndex > groundIndex, 'Soil paints first, seeds overlay it');
-    const seed = events[seedIndex], a = SOWN_CROP_DRAW;
+    const seed = events[seedIndex], a = getSownCropRenderAdjustment(id);
     assert.deepEqual(seed.args, [ORIGIN_X + a.dx, ORIGIN_Y + 40 * QUARTER_W + a.dy, a.dw, a.dh]);
     assert.equal(seed.smoothing, false);
     assert.ok(!events.some(e => e.src?.endsWith('/farmland_sprout.png')), 'No sprout on freshly sown soil');
   }
 });
 
-test('all 48 growth sprites keep their root on the same ground point and increase in size', () => {
+test('seed placement previews use the exact same PNG and ground rectangle as planting', () => {
+  for (const id of SOWN_CROP_IDS) {
+    const events=renderScene({traceAssets:true,setup({grid,ctx}){
+      grid[20][20]='d13_farmland_plot';
+      ctx.getHoverCell=()=>({row:20,col:20});
+      ctx.getActiveSeedBrush=()=>id;
+    }});
+    const seed=events.find(e=>e.src===SOWN_CROP_SPRITES[id]);
+    assert.ok(seed,id+' has a seed placement preview');
+    const a=getSownCropRenderAdjustment(id);
+    assert.deepEqual(seed.args,[ORIGIN_X+a.dx,ORIGIN_Y+40*QUARTER_W+a.dy,a.dw,a.dh]);
+    assert.equal(seed.smoothing,false);
+  }
+});
+
+test('all 54 growth sprites keep their root on the same ground point and increase in size', () => {
   assert.deepEqual(Object.keys(CROP_GROWTH_SPRITES).sort(), SOWN_CROP_IDS.slice().sort());
   for (const id of SOWN_CROP_IDS) {
     const heights = [];
@@ -214,7 +268,7 @@ test('new sowing phase transitions to existing sprouts, young crops and harvest 
       grid[20][20] = 'd13_farmland_plot';
       ctx.getFarmlandState = () => ({ '20_20': farmData });
     } });
-    assert.ok(events.some(e => e.src?.endsWith(expected)), expected);
+    assert.ok(events.some(e => e.src?.split('?')[0].endsWith(expected)), expected);
     assert.equal(farmData.growDurationMs, 25000);
     if (elapsed >= 5000) assert.ok(!events.some(e => e.src === SOWN_CROP_SPRITES.wheat));
   }
@@ -333,7 +387,7 @@ test('livestock drawing never mutates simulation state and harvest badges stay a
 });
 
 test('single-cell assets shrink 20 percent about their feet while terrain and connected fences retain their dimensions', () => {
-  for(const id of ['b64_bbq_restaurant','b06_bakery','b21_chicken_coop','b58_textile_mill']) for(const level of [1,2,3]) {
+  for(const id of ['b64_bbq_restaurant','b06_bakery','b58_textile_mill']) for(const level of [1,2,3]) {
     const source=BUILDING_SOURCE_GEOMETRY[id][level]||BUILDING_SOURCE_GEOMETRY[id][1];
     const a=getBuildingRenderAdjustment(id,level);
     assert.ok(Math.abs(a.dw/source.width*source.visibleWidth-source.worldWidth*WORLD_OBJECT_SCALE)<1e-6);
@@ -341,6 +395,44 @@ test('single-cell assets shrink 20 percent about their feet while terrain and co
     assert.ok(Math.abs(a.dy+source.anchorY*a.dh/source.height-128)<1e-6);
   }
   assert.equal(getBuildingRenderAdjustment('b01_cottage_red').dw,256*WORLD_OBJECT_SCALE);
+});
+
+test('livestock pens span two cells at every level and mirror, with one herd and one ground outline',()=>{
+  for(const id of Object.keys(FARM_BUILDINGS))for(const level of [1,2,3])for(const flip of [false,true]) {
+    const source=BUILDING_SOURCE_GEOMETRY[id][level],a=getBuildingRenderAdjustment(id,level);
+    assert.ok(Math.abs(a.dw/source.width*source.visibleWidth-source.worldWidth)<1e-6);
+    const part=getLivestockCells(20,20,flip)[1];
+    const expected=getLivestockOutline(20,20,flip,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W);
+    const events=renderScene({traceAssets:true,tracePaths:true,setup({grid,ctx}){
+      grid[20][20]=id;reserveLivestockCells(grid,20,20,flip);
+      ctx.getBuildingLevels=()=>({'20_20':level});ctx.getFlippedGrid=()=>({'20_20':flip});
+      ctx.getHoverCell=()=>part;
+      ctx.getLivestockState=()=>({'20_20':{animalCount:2,state:'hungry'}});
+    }});
+    assert.equal(events.filter(e=>e.src===FARM_ANIMALS[source.animalType].uri).length,2,'No duplicate herd on the second cell');
+    const outline=events.findIndex(e=>e.kind==='outline'&&JSON.stringify(e.points)===JSON.stringify(expected));
+    const body=events.findIndex(e=>e.src===source.uri);
+    assert.ok(outline>=0&&outline<body);
+    assert.equal(events.filter(e=>e.src===source.uri).length,1,'Only the isolated building image is drawn');
+    const animalEnd=events.findLastIndex(e=>e.src===FARM_ANIMALS[source.animalType].uri);
+    assert.ok(events.findLastIndex(e=>e.src===FENCE_TEXTURE_URI)>animalEnd,'Grid-aligned front rails paint after the herd');
+  }
+});
+
+test('larger pens and their moving previews stay behind buildings on both front edges',()=>{
+  for(const flip of [false,true])for(const moving of [false,true]) {
+    const id='b22_cow_pasture',uri=FARM_BUILDINGS[id].uri;
+    const events=renderScene({traceAssets:true,setup({grid,ctx}) {
+      grid[19][19]='b01_cottage_red';grid[20][21]='b01_cottage_red';grid[21][20]='b01_cottage_red';
+      if(moving) {
+        ctx.getHoverCell=()=>({row:20,col:20});
+        ctx.getMovingBuilding=()=>({tileId:id,fromRow:25,fromCol:25,level:1,flipped:flip});
+      } else {grid[20][20]=id;reserveLivestockCells(grid,20,20,flip);ctx.getFlippedGrid=()=>({'20_20':flip});}
+    }});
+    const pen=events.findIndex(e=>e.src===uri);
+    const houses=events.map((e,i)=>e.kind==='house'?i:-1).filter(i=>i>=0);
+    assert.ok(houses[0]<pen&&pen<houses[1]&&pen<houses[2]);
+  }
 });
 
 test('missing object sprites never cover the terrain with green fallback diamonds', () => {
@@ -386,7 +478,7 @@ test('ghost preview joins its target depth instead of being pasted above the who
 });
 
 test('building levels keep distinct assets and the same ground anchor', () => {
-  const families = [['b01_cottage_red', 'cottage'], ['b02_tudor_inn', 'inn'], ['b03_blacksmith_forge', 'forge'], ['b04_windmill', 'windmill'], ['b05_watermill', 'watermill'], ['b06_bakery', 'bakery'], ['b07_apothecary', 'herbalist'], ['b08_watchtower', 'watchtower'], ['b09_chapel', 'chapel'], ['b20_noble_manor', 'manor']];
+  const families = [['b65_stone_quarry', 'stone_quarry'], ['b01_cottage_red', 'cottage'], ['b02_tudor_inn', 'inn'], ['b03_blacksmith_forge', 'forge'], ['b04_windmill', 'windmill'], ['b05_watermill', 'watermill'], ['b06_bakery', 'bakery'], ['b07_apothecary', 'herbalist'], ['b08_watchtower', 'watchtower'], ['b09_chapel', 'chapel'], ['b20_noble_manor', 'manor']];
   for (const [tileId, stem] of families) {
     for (const level of [1, 2, 3]) {
       const uri = getBuildingSpriteUri(tileId, level);
@@ -417,9 +509,12 @@ test('building levels keep distinct assets and the same ground anchor', () => {
 });
 
 test('all farm buildings and animals preserve the original generated PNGs', () => {
+  const farmManifest=JSON.parse(readFileSync(new URL('../docs/generated-assets/farm-buildings-v4/manifest.json',import.meta.url)));
   for (const source of [...Object.values(FARM_BUILDINGS), ...Object.values(FARM_ANIMALS)]) {
     const png = readFileSync(new URL(`../public${source.uri}`, import.meta.url));
-    assertOriginalAsset(source.uri, png);
+    const native=farmManifest.find(entry=>entry.uri===source.uri);
+    if(native) assert.equal(createHash('sha256').update(png).digest('hex'),native.sha256);
+    else assertOriginalAsset(source.uri, png);
     assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20), png[25]], [1254, 1254, 6]);
   }
   for (const [id, source] of Object.entries(FARM_BUILDINGS)) {
@@ -458,9 +553,9 @@ test('separate livestock follow the new pens when upgraded, mirrored and moved',
       const adjustment = getBuildingRenderAdjustment(tileId, level);
       const scale = adjustment.dw / source.width;
       const [sourceX, sourceY] = source.animalSlots[0];
-      const runX = adjustment.dx + sourceX * scale;
+      const runX = source.animalSlotsAreWorld ? sourceX : adjustment.dx + sourceX * scale;
       assert.ok(Math.abs(footX - (ORIGIN_X + (flipped ? 128 - runX : runX))) < 1e-6);
-      assert.ok(Math.abs(footY - (ORIGIN_Y + 40 * QUARTER_W + adjustment.dy + sourceY * scale)) < 1e-6);
+      assert.ok(Math.abs(footY - (ORIGIN_Y + 40 * QUARTER_W + (source.animalSlotsAreWorld ? sourceY : adjustment.dy + sourceY * scale))) < 1e-6);
       assert.equal(first.smoothingQuality, 'high');
     }
     const empty = renderScene({traceAssets: true, setup({grid}) { grid[20][20] = tileId; }});
@@ -481,7 +576,7 @@ test('pig pen displays owned animals up to four, including mirrored and moving p
       }
     }});
     const visible = mode === 'brush' ? 0 : count;
-    assert.equal(events.filter(e=>e.src===FARM_BUILDINGS.d33_pig_pen_barn.uri).length, visible ? 2 : 1);
+    assert.equal(events.filter(e=>e.src===FARM_BUILDINGS.d33_pig_pen_barn.uri).length,1);
     assert.equal(events.filter(e=>e.src===FARM_ANIMALS.pig.uri).length, visible);
   }
 });
@@ -701,4 +796,46 @@ test('real actor, harbor, order board and wonder renderers preserve Canvas state
   const lastBody = events.findLastIndex(e => e.kind === 'asset');
   assert.ok(events.findIndex(e => e.text === 'villager-ui') > lastBody);
   assert.ok(events.findIndex(e => e.text === 'vehicle-ui') > lastBody);
+});
+
+test('all eight fruit trees draw all seven native stages with fixed ground contact',()=>{
+  const now=Date.now(),originalNow=Date.now;
+  Date.now=()=>now;
+  try{
+    for(const [id,data] of Object.entries(EXPANSION_PLANTS)){
+      const duration=FRUIT_TREES_CONFIG[id].intervalSec*1000;
+      for(const stage of ['seed','sprout','seedling','young','flowering','fruiting','withered']){
+        const progress={seed:0,sprout:.18,seedling:.33,young:.55,flowering:.8,fruiting:1,withered:0}[stage];
+        const state={...createFruitTreeState(now-duration*progress),...(stage==='withered'?{hasHarvested:true,harvestCount:3,exhausted:true}:{})};
+        const events=renderScene({traceAssets:true,setup({grid,ctx}){
+          grid[20][20]=id;ctx.getProductionState=()=>({'20_20':state});ctx.getFruitTreesState=()=>({'20_20':{...state}});
+        }});
+        const draw=events.find(e=>e.src===data.stages[stage]);
+        assert.ok(draw,id+' '+stage);
+        const a=getFruitTreeRenderAdjustment(id,stage),g=data.geometry[stage];
+        assert.deepEqual(draw.args,[ORIGIN_X+a.dx,ORIGIN_Y+40*QUARTER_W+a.dy,a.dw,a.dh]);
+        assert.ok(Math.abs(a.dx+g.anchor.x*a.dw/g.width-64)<1e-6);
+        assert.ok(Math.abs(a.dy+g.anchor.y*a.dh/g.height-96)<1e-6);
+        assert.ok(!events.some(e=>e.src?.includes('/assets/trees/')),'No old tree artwork');
+      }
+    }
+  }finally{Date.now=originalNow}
+});
+
+test('planting previews use seeds and a harvested moving tree keeps its withered stage',()=>{
+  const now=Date.now();
+  for(const [id,data] of Object.entries(EXPANSION_PLANTS)){
+    const events=renderScene({traceAssets:true,setup({grid,ctx}){
+      grid[20][20]=id;ctx.getHoverCell=()=>({row:21,col:20});ctx.getActiveBrush=()=>id;
+    }});
+    const ghost=events.find(e=>e.src===data.stages.seed&&e.alpha<1);
+    assert.ok(ghost,id+' planting preview');
+    assert.equal(ghost.args[2],getFruitTreeRenderAdjustment(id,'seed').dw);
+    const state={lastHarvest:now,hasHarvested:true,harvestCount:3,exhausted:true,ready:false};
+    const moved=renderScene({traceAssets:true,setup({grid,ctx}){
+      grid[20][20]=id;ctx.getHoverCell=()=>({row:21,col:20});
+      ctx.getMovingBuilding=()=>({tileId:id,fromRow:20,fromCol:20});ctx.getProductionState=()=>({'20_20':state});
+    }});
+    assert.ok(moved.some(e=>e.src===data.stages.withered&&e.alpha===.7),id+' moving preview');
+  }
 });

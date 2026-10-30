@@ -4,6 +4,7 @@ import { INITIAL_UNLOCKED_CHUNKS } from "../data/landConfig.js";
 import { expandGrid16to32 } from "./isoMath.js";
 import { createStarterTownMap32, getStarterFarmlandState } from "../data/starterMap.js";
 import { isValidTerrainMap } from './terrainEditing.js';
+import { migrateLivestockFootprints } from './livestockFootprint.js';
 
 export const SAVE_VERSION = 3;
 export const STORAGE_KEY_V3 = 'isometric_town_builder_save_v3';
@@ -99,7 +100,7 @@ export function getDefaultSaveState(defaultGrid) {
   const normGrid = (defaultGrid && defaultGrid.length === 16) 
     ? expandGrid16to32(defaultGrid) 
     : (defaultGrid || createStarterTownMap32());
-  return {
+  return migrateLivestockFootprints({
     version: SAVE_VERSION,
     savedAt: Date.now(),
     presetName: 'custom',
@@ -108,6 +109,8 @@ export function getDefaultSaveState(defaultGrid) {
     flippedGrid: {},
     constructions: {},
     productionState: {},
+    extraction: null,
+    defense: null,
     economy: {
       gameMode: 'game',
       playerGold: INITIAL_GOLD,
@@ -152,7 +155,7 @@ export function getDefaultSaveState(defaultGrid) {
       bread: 0,
       ironTools: 0
     }
-  };
+  });
 }
 
 /**
@@ -309,7 +312,7 @@ export function loadGameSave(fallbackGrid) {
           farmland = getStarterFarmlandState();
         }
 
-        return {
+        return migrateLivestockFootprints({
           version: SAVE_VERSION,
           savedAt: parsed.savedAt || Date.now(),
           presetName: parsed.presetName || 'custom',
@@ -319,6 +322,8 @@ export function loadGameSave(fallbackGrid) {
           flippedGrid: (parsed.flippedGrid && typeof parsed.flippedGrid === 'object') ? parsed.flippedGrid : {},
           constructions: (parsed.constructions && typeof parsed.constructions === 'object') ? parsed.constructions : {},
           productionState: (parsed.productionState && typeof parsed.productionState === 'object') ? parsed.productionState : {},
+          extraction: (parsed.extraction && typeof parsed.extraction === 'object') ? parsed.extraction : null,
+          defense: (parsed.defense && typeof parsed.defense === 'object') ? parsed.defense : null,
           economy: {
             gameMode: parsed.economy?.gameMode || 'game',
             playerGold: typeof parsed.economy?.playerGold === 'number' ? parsed.economy.playerGold : INITIAL_GOLD,
@@ -380,7 +385,7 @@ export function loadGameSave(fallbackGrid) {
           resources: (parsed.resources && typeof parsed.resources === 'object')
             ? { ...parsed.resources }
             : { wheat: 0, bread: 0, ironTools: 0 }
-        };
+        });
       }
     }
 
@@ -410,6 +415,8 @@ export function saveGameSave(state) {
       flippedGrid: state.flippedGrid || {},
       constructions: state.constructions || {},
       productionState: state.productionState || {},
+      extraction: state.extraction || null,
+      defense: state.defense || null,
       economy: {
         gameMode: state.economy?.gameMode || 'game',
         playerGold: typeof state.economy?.playerGold === 'number' ? state.economy.playerGold : INITIAL_GOLD,
@@ -498,6 +505,8 @@ export function exportGameToJSON(state, filename = 'isometric-town-progress.json
     flippedGrid: state.flippedGrid || {},
     constructions: state.constructions || {},
     productionState: state.productionState || {},
+    extraction: state.extraction || null,
+    defense: state.defense || null,
     economy: {
       gameMode: state.economy?.gameMode || 'game',
       playerGold: typeof state.economy?.playerGold === 'number' ? state.economy.playerGold : INITIAL_GOLD,
@@ -602,6 +611,8 @@ export function importGameFromJSON(file, currentFallbackGrid) {
             flippedGrid: (data.flippedGrid && typeof data.flippedGrid === 'object') ? data.flippedGrid : {},
             constructions: (data.constructions && typeof data.constructions === 'object') ? data.constructions : {},
             productionState: (data.productionState && typeof data.productionState === 'object') ? data.productionState : {},
+            extraction: (data.extraction && typeof data.extraction === 'object') ? data.extraction : null,
+            defense: (data.defense && typeof data.defense === 'object') ? data.defense : null,
             economy: {
               gameMode: data.economy?.gameMode === 'game' ? 'game' : 'sandbox',
               playerGold: typeof data.economy?.playerGold === 'number' ? data.economy.playerGold : INITIAL_GOLD,
@@ -642,7 +653,7 @@ export function importGameFromJSON(file, currentFallbackGrid) {
               ? { ...data.resources }
               : { wheat: 0, bread: 0, ironTools: 0 }
           };
-          resolve(normalized);
+          resolve(migrateLivestockFootprints(normalized));
           return;
         }
 

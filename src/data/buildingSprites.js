@@ -3,8 +3,18 @@ import { applyTownHallTuning, readTownHallTuning, TOWN_HALL_ENTRANCE } from '../
 import { getWarehouseRenderAdjustment, readWarehouseTuning } from '../engine/warehouseTuning.js';
 import { EXPANSION_BUILDING_LEVELS, EXPANSION_BUILDING_GEOMETRY } from './expansionCatalog.js';
 import { WORLD_OBJECT_SCALE, scaleObjectRect } from './renderScale.js';
+import { isLivestockTile } from './livestockConfig.js';
+import { LIVESTOCK_WORLD_WIDTH } from './livestockFootprint.js';
+import { IRON_MINE_LEVEL_SPRITES, IRON_MINE_GEOMETRY } from './ironMineArtData.js';
+import { STONE_DEPOSIT_GEOMETRY } from './stoneDepositArtData.js';
 // Level-specific building art. Each family shares a canvas and ground anchor.
 export const BUILDING_LEVEL_SPRITES = {
+  b66_iron_mine: IRON_MINE_LEVEL_SPRITES,
+  b65_stone_quarry: {
+    1: '/assets/buildings/stone_quarry_lv1.png',
+    2: '/assets/buildings/stone_quarry_lv2.png',
+    3: '/assets/buildings/stone_quarry_lv3.png'
+  },
   b64_bbq_restaurant: {
     1: '/assets/buildings/bbq_restaurant_lv1.png',
     2: '/assets/buildings/bbq_restaurant_lv2.png',
@@ -80,6 +90,13 @@ export function getBuildingSpriteUri(tileId, level = 1) {
 // Original generated PNGs are kept byte-for-byte. Scale only at draw time;
 // source-space foot anchors preserve placement without shrinking the asset.
 export const BUILDING_SOURCE_GEOMETRY = {
+  n02_stone_deposit: STONE_DEPOSIT_GEOMETRY,
+  ...IRON_MINE_GEOMETRY,
+  b65_stone_quarry: {
+    1: { width:1254,height:1254,visibleWidth:1131,anchorX:696,anchorY:1121,worldWidth:128 },
+    2: { width:1254,height:1254,visibleWidth:1208,anchorX:651,anchorY:1169,worldWidth:144 },
+    3: { width:1254,height:1254,visibleWidth:1204,anchorX:668,anchorY:1226,worldWidth:160 }
+  },
   b64_bbq_restaurant: {
     1: { width:1254,height:1254,visibleWidth:1061,anchorX:691,anchorY:1052,worldWidth:128,worldAnchorX:64,worldAnchorY:128 },
     2: { width:1254,height:1254,visibleWidth:1191,anchorX:788,anchorY:1107,worldWidth:144,worldAnchorX:64,worldAnchorY:128 },
@@ -147,7 +164,8 @@ export function getBuildingRenderAdjustment(tileId, level = 1, tuning = undefine
     return undefined;
   }
   if (tileId === 'b60_combined_warehouse') return getWarehouseRenderAdjustment(source, tuning ?? readWarehouseTuning());
-  const scale = source.worldWidth / source.visibleWidth * (tileId === 'b14_town_hall' ? 1 : WORLD_OBJECT_SCALE);
+  const scale = isLivestockTile(tileId) ? source.worldWidth / source.visibleWidth
+    : source.worldWidth / source.visibleWidth * (tileId === 'b14_town_hall' ? 1 : WORLD_OBJECT_SCALE);
   const adjustment = {
     dx: (source.worldAnchorX ?? 64) - source.anchorX * scale,
     dy: (source.worldAnchorY ?? 128) - source.anchorY * scale,
@@ -164,9 +182,11 @@ export function getBuildingAnimalSlots(tileId, level = 1) {
   const levels = BUILDING_SOURCE_GEOMETRY[tileId];
   const source = levels && (levels[level] || levels[1]);
   if (!source?.animalSlots) return [];
+  if(source.animalSlotsAreWorld) return source.animalSlots.map(([x,y],index)=>
+    getFarmAnimalRect(source.animalType,x,y,source.animalWidth,index%2===1));
   const adjustment = getBuildingRenderAdjustment(tileId, level);
   const scale = adjustment.dw / source.width;
   return source.animalSlots.map(([x, y], index) => getFarmAnimalRect(
     source.animalType, adjustment.dx + x * scale, adjustment.dy + y * scale,
-    source.animalWidth * WORLD_OBJECT_SCALE, index % 2 === 1));
+    source.animalWidth * (isLivestockTile(tileId) ? LIVESTOCK_WORLD_WIDTH/source.worldWidth : WORLD_OBJECT_SCALE), index % 2 === 1));
 }

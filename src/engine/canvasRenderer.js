@@ -1,4 +1,9 @@
+import {EXPANSION_PLANTS,getFruitTreeRenderAdjustment} from "../data/fruitTreeSprites.js";
+import {drawResourceIcon} from './runtimeArt.js';
+import {getFruitTreeVisual,resolveFruitTreeState} from "./fruitTreeLifecycle.js";
 import { isLivestockTile } from "../data/livestockConfig.js";
+import { getLivestockAnchor, getLivestockOutline, LIVESTOCK_UI_OFFSET_Y } from '../data/livestockFootprint.js';
+import { canPlaceLivestock } from './livestockFootprint.js';
 import { drawWorkshopActivity } from './workshopEffects.js';
 import { scaleObjectRect } from '../data/renderScale.js';
 import { FARM_ANIMALS, FARM_BUILDINGS, drawFarmAnimal } from "../data/farmSprites.js";
@@ -32,8 +37,12 @@ import {
 import { UPGRADES_CONFIG } from "../data/upgradesConfig.js";
 import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
 import { CROP_PIXEL_SPRITES } from "../data/cropSprites.js";
+import { checkFarmWorkforce } from './workforce.js';
+import { EXTRACTION_WORKSHOPS, EXTRACTION_NODES } from '../data/extractionConfig.js';
+import { drawExtractionWorker } from './extractionRenderer.js';
+import { drawGoblin,drawDefenseOverlay } from './defenseRenderer.js';
 import { CROP_GROWTH_SPRITES, getCropGrowthRenderAdjustment } from "../data/cropGrowthSprites.js";
-import { SOWN_CROP_SPRITES, SOWN_CROP_DRAW, getSownCropSpriteId, isCropJustSown } from "../data/cropVisuals.js";
+import { SOWN_CROP_SPRITES, getSownCropRenderAdjustment, getSownCropSpriteId, isCropJustSown } from "../data/cropVisuals.js";
 import { FRUIT_TREES_CONFIG, RESOURCES_CONFIG } from "../data/resourcesConfig.js";
 import { getExpansionRenderAdjustment } from '../data/expansionCatalog.js';
 import { drawExpansionGround, isExpansionGround } from './expansionRenderer.js';
@@ -43,6 +52,7 @@ import { TILE_DATA_URIS } from "../data/sprites.js";
 import { AESTHETIC_TILE_URIS } from "../data/aestheticTileIcons.js";
 import { isFenceTile, canAddFence, getFenceSegments } from "../data/fenceConfig.js";
 import { FENCE_TEXTURE_URI, buildFenceNetwork, drawFencePart } from "./fenceRenderer.js";
+import {drawLivestockFence} from './livestockFenceRenderer.js';
 import { BUILDING_LEVEL_SPRITES, getBuildingRenderAdjustment, getBuildingAnimalSlots } from "../data/buildingSprites.js";
 import { compareWorldDepth, isFlatGroundTile } from "./renderOrder.js";
 import { getTerrainSprite, getBaseTerrainTile } from "../data/terrainConfig.js";
@@ -392,47 +402,26 @@ export function createCanvasRenderer(ctx) {
     cropImageCache[cKey] = cImg;
   }
 
-  // 2b. Khởi tạo Image Cache cho Cây Táo Đỏ 3 Giai Đoạn Pixel Art
-  const appleTreeStageImages = {
-    growing: new Image(),
-    flowering: new Image(),
-    ripe: new Image()
-  };
-  appleTreeStageImages.growing.src = "/assets/trees/apple_tree_growing.png";
-  appleTreeStageImages.flowering.src = "/assets/trees/apple_tree_flowering.png";
-  appleTreeStageImages.ripe.src = "/assets/trees/apple_tree_ripe.png";
-  appleTreeStageImages.growing.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  appleTreeStageImages.flowering.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  appleTreeStageImages.ripe.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  imageCache["d21_apple_tree"] = appleTreeStageImages.ripe;
-
-  // 2c. Khởi tạo Image Cache cho Cây Me Chua Ngọt 3 Giai Đoạn Pixel Art
-  const tamarindTreeStageImages = {
-    growing: new Image(),
-    flowering: new Image(),
-    ripe: new Image()
-  };
-  tamarindTreeStageImages.growing.src = "/assets/trees/tamarind_tree_growing.png";
-  tamarindTreeStageImages.flowering.src = "/assets/trees/tamarind_tree_flowering.png";
-  tamarindTreeStageImages.ripe.src = "/assets/trees/tamarind_tree_ripe.png";
-  tamarindTreeStageImages.growing.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  tamarindTreeStageImages.flowering.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  tamarindTreeStageImages.ripe.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  imageCache["d23_tamarind_tree"] = tamarindTreeStageImages.ripe;
-
-  // 2d. Khởi tạo Image Cache cho Cây Dừa Xiêm 3 Giai Đoạn Pixel Art
-  const coconutPalmStageImages = {
-    growing: new Image(),
-    flowering: new Image(),
-    ripe: new Image()
-  };
-  coconutPalmStageImages.growing.src = "/assets/trees/coconut_palm_growing.png";
-  coconutPalmStageImages.flowering.src = "/assets/trees/coconut_palm_flowering.png";
-  coconutPalmStageImages.ripe.src = "/assets/trees/coconut_palm_ripe.png";
-  coconutPalmStageImages.growing.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  coconutPalmStageImages.flowering.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  coconutPalmStageImages.ripe.onload = () => { if (ctx.onRequestRender) ctx.onRequestRender(); };
-  imageCache["d22_coconut_palm"] = coconutPalmStageImages.ripe;
+  // Seven native stages per species, with measured root anchors.
+  const fruitTreeStageImages={};
+  for(const [id,data] of Object.entries(EXPANSION_PLANTS)){
+    fruitTreeStageImages[id]={};
+    for(const [stage,uri] of Object.entries(data.stages)){
+      const image=new Image();
+      image.onload=()=>ctx.onRequestRender?.();
+      image.src=uri;
+      fruitTreeStageImages[id][stage]=image;
+    }
+    imageCache[id]=fruitTreeStageImages[id].fruiting;
+  }
+  function getTreeImage(id,stage='fruiting'){
+    const image=fruitTreeStageImages[id]?.[stage];
+    return isImageReady(image)?image:getTileImage(id);
+  }
+  function treeStateAt(row,col){
+    const key=row+'_'+col;
+    return resolveFruitTreeState(ctx.getProductionState?.()?.[key],ctx.getFruitTreesState?.()?.[key]);
+  }
 
   // 2e. Khởi tạo Image Cache cho Con Vật Chăn Nuôi (Gà, Bò, Cừu)
   const animalSpriteImages = Object.fromEntries(['chicken', 'cow', 'sheep', 'pig'].map(type => {
@@ -448,27 +437,9 @@ export function createCanvasRenderer(ctx) {
       flip: flipped ? !slot.flip : slot.flip }));
   }
 
-  // Repaint only the original foreground fence pixels above animal feet.
-  // This keeps separate animals inside the enclosure without editing either PNG.
+  // Foreground rails follow the tile perimeter, independently of barn artwork.
   function renderFarmForeground(c2d, tileId, ox, oy, level = 1, flipped = false) {
-    const points = FARM_BUILDINGS[tileId]?.foreground;
-    const img = getTileImage(tileId, level);
-    if (!points || !isImageReady(img)) return;
-    const a = getBuildingRenderAdjustment(tileId, level);
-    c2d.save();
-    c2d.translate(ox + (flipped ? 128 : 0), oy);
-    if (flipped) c2d.scale(-1, 1);
-    c2d.beginPath();
-    points.forEach(([x, y], index) => {
-      const px = a.dx + x * a.dw / 1254, py = a.dy + y * a.dh / 1254;
-      if (index === 0) c2d.moveTo(px, py); else c2d.lineTo(px, py);
-    });
-    c2d.closePath();
-    c2d.clip();
-    c2d.imageSmoothingEnabled = true;
-    c2d.imageSmoothingQuality = 'high';
-    c2d.drawImage(img, a.dx, a.dy, a.dw, a.dh);
-    c2d.restore();
+    drawLivestockFence(c2d,fenceTexture,ox,oy,flipped,'front');
   }
 
   // 3. Quản lý trạng thái hiệu ứng thị giác (Floating particles & texts)
@@ -519,7 +490,7 @@ export function createCanvasRenderer(ctx) {
   /**
    * Tạo hiệu ứng nông sản vừa thu hoạch bay vào kho nông trại
    */
-  function spawnFlyingProduce(gridCol, gridRow, icon = "🌾") {
+  function spawnFlyingProduce(gridCol,gridRow,icon="🌾",resourceId=null) {
     const worldX = ORIGIN_X + (gridCol - gridRow) * HALF_W + 64;
     const worldY = ORIGIN_Y + (gridRow + gridCol) * QUARTER_W + 20;
 
@@ -531,7 +502,7 @@ export function createCanvasRenderer(ctx) {
       arcOffsetY: 45 + Math.random() * 35,
       startTime: performance.now(),
       duration: 780,
-      icon: icon
+      icon:icon,resourceId
     });
   }
 
@@ -616,11 +587,12 @@ export function createCanvasRenderer(ctx) {
       }
     }
 
-    if (count > 0) renderFarmForeground(c2d, "b21_chicken_coop", ox, oy, level, flipped);
+    renderFarmForeground(c2d, "b21_chicken_coop", ox, oy, level, flipped);
 
     if (opts.suppressOverlay) { c2d.restore(); return; }
     const drawOverlay = () => {
     c2d.save();
+    c2d.translate(0,LIVESTOCK_UI_OFFSET_Y);
     if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
@@ -642,7 +614,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "18px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText("🥚", bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,'egg',bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText("🥚",bubbleX,bubbleY);
 
       c2d.fillStyle = "#15803d";
       c2d.beginPath();
@@ -669,7 +641,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "14px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText("🌾", bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,'wheat',bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText("🌾",bubbleX,bubbleY);
 
       c2d.fillStyle = "#d97706";
       c2d.beginPath();
@@ -751,11 +723,12 @@ export function createCanvasRenderer(ctx) {
       }
     }
 
-    if (count > 0) renderFarmForeground(c2d, buildingTid, ox, oy, level, flipped);
+    renderFarmForeground(c2d, buildingTid, ox, oy, level, flipped);
 
     if (opts.suppressOverlay) { c2d.restore(); return; }
     const drawOverlay = () => {
     c2d.save();
+    c2d.translate(0,LIVESTOCK_UI_OFFSET_Y);
     if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
@@ -777,7 +750,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "18px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText(isPig ? "🥩" : "🥛", bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,isPig?'meat':'milk',bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText(isPig?'🥩':'🥛',bubbleX,bubbleY);
 
       c2d.fillStyle = "#15803d";
       c2d.beginPath();
@@ -804,7 +777,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "14px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText("🌽", bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,'corn',bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText("🌽",bubbleX,bubbleY);
 
       c2d.fillStyle = "#d97706";
       c2d.beginPath();
@@ -884,11 +857,12 @@ export function createCanvasRenderer(ctx) {
       }
     }
 
-    if (count > 0) renderFarmForeground(c2d, "b57_sheep_pasture", ox, oy, level, flipped);
+    renderFarmForeground(c2d, "b57_sheep_pasture", ox, oy, level, flipped);
 
     if (opts.suppressOverlay) { c2d.restore(); return; }
     const drawOverlay = () => {
     c2d.save();
+    c2d.translate(0,LIVESTOCK_UI_OFFSET_Y);
     if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
@@ -910,7 +884,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "18px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText("🐑", bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,'wool',bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText('🐑',bubbleX,bubbleY);
 
       c2d.fillStyle = "#15803d";
       c2d.beginPath();
@@ -937,7 +911,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "14px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText("🥕", bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,'carrot',bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText("🥕",bubbleX,bubbleY);
 
       c2d.fillStyle = "#d97706";
       c2d.beginPath();
@@ -1089,102 +1063,19 @@ export function createCanvasRenderer(ctx) {
   /**
    * Vẽ hoạt họa Cây Ăn Quả Độc Lập Trồng Ngoài Đất Cỏ (Táo 🍎, Dừa 🥥, Me 🍈)
    */
-  function renderFruitTreeDetails(c2d, ox, oy, animTime, tid, treeState, i, j) {
-    const cfg = FRUIT_TREES_CONFIG[tid];
-    if (!cfg) return;
-
-    const now = Date.now();
-    const lastHarvest = treeState ? (treeState.lastHarvest || 0) : 0;
-    const elapsedSec = (now - lastHarvest) / 1000;
-    const isReady = treeState ? (treeState.ready || elapsedSec >= cfg.intervalSec) : true;
-
+  function renderFruitTreeDetails(c2d,ox,oy,animTime,tid,treeState,i,j){
+    const visual=getFruitTreeVisual(tid,treeState);
+    if(!visual)return;
+    const labels={seed:'Đã gieo hạt',sprout:'🌱 Mầm',seedling:'🌱 Cây con',young:'🌿 Cây non',flowering:'🌸 Trổ hoa',fruiting:'Quả chín',withered:'🍂 Héo · Đào cây'};
     c2d.save();
-
-    // Vị trí vòm cây trung tâm
-    const canopyX = ox + 64;
-    const canopyY = oy + 42;
-
-    if (tid === "d21_apple_tree" || tid === "d23_tamarind_tree" || tid === "d22_coconut_palm") {
-      // Cây Táo Đỏ, Cây Me và Cây Dừa đã có Pixel Art 3 giai đoạn tự nhiên (Lá non -> Hoa/Dừa non -> Trái chín)
-      if (isReady) {
-        // Lấp lánh trái chín rực rỡ
-        const spPhase = animTime * 4 + i;
-        c2d.font = "9px sans-serif";
-        c2d.fillStyle = "#ffffff";
-        c2d.fillText("✨", canopyX + Math.cos(spPhase) * 22, canopyY - 14 + Math.sin(spPhase) * 10);
-      } else {
-        // Thanh tiến độ sinh trưởng + nhãn giai đoạn
-        const progress = Math.min(1.0, elapsedSec / cfg.intervalSec);
-        const barW = 34;
-        const barH = 3.5;
-        const barX = canopyX - barW / 2;
-        const barY = canopyY - 24;
-
-        c2d.fillStyle = "rgba(0, 0, 0, 0.55)";
-        c2d.beginPath();
-        c2d.roundRect(barX - 1, barY - 1, barW + 2, barH + 2, 2);
-        c2d.fill();
-
-        let stageFlower = "🌸 Nở hoa";
-        let stageColor = "#ec4899";
-        let textColor = "#fbcfe8";
-
-        if (tid === "d23_tamarind_tree") {
-          stageFlower = "🌼 Trổ hoa";
-          stageColor = "#eab308";
-          textColor = "#fef08a";
-        } else if (tid === "d22_coconut_palm") {
-          stageFlower = "🥥 Dừa non";
-          stageColor = "#38bdf8";
-          textColor = "#bae6fd";
-        }
-
-        c2d.fillStyle = progress >= 0.45 ? stageColor : "#22c55e";
-        c2d.beginPath();
-        c2d.roundRect(barX, barY, barW * progress, barH, 1.5);
-        c2d.fill();
-
-        // Huy hiệu nhỏ: "🌱 Lớn lá" hoặc "🌸 Nở hoa" / "🌼 Trổ hoa" / "🥥 Dừa non"
-        const stageLabel = progress >= 0.45 ? stageFlower : "🌱 Lớn lá";
-        c2d.font = "700 8px system-ui, sans-serif";
-        c2d.textAlign = "center";
-        c2d.fillStyle = progress >= 0.45 ? textColor : "#bbf7d0";
-        c2d.shadowColor = "rgba(0,0,0,0.8)";
-        c2d.shadowBlur = 3;
-        c2d.fillText(stageLabel, canopyX, barY - 4);
-      }
-      c2d.restore();
-      return;
+    const barX=ox+47,barY=oy+24;
+    if(!visual.ready&&!visual.exhausted){
+      c2d.fillStyle='rgba(0,0,0,.5)';c2d.fillRect(barX-1,barY-1,36,5);
+      c2d.fillStyle='#5ea548';c2d.fillRect(barX,barY,34*visual.progress,3);
     }
-
-    if (isReady) {
-      // Lấp lánh hoa quả chín
-      const spPhase = animTime * 4 + i;
-      c2d.font = "9px sans-serif";
-      c2d.fillStyle = "#ffffff";
-      c2d.fillText("✨", canopyX + Math.cos(spPhase) * 24, canopyY - 10 + Math.sin(spPhase) * 12);
-    } else {
-      // Cây đang sinh trưởng: Thanh tiến độ nhỏ
-      const progress = Math.min(1.0, elapsedSec / cfg.intervalSec);
-      const barW = 32;
-      const barH = 3;
-      const barX = canopyX - barW / 2;
-      const barY = canopyY - 16;
-
-      c2d.fillStyle = "rgba(0, 0, 0, 0.4)";
-      c2d.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
-
-      c2d.fillStyle = "#22c55e";
-      c2d.fillRect(barX, barY, barW * progress, barH);
-
-      // Hoa nhỏ đang nở rộ
-      const flowerSway = Math.sin(animTime * 2.5 + i) * 1.0;
-      c2d.fillStyle = "#fbcfe8"; // Cánh hoa hồng phấn
-      c2d.fillRect(canopyX - 12, canopyY - 6 + flowerSway, 2.5, 2.5);
-      c2d.fillRect(canopyX + 10, canopyY - 10 + flowerSway, 2.5, 2.5);
-      c2d.fillRect(canopyX + 2, canopyY + 4 + flowerSway, 2.5, 2.5);
-    }
-
+    c2d.font='700 8px system-ui';c2d.textAlign='center';
+    c2d.fillStyle='#fff5d5';c2d.shadowColor='#253423';c2d.shadowBlur=3;
+    c2d.fillText(labels[visual.stage]+' · '+visual.harvestCount+'/3',ox+64,barY-4);
     c2d.restore();
   }
 
@@ -1224,7 +1115,8 @@ export function createCanvasRenderer(ctx) {
     b57_sheep_pasture: { dx: 0, dy: 22, dw: 128, dh: 128 }
   };
 
-  function getTileRenderAdjustment(tileId, level = 1) {
+  function getTileRenderAdjustment(tileId, level = 1, stage = "fruiting") {
+    const tree=getFruitTreeRenderAdjustment(tileId,stage);if(tree)return tree;
     const measured = getBuildingRenderAdjustment(tileId, level) || getExpansionRenderAdjustment(tileId, level);
     if (measured) return measured;
     const rect = TILE_RENDER_ADJUSTMENTS[tileId] || { dx:0,dy:0,dw:128,dh:128 };
@@ -1425,7 +1317,7 @@ export function createCanvasRenderer(ctx) {
   function drawProductionBubble(c2d, item, animTime) {
     const { ox, oy, tid, prod, p, bLvl, i, j } = item;
     if (p.queueMode && !p.activeBatch && !p.ready) return;
-    const speedMult = bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0);
+    const speedMult = FRUIT_TREES_CONFIG[tid]?1:(bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0));
     const pIntervalMs = p.activeBatch?.durationMs || Math.round((prod.intervalSec * 1000) / speedMult);
     const pElapsed = Date.now() - (p.lastHarvest || 0);
 
@@ -1465,7 +1357,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "14px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText(iconText, bubbleX, bubbleY);
+      if(!drawResourceIcon(c2d,p.pauseReason?.replace('missing_',''),bubbleX,bubbleY,22,()=>ctx.requestRender?.()))c2d.fillText(iconText,bubbleX,bubbleY);
 
       c2d.fillStyle = "#d97706";
       c2d.beginPath();
@@ -1496,7 +1388,9 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "16px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText(p.completedBatches?.[0]?.icon || prod.icon || "🪙", bubbleX, bubbleY);
+      const productId=p.completedBatches?.[0]?.resource || FRUIT_TREES_CONFIG[tid]?.fruitId || prod.yieldResource;
+      if(!drawResourceIcon(c2d,productId,bubbleX,bubbleY,23,()=>ctx.requestRender?.()))
+        c2d.fillText(p.completedBatches?.[0]?.icon || prod.icon || "🪙",bubbleX,bubbleY);
 
       const uCfg = UPGRADES_CONFIG[tid];
       const upgradeCfg = uCfg ? uCfg[bLvl] : null;
@@ -1525,6 +1419,7 @@ export function createCanvasRenderer(ctx) {
         badgeText = `+${yieldQty}🍈 +${curGoldGain}🪙`;
       }
 
+      if(FRUIT_TREES_CONFIG[tid])badgeText=`+${yieldQty}${FRUIT_TREES_CONFIG[tid].icon} +${curGoldGain}🪙`;
       if (p.queueMode) badgeText = `${p.completedBatches.length} mẻ xong`;
       c2d.fillStyle = "#15803d";
       c2d.beginPath();
@@ -1689,11 +1584,14 @@ export function createCanvasRenderer(ctx) {
         }
 
         if (activeSeedBrush) {
-          const crop = CROPS_CONFIG[activeSeedBrush];
-          c2d.font = "24px sans-serif";
-          c2d.textAlign = "center";
-          c2d.textBaseline = "middle";
-          c2d.fillText(crop ? crop.icon : "🌱", hOx + 64, hOy + 82);
+          const seed = sownCropImages[getSownCropSpriteId(activeSeedBrush)];
+          const a = getSownCropRenderAdjustment(activeSeedBrush);
+          if (a && isImageReady(seed)) {
+            c2d.save();
+            c2d.imageSmoothingEnabled = false;
+            c2d.drawImage(seed, hOx+a.dx, hOy+a.dy, a.dw, a.dh);
+            c2d.restore();
+          }
         }
 
         if (activeBrush && activeBrush !== "erase") {
@@ -1702,13 +1600,18 @@ export function createCanvasRenderer(ctx) {
           const isUnlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
           const hasConstruction = !!constructions[hKey];
           const isEmptyGrass = canPlaceOnSurface(activeBrush, hTid) && !isPlacementProtected(activeBrush, hoverCell.row, hoverCell.col, hTid);
-          const isValidPlacement = isFenceTile(activeBrush)
+          let isValidPlacement = isLivestockTile(activeBrush)
+            ? canPlaceLivestock(ctx,activeBrush,hoverCell.row,hoverCell.col,brushFlipped)
+            : isFenceTile(activeBrush)
             ? isUnlocked && canAddFence(ctx.getFences?.() || [], activeBrush, hoverCell.row, hoverCell.col, brushFlipped)
             : isUnlocked && !hasConstruction && isEmptyGrass;
+          if (activeBrush === 'd13_farmland_plot') {
+            isValidPlacement = isValidPlacement && checkFarmWorkforce(currentGrid, constructions, {}, buildingLevels, ctx.getExtractionState?.()).allowed;
+          }
 
-          const brushImg = getTileImage(activeBrush);
+          const brushImg = EXPANSION_PLANTS[activeBrush]?getTreeImage(activeBrush,"seed"):getTileImage(activeBrush);
           if (!isFenceTile(activeBrush) && isImageReady(brushImg)) {
-            const bAdj = getTileRenderAdjustment(activeBrush);
+            const bAdj = getTileRenderAdjustment(activeBrush,1,EXPANSION_PLANTS[activeBrush]?"seed":"fruiting");
             const bDx = bAdj.dx || 0;
             const bDy = bAdj.dy || 0;
             const bDw = bAdj.dw || 128;
@@ -1716,6 +1619,7 @@ export function createCanvasRenderer(ctx) {
             c2d.save();
             setSpriteSampling(c2d, bAdj);
             c2d.globalAlpha = isValidPlacement ? 0.68 : 0.38;
+            if(isLivestockTile(activeBrush))drawLivestockFence(c2d,fenceTexture,hOx,hOy,brushFlipped,'back');
             if (activeBrush === 'b60_combined_warehouse') {
               drawWarehouseSprite(c2d, brushImg, bAdj, hOx, hOy, brushFlipped);
             } else if (isExpansionGround(activeBrush)) {
@@ -1732,6 +1636,10 @@ export function createCanvasRenderer(ctx) {
             c2d.restore();
           }
 
+          if(isLivestockTile(activeBrush)) {
+            c2d.save();c2d.globalAlpha=isValidPlacement ? .68 : .38;
+            drawLivestockFence(c2d,fenceTexture,hOx,hOy,brushFlipped,'front');c2d.restore();
+          }
           if (AESTHETIC_TILE_IDS.includes(activeBrush)) {
             c2d.save();
             c2d.globalAlpha = isValidPlacement ? 0.75 : 0.40;
@@ -1754,6 +1662,8 @@ export function createCanvasRenderer(ctx) {
           const hasConstruction = !!constructions[hKey];
           const isEmptyGrass = canPlaceOnSurface(movingBuilding.tileId, hTid) && !isPlacementProtected(movingBuilding.tileId, hoverCell.row, hoverCell.col, hTid);
           let isValidPlacement = isUnlocked && !hasConstruction && isEmptyGrass;
+          if(isLivestockTile(movingBuilding.tileId))isValidPlacement=canPlaceLivestock(ctx,movingBuilding.tileId,
+            hoverCell.row,hoverCell.col,!!movingBuilding.flipped,{row:movingBuilding.fromRow,col:movingBuilding.fromCol});
           if (movingBuilding.footprint === 2) {
             isValidPlacement = true;
             for (let dr = -1; dr <= 0; dr++) {
@@ -1771,9 +1681,10 @@ export function createCanvasRenderer(ctx) {
             }
           }
 
-          const bImg = getTileImage(movingBuilding.tileId, movingBuilding.level || 1);
+          const movingTreeStage=getFruitTreeVisual(movingBuilding.tileId,treeStateAt(movingBuilding.fromRow,movingBuilding.fromCol))?.stage;
+          const bImg = movingTreeStage?getTreeImage(movingBuilding.tileId,movingTreeStage):getTileImage(movingBuilding.tileId, movingBuilding.level || 1);
           if (!isFenceTile(movingBuilding.tileId) && isImageReady(bImg)) {
-            const mAdj = getTileRenderAdjustment(movingBuilding.tileId, movingBuilding.level || 1);
+            const mAdj = getTileRenderAdjustment(movingBuilding.tileId, movingBuilding.level || 1,movingTreeStage);
             const mDx = mAdj.dx || 0;
             const mDy = mAdj.dy || 0;
             const mDw = mAdj.dw || 128;
@@ -1781,6 +1692,7 @@ export function createCanvasRenderer(ctx) {
             c2d.save();
             setSpriteSampling(c2d, mAdj);
             c2d.globalAlpha = isValidPlacement ? 0.70 : 0.40;
+            if(isLivestockTile(movingBuilding.tileId))drawLivestockFence(c2d,fenceTexture,hOx,hOy,!!movingBuilding.flipped,'back');
             if (movingBuilding.tileId === 'b60_combined_warehouse') {
               drawWarehouseSprite(c2d, bImg, mAdj, hOx, hOy, movingBuilding.flipped);
             } else if (isExpansionGround(movingBuilding.tileId)) {
@@ -1806,6 +1718,10 @@ export function createCanvasRenderer(ctx) {
 
           const lsOldKey = `${movingBuilding.fromRow}_${movingBuilding.fromCol}`;
           const ls = (livestockState && livestockState[lsOldKey]) ? livestockState[lsOldKey] : null;
+          if(isLivestockTile(movingBuilding.tileId) && (!ls?.animalCount||!isValidPlacement)) {
+            c2d.save();c2d.globalAlpha=isValidPlacement ? .70 : .40;
+            drawLivestockFence(c2d,fenceTexture,hOx,hOy,!!movingBuilding.flipped,'front');c2d.restore();
+          }
           if (ls && ls.animalCount > 0 && isValidPlacement) {
             c2d.save();
             c2d.globalAlpha = 0.75;
@@ -2051,6 +1967,11 @@ export function createCanvasRenderer(ctx) {
         const placing = !!(activeBrush || movingBuilding);
         const harborFootprint = !movingBuilding && !kingdomWondersManager?.movingWonderId
           ? getHarborFootprint(hoverCell.row,hoverCell.col) : null;
+        const penTile=movingBuilding?.tileId || activeBrush;
+        const penAnchor=isLivestockTile(penTile)?hoverCell:
+          !movingBuilding&&!activeBrush?getLivestockAnchor(currentGrid,hoverCell.row,hoverCell.col,constructions):null;
+        const penFlip=isLivestockTile(penTile)?!!(movingBuilding?.flipped ?? brushFlipped):
+          penAnchor?!!(constructions[`${penAnchor.row}_${penAnchor.col}`]?.flipped ?? flippedGrid[`${penAnchor.row}_${penAnchor.col}`]):false;
         let footprint = movingBuilding?.footprint === 2 ? 2 : 1;
         if (!placing && tid === 'b60_combined_warehouse') {
           for (let r=hoverCell.row-1;r<=hoverCell.row;r++) for (let c=hoverCell.col-1;c<=hoverCell.col;c++) {
@@ -2078,7 +1999,12 @@ export function createCanvasRenderer(ctx) {
         }
         c2d.save();
         c2d.beginPath();
-        if (harborFootprint) {
+        if (penAnchor) {
+          if(placing)valid=canPlaceLivestock(ctx,penTile,hoverCell.row,hoverCell.col,penFlip,
+            movingBuilding?{row:movingBuilding.fromRow,col:movingBuilding.fromCol}:null);
+          getLivestockOutline(penAnchor.row,penAnchor.col,penFlip,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W)
+            .forEach(([x,y],index)=>{if(index===0)c2d.moveTo(x,y);else c2d.lineTo(x,y);});
+        } else if (harborFootprint) {
           if (placing) valid=false;
           getHarborOutline(harborFootprint,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W).forEach(([x,y],index)=> {
             if (index===0) c2d.moveTo(x,y); else c2d.lineTo(x,y);
@@ -2143,10 +2069,17 @@ export function createCanvasRenderer(ctx) {
         c2d.strokeStyle = color;
         c2d.lineWidth = 2;
         c2d.beginPath();
+        const penId=constructions[`${row}_${col}`]?.targetTileId || currentGrid[row]?.[col];
+        if(isLivestockTile(penId)) {
+          const flip=!!(constructions[`${row}_${col}`]?.flipped ?? flippedGrid[`${row}_${col}`]);
+          getLivestockOutline(row,col,flip,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W)
+            .forEach(([x,y],index)=>{if(index===0)c2d.moveTo(x,y);else c2d.lineTo(x,y);});
+        } else {
         c2d.moveTo(ux + 64, uy + 64);
         c2d.lineTo(ux + 128, uy + 96);
         c2d.lineTo(ux + 64, uy + 128);
         c2d.lineTo(ux, uy + 96);
+        }
         c2d.closePath();
         c2d.stroke();
         c2d.restore();
@@ -2199,6 +2132,7 @@ export function createCanvasRenderer(ctx) {
                   c2d.save();
                   setSpriteSampling(c2d, cAdj);
                   c2d.globalAlpha = 0.35 + progress * 0.45;
+                  if(isLivestockTile(c.targetTileId))drawLivestockFence(c2d,fenceTexture,ox,oy,!!c.flipped,'back');
                   if (c.targetTileId === 'b60_combined_warehouse') {
                     drawWarehouseSprite(c2d, cImg, cAdj, ox, oy, c.flipped);
                   } else if (getTerrainSprite(c.targetTileId)) {
@@ -2211,6 +2145,10 @@ export function createCanvasRenderer(ctx) {
                     c2d.drawImage(cImg, ox + cDx, oy + cDy, cDw, cDh);
                   }
                   c2d.restore();
+                  if(isLivestockTile(c.targetTileId)) {
+                    c2d.save();c2d.globalAlpha=.35+progress*.45;
+                    drawLivestockFence(c2d,fenceTexture,ox,oy,!!c.flipped,'front');c2d.restore();
+                  }
                 }
 
                 deferOverlay(() => {
@@ -2339,7 +2277,7 @@ export function createCanvasRenderer(ctx) {
                       if (isImageReady(seeds)) {
                         c2d.save();
                         c2d.imageSmoothingEnabled = false;
-                        const a = SOWN_CROP_DRAW;
+                        const a = getSownCropRenderAdjustment(farmData.seedId);
                         c2d.drawImage(seeds, ox + a.dx, oy + a.dy, a.dw, a.dh);
                         c2d.restore();
                       }
@@ -2394,59 +2332,9 @@ export function createCanvasRenderer(ctx) {
                 let img = getTileImage(tid, buildingLevels[key] || 1);
                 let drawOffsetY = 0;
 
-                // Xử lý Cây Táo Đỏ, Cây Me & Cây Dừa 3 Giai Đoạn
-                if (tid === "d21_apple_tree") {
-                  const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
-                  const now = Date.now();
-                  const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-                  const cfg = FRUIT_TREES_CONFIG[tid];
-                  const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 45000;
-                  const pElapsed = now - lastHarvest;
-                  const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
-                  const progress = Math.min(1.0, pElapsed / pIntervalMs);
-
-                  if (isReady) {
-                    img = appleTreeStageImages.ripe;
-                  } else if (progress >= 0.45) {
-                    img = appleTreeStageImages.flowering;
-                  } else {
-                    img = appleTreeStageImages.growing;
-                  }
-                } else if (tid === "d23_tamarind_tree") {
-                  const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
-                  const now = Date.now();
-                  const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-                  const cfg = FRUIT_TREES_CONFIG[tid];
-                  const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 60000;
-                  const pElapsed = now - lastHarvest;
-                  const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
-                  const progress = Math.min(1.0, pElapsed / pIntervalMs);
-
-                  if (isReady) {
-                    img = tamarindTreeStageImages.ripe;
-                  } else if (progress >= 0.45) {
-                    img = tamarindTreeStageImages.flowering;
-                  } else {
-                    img = tamarindTreeStageImages.growing;
-                  }
-                } else if (tid === "d22_coconut_palm") {
-                  const p = productionState[key] || (fruitTreesState ? fruitTreesState[key] : null);
-                  const now = Date.now();
-                  const lastHarvest = p ? (p.lastHarvest || 0) : 0;
-                  const cfg = FRUIT_TREES_CONFIG[tid];
-                  const pIntervalMs = (cfg && cfg.intervalSec) ? cfg.intervalSec * 1000 : 60000;
-                  const pElapsed = now - lastHarvest;
-                  const isReady = p ? (p.ready || pElapsed >= pIntervalMs) : true;
-                  const progress = Math.min(1.0, pElapsed / pIntervalMs);
-
-                  if (isReady) {
-                    img = coconutPalmStageImages.ripe;
-                  } else if (progress >= 0.45) {
-                    img = coconutPalmStageImages.flowering;
-                  } else {
-                    img = coconutPalmStageImages.growing;
-                  }
-                }
+                const treeState=EXPANSION_PLANTS[tid]?resolveFruitTreeState(productionState[key],fruitTreesState?.[key]):null;
+                const treeVisual=getFruitTreeVisual(tid,treeState);
+                if(treeVisual)img=getTreeImage(tid,treeVisual.stage);
 
                 const isTownHallCell = (i >= 12 && i <= 13 && j >= 14 && j <= 16);
                 const isTownCenterCovered = isTownHallCell;
@@ -2469,7 +2357,7 @@ export function createCanvasRenderer(ctx) {
                 if (isImageReady(img)) {
                   const tileAdj = (isTownCenterSprite && !isTownCenterImageReady)
                     ? { dx: 0, dy: 0, dw: 128, dh: 128 }
-                    : getTileRenderAdjustment(tid, buildingLevels[key] || 1);
+                    : getTileRenderAdjustment(tid, buildingLevels[key] || 1,treeVisual?.stage);
                   const tDx = tileAdj.dx || 0;
                   const tDy = (tileAdj.dy || 0) + drawOffsetY;
                   const tDw = tileAdj.dw || 128;
@@ -2499,6 +2387,7 @@ export function createCanvasRenderer(ctx) {
                     c2d.save();
                     setSpriteSampling(c2d, tileAdj);
                     if (isCellBeingMoved) c2d.globalAlpha = 0.35;
+                    if(isLivestockTile(tid))drawLivestockFence(c2d,fenceTexture,ox,oy,!!flippedGrid[key],'back');
                     if (isCombinedWarehouseCell) {
                       drawWarehouseSprite(c2d, img, tileAdj, ox, oy, flippedGrid[key]);
                     } else if (flippedGrid[key]) {
@@ -2541,7 +2430,7 @@ export function createCanvasRenderer(ctx) {
 
                 // Cây ăn quả độc lập trên cỏ (Táo 🍎, Dừa 🥥, Me 🍈)
                 if (FRUIT_TREES_CONFIG[tid]) {
-                  renderFruitTreeDetails(c2d, ox, oy, animTime, tid, productionState[key] || (fruitTreesState ? fruitTreesState[key] : null), i, j);
+                  renderFruitTreeDetails(c2d, ox, oy, animTime, tid, treeState, i, j);
                 }
 
                 // Bong bóng Thành Tựu: chỉ 1 chiếc, vẽ ở lớp overlay sau công trình lớn.
@@ -2554,9 +2443,9 @@ export function createCanvasRenderer(ctx) {
 
                 // Production Building Status & Harvest Bubbles (state do productionManager quản lý)
                 const isLivestock = isLivestockTile(tid);
-                if (PRODUCTION_BUILDINGS[tid] && !isLivestock) {
+                if (PRODUCTION_BUILDINGS[tid] && !isLivestock && !treeVisual?.exhausted) {
                   const prod = PRODUCTION_BUILDINGS[tid];
-                  const p = productionState[key];
+                  const p = treeVisual?{...treeState,ready:treeVisual.ready}:productionState[key];
                   if (p) {
                     bubbleOverlays.push({
                       kind: "production",
@@ -2664,6 +2553,25 @@ export function createCanvasRenderer(ctx) {
       }
 
       // All world bodies share the SAME anchor/depth comparator, including
+      for(const enemy of ctx.getDefenseState?.()?.enemies || []){
+        if(enemy.hp>0)queueWorld(enemy.r,enemy.c,()=>drawGoblin(c2d,enemy,animTime));
+      }
+      if(ctx.getDefenseState?.())deferOverlay(()=>drawDefenseOverlay(c2d,ctx.getDefenseState(),currentGrid));
+      for (const job of ctx.getExtractionState?.()?.jobs || []) {
+        const config=EXTRACTION_WORKSHOPS[job.tileId];
+        if(config)queueWorld(job.r,job.c,()=>drawExtractionWorker(c2d,job,config,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W,animTime));
+      }
+      for(const [key,node] of Object.entries(ctx.getExtractionState?.()?.nodes || {})) {
+        const [r,c]=key.split('_').map(Number), config=EXTRACTION_NODES[currentGrid[r]?.[c]];
+        if(!config)continue;
+        deferOverlay(()=>{
+          c2d.save();c2d.font='bold 10px sans-serif';c2d.textAlign='center';c2d.fillStyle='#fff';c2d.strokeStyle='#263526';c2d.lineWidth=3;
+          const text=`${config.icon || '🪵'} ${node.remaining}/${config.capacity}`;
+          const x=ORIGIN_X+(c-r)*HALF_W+64,y=ORIGIN_Y+(r+c)*QUARTER_W+66;
+          c2d.strokeText(text,x,y);c2d.fillText(text,x,y);c2d.restore();
+        });
+      }
+      // All world bodies share the SAME anchor/depth comparator, including
       // fractional positions of walking actors and vehicles.
       for (const villager of villagerManager?.villagers || []) {
         queueWorld(villager.r, villager.c, () => villagerManager.render(
@@ -2704,7 +2612,7 @@ export function createCanvasRenderer(ctx) {
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, camera, isNight,
           { only: vehicle, deferOverlay }));
       }
-      if (hoverCell && !groundGhost) queueWorld(hoverCell.row, hoverCell.col, drawGhostPreview, 2);
+      if (hoverCell && !groundGhost) queueWorld(hoverCell.row,hoverCell.col,drawGhostPreview,2);
       worldQueue.sort(compareWorldDepth);
       for (const command of worldQueue) command.draw();
 
@@ -2878,7 +2786,7 @@ export function createCanvasRenderer(ctx) {
           c2d.font = "22px sans-serif";
           c2d.textAlign = "center";
           c2d.textBaseline = "middle";
-          c2d.fillText(p.icon || "🌾", curX, curY);
+          if(!drawResourceIcon(c2d,p.resourceId,curX,curY,24,()=>ctx.requestRender?.()))c2d.fillText(p.icon||"🌾",curX,curY);
         }
         c2d.restore();
       }

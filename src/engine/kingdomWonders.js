@@ -1,3 +1,5 @@
+import {RUNTIME_ART} from '../data/runtimeArtData.js';
+import {resourceIconHtml} from '../data/resourceIcons.js';
 import { ROWS, COLS } from "./isoMath.js";
 import { isCellUnlocked } from "../data/landConfig.js";
 import { isProtectedTile } from "../data/starterMap.js";
@@ -197,7 +199,7 @@ export function getWonderImage(id, onRequestRender) {
 }
 
 // Ảnh riêng cho từng giai đoạn thi công (file: /assets/wonders/<id>_stage<N>.png)
-const WONDER_STAGE_SPRITES = { royal_palace: [0, 1, 2, 3] };
+export const WONDER_STAGE_SPRITES = { royal_palace: [0, 1, 2, 3], ocean_library:[0,1,2,3], poseidon_statue:[0,1,2,3] };
 const WONDER_STAGE_IMAGES = {};
 export function getWonderStageImage(id, stage, onRequestRender) {
   const key = id + "_" + stage;
@@ -208,7 +210,7 @@ export function getWonderStageImage(id, stage, onRequestRender) {
         onRequestRender();
       }
     };
-    img.src = "/assets/wonders/" + id + "_stage" + stage + ".png";
+    img.src = RUNTIME_ART.wonder[id+"_stage"+stage]?.uri || "/assets/wonders/" + id + "_stage" + stage + ".png";
     WONDER_STAGE_IMAGES[key] = img;
   }
   return WONDER_STAGE_IMAGES[key];
@@ -641,7 +643,7 @@ export class KingdomWondersManager {
         const goldReq = `${stg.goldCost.toLocaleString()} 🪙`;
         const rubyReq = stg.rubyCost > 0 ? `, ${stg.rubyCost} 💎` : '';
         const resReq = Object.entries(stg.resourcesCost)
-          .map(([k, qty]) => `${qty} ${k === 'wheat' ? '🌾' : (k === 'bread' ? '🍞' : (k === 'butter' ? '🧈' : '🔨'))}`)
+          .map(([k, qty]) => `${qty} ${resourceIconHtml(k,k,20)}`)
           .join(', ');
 
         return `
@@ -854,6 +856,15 @@ export class KingdomWondersManager {
       }
       ctx.save();
       if (alpha < 1.0) ctx.globalAlpha = alpha;
+      const frame=stageReady?RUNTIME_ART.wonder[site.id+'_stage'+curStage]:null;
+      if(frame){
+        const [left,top,right,bottom]=frame.bounds,scale=(site.id==='poseidon_statue'?90:124)/(right-left);
+        const w=(right-left)*scale,h=(bottom-top)*scale;
+        ctx.translate(spriteX+64,spriteY+128);
+        if(isFlipped)ctx.scale(-1,1);
+        ctx.drawImage(drawImg,left,top,right-left,bottom-top,-w/2,-h,w,h);
+        ctx.restore();return;
+      }
       if (isFlipped) {
         ctx.translate(ox + 128, spriteY);
         ctx.scale(-1, 1);

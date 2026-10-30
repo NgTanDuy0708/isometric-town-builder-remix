@@ -6,8 +6,15 @@
 import { getBuildingSpriteUri } from "./buildingSprites.js";
 import { FENCE_ITEMS } from "./fenceConfig.js";
 import { EXPANSION_TILE_URIS, EXPANSION_VARIANT_URIS } from "./expansionCatalog.js";
+import { IRON_MINE_ART } from './ironMineArtData.js';
+import { STONE_DEPOSIT_ART } from './stoneDepositArtData.js';
 
 export const AESTHETIC_TILE_URIS = {
+  b66_iron_mine: getBuildingSpriteUri('b66_iron_mine'),
+  n03_iron_deposit: IRON_MINE_ART.iron_deposit.uri,
+  b65_stone_quarry: getBuildingSpriteUri('b65_stone_quarry'),
+  n01_logging_grove: '/assets/decorations/forest_3.png',
+  n02_stone_deposit: STONE_DEPOSIT_ART.uri,
   b64_bbq_restaurant: getBuildingSpriteUri('b64_bbq_restaurant'),
   ...EXPANSION_TILE_URIS,
   ...EXPANSION_VARIANT_URIS,
@@ -46,13 +53,13 @@ export const AESTHETIC_TILE_URIS = {
   d27_royal_banner_flag: "/assets/aistudio/C_t_c__hi_u_ho_ng_tri_u_78f7b9bb.png",
 
   // 6. Cây Táo Đỏ 3 Giai Đoạn Pixel Art
-  d21_apple_tree: "/assets/trees/apple_tree_ripe.png",
+  d21_apple_tree: EXPANSION_TILE_URIS.d21_apple_tree,
 
   // 7. Cây Dừa Xiêm 3 Giai Đoạn Pixel Art
-  d22_coconut_palm: "/assets/trees/coconut_palm_ripe.png",
+  d22_coconut_palm: EXPANSION_TILE_URIS.d22_coconut_palm,
 
   // 8. Cây Me Chua Ngọt 3 Giai Đoạn Pixel Art
-  d23_tamarind_tree: "/assets/trees/tamarind_tree_ripe.png",
+  d23_tamarind_tree: EXPANSION_TILE_URIS.d23_tamarind_tree,
 
   // 9. Chuồng Gà Đẻ Trứng
   b21_chicken_coop: getBuildingSpriteUri("b21_chicken_coop"),

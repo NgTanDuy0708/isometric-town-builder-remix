@@ -1,8 +1,16 @@
 # Roadmap phát triển gameplay
 
-Ngày lập: 30/10/2026. Trạng thái: kế hoạch thiết kế; các mục dưới đây chưa được triển khai theo roadmap này.
+Ngày lập: 30/10/2026. Trạng thái: đã triển khai chặng 1, khai thác gỗ/đá/quặng của chặng 2, chuỗi chế biến và lương thực công nhân của chặng 3; chặng 4 đã có tháp tự bắn và các đợt goblin. Lính/pháp sư, rồng và chặng 5–6 vẫn là kế hoạch tiếp theo.
+
+Chặng 1 dùng nhà ở đã hoàn tất để tính dân; mỗi luống giữ 1 suất. Có giới hạn ở cả mua từng luống và kéo đặt liên tục, HUD dân rảnh/làm nông, chặn gỡ nhà gây thiếu dân và bảo toàn save cũ dư luống. Phân công được tính từ nhà/luống đã lưu, không tạo bộ đếm độc lập có thể bị lệch qua save/load. Công nhân đã được bổ sung ở chặng 2; binh lính thuộc chặng sau.
+
+Chặng 2 hiện có Xưởng mộc, Xưởng khai thác đá và Mỏ sắt, dùng chung dân với luống đất. Xưởng cấp 1/2/3 có 2/3/4 chỗ; thuê một lần 30 vàng/người. Công nhân đi trên đất trống và đường đã mở khóa, làm việc 6 giây để lấy tối đa 2 đơn vị, mang tới Kho Tổng Hợp rồi quay về xưởng. Kho đầy giữ hàng; cho nghỉ chờ giao hàng và về xưởng mới trả dân. Mỗi điểm tự nhiên có 30 đơn vị, hồi sau 60 giây chạy game khi cạn. Tiến độ/nguồn tài nguyên/túi hàng có trong save, xuất/nhập và reset. Bản đầu không tính khai thác offline; tải lại giữ hàng đang mang và tính lại đường đi. Chi tiết sử dụng: [Công nhân khai thác](EXTRACTION_WORKERS.md).
+
+Chặng 3 hiện có 4 công thức: 2 gỗ → 1 ván (20s), 2 đá → 1 đá xây dựng (20s), 2 quặng + 1 gỗ → 1 thỏi sắt (30s), 1 thỏi + 1 ván → 1 dụng cụ (45s). Dùng hàng đợi tối đa 5 mẻ; giữ nguyên liệu khi đặt, hoàn mẻ chờ khi hủy nếu kho còn chỗ, giữ thành phẩm khi kho đầy. Xưởng gỗ/đá có nút Chế biến; Lò rèn mở công thức trực tiếp. Cả ba mở từ cấp 4, không tự tạo vật liệu khi không có mẻ. Nâng cấp xưởng đá và mỏ sắt dùng ván/đá xây dựng/dụng cụ. Xưởng cấp 2/3 chế biến nhanh hơn 30%/60%; mỗi mẻ vẫn cho 1 sản phẩm. Save lò rèn cũ giữ một mẻ đang làm hoặc đã xong. Chi tiết: [Chuỗi nguyên liệu](MATERIAL_CHAINS.md).
 
 ## Vòng chơi hướng tới
+
+Lương thực công nhân đã hoạt động: mỗi công nhân khai thác trong suất dân cần 1 khẩu phần/120 giây chạy game (0,5/phút). Dùng bánh mì (4 khẩu phần), ngô/lúa mì (1); thịt nướng (8) có thể bật thêm. Người chơi chọn loại được dùng trong bảng công nhân; phần đã chuẩn bị được lưu. Thiếu ăn giảm tốc độ đốn/đào còn 50%, giữ vận chuyển bình thường và không tích nợ vô hạn hay trừ giờ offline. Người xin nghỉ và công nhân thiếu suất dân không tiêu thụ; nông dân/dân rảnh chưa tiêu thụ. HUD/bảng công nhân cho biết khẩu phần còn dùng được và nhu cầu/phút. Chi tiết: [Lương thực công nhân](WORKER_FOOD.md).
 
 Xây nhà → có dân rảnh → phân công làm nông hoặc khai thác → tích lũy nguyên liệu → xây và nâng cấp → chuẩn bị phòng thủ → mở vùng đất mới.
 
@@ -98,6 +106,16 @@ Không gắn lịch cố định trước khi chốt phạm vi từng chặng. H
 
 ## Chặng 4 — Phòng thủ làng và các đợt tấn công
 
+### Đã triển khai: tháp canh và goblin
+
+- Phòng thủ mở cấp 6 với nhiệm vụ diễn tập trong bảng **Phòng thủ làng**. Cần Tòa thị chính và ít nhất 1 Tháp canh đã hoàn tất, có đường từ rìa đất đã mở. Diễn tập có cảnh báo 15 giây và 3 goblin.
+- Sau chiến thắng diễn tập, người chơi tự bật đợt ngẫu nhiên. Có 5 phút chuẩn bị lần đầu, các lần sau cách 8–12 phút chơi, kèm cảnh báo 60 giây. Tắt lịch không hủy cảnh báo/trận đã bắt đầu; save cũ và reset mặc định chưa bật.
+- Tháp cấp 1/2/3 gây 18/24/30 sát thương mỗi giây, tầm 4/4,5/5 ô; chỉ tháp hoàn tất, chưa hư mới bắn. Tháp tự hoạt động, chưa tuyển lính hay dùng suất dân/lương thực.
+- Goblin đi trên đường/đất trống đã mở, đánh tháp gần nhất còn hoạt động rồi tới Tòa thị chính. Không xuyên công trình, nước hoặc đất khóa. Hết 120 giây trận thì rút lui, không thưởng nếu còn địch sống.
+- Tháp có 100 độ bền; hư ở 0 thì ngừng bắn. Sức phòng thủ làng cũng có 100; về 0 kết thúc thua. Không xóa nhà, mất dân hoặc lấy hàng trong kho. Sửa tháp: 20 vàng + 1 gỗ + 1 đá; sửa làng: 50 vàng + 2 gỗ + 2 đá; chỉ sửa ngoài cảnh báo/trận.
+- Kết quả chờ người chơi xem, nhận thưởng một lần rồi tiếp tục. State lưu cùng vàng/tài nguyên, gồm lịch, trận, vị trí/máu địch, tháp, độ bền và cờ đã nhận thưởng. Chỉ chạy online, đóng game không sinh thêm đợt hoặc trừ thời gian.
+- Đồ họa goblin là SVG tạm, vẽ theo lớp chiều sâu chung và có thanh máu. Hướng dẫn: [Phòng thủ làng](VILLAGE_DEFENSE.md).
+
 ### Phạm vi đề xuất
 
 - Mở bằng nhiệm vụ ở ngưỡng cấp phù hợp. Có thời gian xây tháp và huấn luyện đội quân đầu tiên trước trận thật.
@@ -160,4 +178,4 @@ Không gắn lịch cố định trước khi chốt phạm vi từng chặng. H
 
 ## Mốc bắt đầu
 
-Chặng triển khai đầu tiên là **Dân số và giới hạn luống đất**. Hoàn thành riêng vòng nhà ở → dân rảnh → mua/gỡ luống → lưu/tải, trước khi bổ sung công nhân đi rừng hoặc chiến đấu.
+Chặng 1, khai thác gỗ/đá/quặng, chế biến, lương thực công nhân và vòng phòng thủ bằng tháp/goblin đã hoạt động. Tiếp theo là cân bằng giao tranh, bổ sung quân đội dùng suất dân/lương thực và mở rộng nội dung chặng 4 trước khi chuyển sang nhiều map.

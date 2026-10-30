@@ -1,3 +1,4 @@
+import {RUNTIME_ART} from './runtimeArtData.js';
 // Measured source anchors and display scales; original PNGs are untouched.
 export const CROP_GROWTH_GEOMETRY = {
   "wheat": {
@@ -801,3 +802,13 @@ export const CROP_GROWTH_GEOMETRY = {
     }
   }
 };
+
+const extraStages=['sprout','grow','ripe'];
+for(const id of ['watermelon','cabbage'])if(extraStages.every(stage=>RUNTIME_ART[id]?.[id+'_'+stage])){
+  CROP_GROWTH_GEOMETRY[id]=Object.fromEntries(extraStages.map(stage=>{
+    const asset=RUNTIME_ART[id][id+'_'+stage];
+    const [left,,right,bottom]=asset.bounds;
+    return [stage,{file:id+'_'+stage+'.png',width:asset.width,height:asset.height,bounds:asset.bounds,
+      anchor:{x:(left+right)/2,y:bottom-1},scale:(id==='cabbage'?{sprout:22,grow:44,ripe:64}:{sprout:24,grow:52,ripe:76})[stage]/(right-left)}];
+  }));
+}

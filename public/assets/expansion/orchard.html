@@ -1,0 +1,44 @@
+<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Tám cây ăn quả · thử chu kỳ trong game</title>
+<style>body{margin:24px;background:#f2f0e5;color:#29452e;font:15px system-ui}h1{font-size:25px}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}button,select{padding:10px;border:1px solid #91a38a;border-radius:7px;background:white;color:#29452e}canvas{width:100%;max-width:1100px;height:auto;border-radius:12px;background:#88a25a}#inventory{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}#inventory span{padding:8px;background:white;border-radius:6px}.note{font-size:13px}</style>
+<h1>Tám loài cây · bảy giai đoạn · thu hoạch vào kho</h1>
+<p>Táo, dừa, me, ca cao, cherry, việt quất, sầu riêng và cam. Cùng renderer và logic chu kỳ với game.</p>
+<div class="controls"><label>Giai đoạn <select id="stage"><option value="fruiting">Kết trái</option><option value="seed">Hạt giống</option><option value="sprout">Mầm</option><option value="seedling">Cây con</option><option value="young">Cây non</option><option value="flowering">Trổ hoa</option><option value="withered">Héo · hết 3 lượt</option></select></label><button id="harvest">Thu hoạch cả tám cây</button><button id="ripen">Làm chín vụ tiếp</button><button id="replant">Đào và gieo cây mới (mô phỏng)</button><button id="mirror">Lật cây</button><a href="./plants.html">Xem PNG gốc</a></div>
+<canvas width="1100" height="510" aria-label="Vườn tám loài cây dùng bộ ảnh mới trong game"></canvas>
+<p id="status" role="status">Đang tải bộ ảnh…</p><div id="inventory"></div>
+<p class="note">Trang thử độc lập, không thay đổi bản lưu của bạn.</p>
+<script type="module">
+import {createCanvasRenderer} from '/src/engine/canvasRenderer.js';
+import {createProductionManager} from '/src/engine/productionManager.js';
+import {FRUIT_TREES_CONFIG} from '/src/data/fruitTreeConfig.js';
+import {EXPANSION_PLANTS} from '/src/data/fruitTreeSprites.js';
+import {createFruitTreeState,harvestFruitTreeProduce,resolveFruitTreeState,getFruitTreeVisual,forceFruitTreeReady} from '/src/engine/fruitTreeLifecycle.js';
+import {ORIGIN_X,ORIGIN_Y,QUARTER_W} from '/src/engine/isoMath.js';
+const canvas=document.querySelector('canvas'),c2d=canvas.getContext('2d');
+const grid=Array.from({length:32},()=>Array(32).fill('d12_meadow_wildflowers'));
+const resources={},fruit={},flipped={},keys=[];let renderer,frame;
+const species=Object.entries(FRUIT_TREES_CONFIG);
+const requestRender=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=null;renderer?.renderCanvas();labels()})};
+const camera={x:550-(ORIGIN_X+64)*1.5,y:230-(ORIGIN_Y+36*QUARTER_W+96)*1.5,zoom:1.5};
+const none=()=>null,empty=()=>({});
+const ctx={ensureCanvasRef(){},getCanvas:()=>canvas,getContainer:()=>canvas,getContext2D:()=>c2d,
+getViewportSize:()=>({width:1100,height:510}),getRenderDpr:()=>1,getCamera:()=>camera,getDayNightWeather:none,
+getCurrentGrid:()=>grid,getConstructions:empty,getFarmlandState:empty,getProductionState:()=>manager.getState(),
+getBuildingLevels:empty,getLandUnlockedChunks:()=>[],getFlippedGrid:()=>flipped,getUpgradesInProgress:empty,
+getGameMode:()=> 'sandbox',getVillagerManager:none,getHoverCell:none,getActiveBrush:none,getBrushFlipped:()=>false,
+getActiveSeedBrush:none,getMovingBuilding:none,getAnimTime:()=>performance.now()/1000,getFruitTreesState:()=>fruit,
+getPlayerResources:()=>resources,onRequestRender:requestRender,requestRender,
+harvestFruitTreeCell(row,col){const key=row+'_'+col;const result=harvestFruitTreeProduce(grid[row][col],resolveFruitTreeState(manager.getState()[key],fruit[key]),resources,300);if(!result.ok)return false;fruit[key]={...result.nextState};manager.setEntry(key,{...result.nextState});return true}};
+const manager=createProductionManager(ctx);manager.init({});
+species.forEach(([id,cfg],i)=>{const n=i%4,row=(i<4?18:21)-n,col=(i<4?18:21)+n;grid[row][col]=id;keys.push({id,cfg,row,col,key:row+'_'+col})});
+function setStage(stage){const now=Date.now();for(const {id,key,cfg} of keys){const progress={seed:0,sprout:.18,seedling:.33,young:.55,flowering:.8,fruiting:1,withered:0}[stage];const state=createFruitTreeState(now-cfg.intervalSec*1000*progress);if(stage==='withered')Object.assign(state,{hasHarvested:true,harvestCount:3,exhausted:true});state.ready=stage==='fruiting';fruit[key]={...state};manager.setEntry(key,{...state})}requestRender()}
+function labels(){c2d.save();c2d.font='700 12px system-ui';c2d.textAlign='center';for(const {row,col,cfg} of keys){const x=camera.x+(ORIGIN_X+(col-row)*64+64)*1.5,y=camera.y+(ORIGIN_Y+(row+col)*32+118)*1.5;c2d.fillStyle='#fcf7de';c2d.shadowColor='#234224';c2d.shadowBlur=4;c2d.fillText(cfg.name+' · '+getFruitTreeVisual(grid[row][col],resolveFruitTreeState(manager.getState()[row+'_'+col],fruit[row+'_'+col])).harvestCount+'/3',x,y)}c2d.restore()}
+document.querySelector('#stage').onchange=e=>setStage(e.target.value);
+document.querySelector('#ripen').onclick=()=>{for(const {id,key} of keys){const state=forceFruitTreeReady(id,resolveFruitTreeState(manager.getState()[key],fruit[key]));fruit[key]={...state};manager.setEntry(key,{...state})}document.querySelector('#status').textContent='Cây còn lượt đã chín; cây héo không hồi sinh.';requestRender()};
+document.querySelector('#replant').onclick=()=>{setStage('seed');document.querySelector('#stage').value='seed';document.querySelector('#status').textContent='Đã gieo cây mới · mỗi cây còn 3 lượt hái.'};
+document.querySelector('#mirror').onclick=()=>{for(const {key} of keys)flipped[key]=!flipped[key];requestRender()};
+document.querySelector('#harvest').onclick=()=>{let count=0;for(const {row,col} of keys)if(manager.harvest(row,col))count++;document.querySelector('#status').textContent=count?'Đã thu hoạch '+count+' cây · sau 3 lượt hái cây héo vĩnh viễn.':'Cây chưa kết trái hoặc đã thu hoạch hết.';document.querySelector('#inventory').replaceChildren(...species.map(([id,cfg])=>{const span=document.createElement('span');span.textContent=cfg.icon+' '+cfg.fruitName+': '+(resources[cfg.fruitId]||0);return span}));requestRender()};
+renderer=createCanvasRenderer(ctx);setStage('fruiting');
+Promise.all(Object.values(EXPANSION_PLANTS).flatMap(data=>Object.values(data.stages).map(async uri=>{const image=new Image();image.src=uri;await image.decode()}))).then(()=>{document.querySelector('#status').textContent='Đã tải đủ 56 ảnh · chọn giai đoạn hoặc thu hoạch để kiểm tra.';requestRender()});
+setInterval(()=>{manager.update();requestRender()},1000);
+</script></html>

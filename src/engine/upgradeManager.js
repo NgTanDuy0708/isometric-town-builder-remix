@@ -1,4 +1,7 @@
+import {resourceIconHtml} from '../data/resourceIcons.js';
 // Building Upgrade and Inspection Modal Controller
+import { isLivestockTile } from '../data/livestockConfig.js';
+import { getLivestockAnchor } from '../data/livestockFootprint.js';
 import {
   MAX_BUILDING_LEVEL, UPGRADES_CONFIG, getNextUpgrade, getBuildingLevelPopulation
 } from "../data/upgradesConfig.js";
@@ -205,6 +208,8 @@ export function createUpgradeManager(ctx) {
 
   function openUpgradeModal(row, col) {
     if (!upgradeModal) return;
+    const anchor=getLivestockAnchor(ctx.getCurrentGrid(),row,col);
+    if(anchor)({row,col}=anchor);
     inspectedCell = { row, col };
     playModalOpenSound();
     renderUpgradeModalContent();
@@ -238,6 +243,10 @@ export function createUpgradeManager(ctx) {
       const curTid = currentGrid[row][col];
       const curFlipped = !!flippedGrid[key];
 
+      if(isLivestockTile(curTid) && ctx.rotateCellAt) {
+        ctx.rotateCellAt(row,col);renderUpgradeModalContent();return;
+      }
+
       const res = getRotatedTileIdAndFlip(curTid, curFlipped);
       if (tileMap[res.nextId]) {
         currentGrid[row][col] = res.nextId;
@@ -268,7 +277,7 @@ export function createUpgradeManager(ctx) {
       const lvl = buildingLevels[key] || 1;
       const isFlipped = !!flippedGrid[key];
 
-      ctx.setMovingBuilding({
+      const moveResult = ctx.setMovingBuilding({
         fromRow: row,
         fromCol: col,
         tileId: tid,
@@ -276,6 +285,7 @@ export function createUpgradeManager(ctx) {
         flipped: isFlipped
       });
 
+      if (moveResult === false) return;
       closeUpgradeModal();
       ctx.showToast("🚚 Đang chọn vị trí mới... Nhấp vào ô Cỏ Hoa trống để đặt công trình!", "info");
       ctx.requestRender();
@@ -387,7 +397,7 @@ export function createUpgradeManager(ctx) {
         const badgeColor = isEnough ? "#15803d" : "#b91c1c";
         const badgeBg = isEnough ? "#f0fdf4" : "#fee2e2";
         return `<span style="display:inline-flex; align-items:center; gap:3px; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${badgeBg}; color:${badgeColor}; font-weight:600;">
-          ${icon} ${name}: ${hasQty}/${reqQty}
+          ${resourceIconHtml(rKey,name,20,icon)} ${name}: ${hasQty}/${reqQty}
         </span>`;
       }).join(" ");
 

@@ -1,3 +1,5 @@
+import {drawRuntimeActor} from './runtimeArt.js';
+import { drawAnimatedCharacter, getCharacterImage, characterDirection } from './characterAnimation.js';
 /**
  * trafficVehicles.js - Hệ Thống Phương Tiện Giao Thông & Thuyền Bè Ngoại Khơi
  * 
@@ -74,6 +76,7 @@ export class VehicleManager {
    */
   createVehicle(startCell, type = "wheat_cart") {
     const isHorse = type === "horse_carriage";
+    getCharacterImage('vehicle', type);
     return {
       id: `veh_${this.nextId++}`,
       type,
@@ -83,6 +86,7 @@ export class VehicleManager {
       targetR: startCell.r,
       targetC: startCell.c,
       moveProgress: 0,
+      animationPhase: 0,
       speed: isHorse ? 1.6 : 1.1, // ô mỗi giây
       facing: "SE",
       path: [],
@@ -159,14 +163,11 @@ export class VehicleManager {
         // Xác định hướng xe
         const dr = v.targetR - v.r;
         const dc = v.targetC - v.c;
-        if (Math.abs(dr) > Math.abs(dc)) {
-          v.facing = dr > 0 ? "SE" : "NW";
-        } else {
-          v.facing = dc > 0 ? "SW" : "NE";
-        }
+        v.facing = characterDirection(dr, dc, v.facing);
 
         const step = v.speed * dt;
         const dist = Math.hypot(dr, dc);
+        v.animationPhase = (Number.isFinite(v.animationPhase) ? v.animationPhase : 0) + Math.min(step, dist) * 8;
 
         if (dist <= step) {
           v.r = v.targetR;
@@ -280,10 +281,9 @@ export class VehicleManager {
       if (opts.only && opts.only !== v) continue;
       const worldX = originX + (v.c - v.r) * halfW + 64;
       const worldY = originY + (v.r + v.c) * quarterW + 90;
-      const hop = Math.abs(Math.sin((v.r + v.c) * 6)) * 2;
 
       ctx.save();
-      ctx.translate(worldX, worldY - hop);
+      ctx.translate(worldX, worldY);
 
       // Bóng xe đổ xuống mặt đường
       ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
@@ -291,87 +291,21 @@ export class VehicleManager {
       ctx.ellipse(0, 4, 14, 6, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      if (v.type === "horse_carriage") {
-        // CỖ XE NGỰA HOÀNG GIA / LỮ QUÁN
-        // Thùng xe 4 bánh màu đỏ bordeaux hoặc hoàng gia
-        ctx.fillStyle = "#831843"; // Vỏ xe gỗ quý
-        ctx.beginPath();
-        ctx.roundRect(-10, -14, 15, 11, 2);
-        ctx.fill();
-
-        // Cửa sổ xe có ánh vàng
-        ctx.fillStyle = isNight ? "#fde047" : "#bae6fd";
-        ctx.fillRect(-7, -11, 4, 4);
-
-        // Bánh xe gỗ nan hoa
-        ctx.fillStyle = "#451a03";
-        ctx.beginPath();
-        ctx.arc(-8, -1, 3.5, 0, Math.PI * 2);
-        ctx.arc(2, -1, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Chú ngựa kéo xe phía trước
-        const horseX = 11;
-        ctx.fillStyle = "#78350f"; // Lông ngựa hạt dẻ
-        ctx.fillRect(horseX - 3, -11, 8, 6); // Thân ngựa
-        ctx.fillRect(horseX + 2, -15, 4, 6); // Đầu ngựa
-
-        // Bờm ngựa & chân ngựa
-        ctx.fillStyle = "#451a03";
-        ctx.fillRect(horseX + 1, -16, 2, 4);
-        ctx.fillRect(horseX - 2, -5, 2, 4);
-        ctx.fillRect(horseX + 3, -5, 2, 4);
-
-        // Bác xà ích ngồi trên bục
-        ctx.fillStyle = "#1e293b";
-        ctx.beginPath();
-        ctx.arc(-2, -16, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        // XE KÉO LÚA MÌ NÔNG THÔN (WHEAT CART)
-        // Thùng xe gỗ 2 bánh
-        ctx.fillStyle = "#92400e";
-        ctx.beginPath();
-        ctx.roundRect(-9, -8, 14, 7, 2);
-        ctx.fill();
-
-        // Chất đầy các bó lúa mì vàng óng
-        ctx.fillStyle = "#facc15";
-        ctx.beginPath();
-        ctx.ellipse(-2, -8, 6, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#ca8a04";
-        ctx.fillRect(-4, -10, 8, 2.5);
-
-        // Bánh xe gỗ
-        ctx.fillStyle = "#451a03";
-        ctx.beginPath();
-        ctx.arc(-2, 0, 3.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Càng xe
-        ctx.strokeStyle = "#78350f";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(4, -5);
-        ctx.lineTo(10, -2);
-        ctx.stroke();
-
-        // Bác nông dân kéo xe
-        ctx.fillStyle = "#15803d"; // Áo xanh lá
-        ctx.fillRect(9, -11, 4, 6);
-        ctx.fillStyle = "#fcd34d"; // Mặt
-        ctx.beginPath();
-        ctx.arc(11, -13, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#ca8a04"; // Mũ rơm
-        ctx.fillRect(9, -15, 4, 1.5);
-      }
+      // Each animated frame keeps vehicle, driver/puller and harness together.
+      const animated = drawAnimatedCharacter(ctx, 'vehicle', v.type, 0, 4, {
+        width: v.type === 'horse_carriage' ? 78 : 54,
+        facing: v.facing || 'SE', walking: v.state === 'walking' && !!v.path?.length,
+        phase: v.animationPhase || 0
+      });
+      if (!animated) drawRuntimeActor(ctx,'vehicle',v.type,0,4,{
+        width:v.type==='horse_carriage'?78:54,
+        flipped:v.facing==='SE'||v.facing==='NE'
+      });
 
       const drawOverlay = () => {
         ctx.save();
         // Reapply the actor transform when the overlay is deferred to the UI pass.
-        if (opts.deferOverlay) ctx.translate(worldX, worldY - hop);
+        if (opts.deferOverlay) ctx.translate(worldX, worldY);
         // Speech bubble khi người chơi nhấp vào xe
         if (this.speechBubble && this.speechBubble.vehicleId === v.id) {
           const bubbleW = 140;

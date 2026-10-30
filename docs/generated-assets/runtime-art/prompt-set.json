@@ -1,0 +1,440 @@
+{
+  "mode": "built-in imagegen",
+  "createdAt": "2026-10-30T06:41:29.319Z",
+  "items": [
+    {
+      "kind": "visitor",
+      "id": "npc_marie",
+      "filename": "npc_marie.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a welcoming middle-aged female royal cook, cream apron over mustard ochre dress, white linen bonnet, carrying a small wicker basket\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_angus",
+      "filename": "npc_angus.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a broad stocky middle-aged male blacksmith, charcoal leather apron over rusty red shirt, short dark beard, small hammer tucked into belt\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_lily",
+      "filename": "npc_lily.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a cheerful young village girl with brown twin braids, sage green dress and cream blouse, carrying a tiny flower basket\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_marco",
+      "filename": "npc_marco.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a friendly traveling male merchant with swept brown hair, teal tunic, short brown cloak and a leather satchel\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_lancelot",
+      "filename": "npc_lancelot.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a modest town knight in warm gray steel armor, deep blue cloth tabard, small gold emblem, helmet under one arm, no drawn weapon\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_rosalind",
+      "filename": "npc_rosalind.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a refined female noble in a muted plum medieval gown with cream trim, auburn braided hair and a small gold circlet\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_elric",
+      "filename": "npc_elric.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: an elderly herbalist with silver beard, muted olive robe, leather pouch and a small bunch of herbs\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_giles",
+      "filename": "npc_giles.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: an elderly male farmer with a gray beard, straw hat, faded olive tunic and brown trousers, small woven produce basket\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_pierre",
+      "filename": "npc_pierre.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a hearty male innkeeper with brown moustache, cream shirt, russet vest, dark apron and a folded towel over his arm\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "visitor",
+      "id": "npc_jack",
+      "filename": "npc_jack.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/villagers/merchant.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a weathered male sailor with navy short coat, cream shirt, brown boots, red neckerchief and small rolled sea chart\nONE complete full-body character viewed from elevated three-quarter front, face and torso pointing toward lower-right. Proportions like the reference, not chibi or emoji. Walking-ready relaxed stance, both boots visible on the same ground plane, no ground tile or platform. Occupy about 65% canvas height, feet near bottom center. Do not copy the merchant outfit; keep this character identity and role."
+    },
+    {
+      "kind": "vehicle",
+      "id": "wheat_cart",
+      "filename": "wheat_cart.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/vehicles/delivery_truck.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: ONE rustic two-wheel oak handcart filled with tied golden wheat sheaves, pulled by ONE farmer in an olive tunic, cream shirt, straw hat and brown boots. Farmer and cart form one attached complete moving sprite\nReference is pixel style and camera only: NO steam engine, chimney, motor, locomotive, vehicle roof or extra passengers. Cart trails upper-left; farmer at lower-right holds two wooden handles. Both wheels and farmer feet grounded, long axis follows the 2:1 upper-left/lower-right grid direction. Entire shafts, wheels and person inside frame. Clear transparent padding."
+    },
+    {
+      "kind": "vehicle",
+      "id": "horse_carriage",
+      "filename": "horse_carriage.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/vehicles/delivery_truck.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: ONE compact medieval burgundy passenger carriage with honey oak trim and four wooden spoked wheels, drawn by ONE chestnut horse, with ONE coachman seated on the front bench. Horse, harness, shafts and carriage form one complete moving sprite\nReference is pixel style and camera only: NO steam engine, smokestack, motor or locomotive. Carriage behind at upper-left, horse facing lower-right, long axis follows 2:1 isometric upper-left/lower-right direction. All hooves, wheels, harness and driver fully visible, transparent gaps. No road tile."
+    },
+    {
+      "kind": "watermelon",
+      "id": "watermelon_sown",
+      "filename": "watermelon_sown.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: four tiny dark teardrop watermelon seeds partly pressed into four tiny separate soil divots arranged on a 2:1 diamond, just sown. No germination or leaves\nReference is art style only; replace orange pumpkins entirely with the specified watermelon growth stage. Ground-contact anchor at bottom center around (627,1160) on a 1254 square. The four seed divots occupy a low flat 2:1 diamond in the lower half. No soil diamond, surrounding terrain, grass, thick base, external roots or scenery. ONE stage only."
+    },
+    {
+      "kind": "watermelon",
+      "id": "watermelon_sprout",
+      "filename": "watermelon_sprout.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: ONE small newly germinated watermelon plant with two rounded seed leaves and its first small lobed true leaf, a short stem and a tiny root contact. No fruit or yellow grain\nReference is art style only; replace orange pumpkins entirely with the specified watermelon growth stage. Ground-contact anchor at bottom center around (627,1160) on a 1254 square. Plant and attached produce occupy lower center; small germination silhouette. No soil diamond, surrounding terrain, grass, thick base, external roots or scenery. ONE stage only."
+    },
+    {
+      "kind": "watermelon",
+      "id": "watermelon_grow",
+      "filename": "watermelon_grow.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: ONE young low sprawling watermelon vine with deeply lobed sage-green leaves, short curling tendrils and two tiny pale-green unripe melons. No tall stalk, grain heads, pumpkins or cut fruit\nReference is art style only; replace orange pumpkins entirely with the specified watermelon growth stage. Ground-contact anchor at bottom center around (627,1160) on a 1254 square. Plant and attached produce occupy lower center; low spreading silhouette. No soil diamond, surrounding terrain, grass, thick base, external roots or scenery. ONE stage only."
+    },
+    {
+      "kind": "watermelon",
+      "id": "watermelon_ripe",
+      "filename": "watermelon_ripe.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: ONE mature low watermelon vine with deeply lobed muted green leaves, curling tendrils and TWO plump oblong DARK GREEN WATERMELONS with clear lighter green longitudinal stripes, one larger at the front. All melons intact, no cut red flesh, no pumpkins, grain or wheat\nReference is art style only; replace orange pumpkins entirely with the specified watermelon growth stage. Ground-contact anchor at bottom center around (627,1160) on a 1254 square. Plant and attached produce occupy lower center; low spreading silhouette. No soil diamond, surrounding terrain, grass, thick base, external roots or scenery. ONE stage only."
+    },
+    {
+      "kind": "wonder",
+      "id": "ocean_library_stage0",
+      "filename": "ocean_library_stage0.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/ocean_library.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT white-stone ocean library with verdigris green dome in the reference: stage 0, a planned construction site: only the complete existing foundation footprint and a few survey stakes and small neatly stacked materials. No finished upper walls, roof, dome or full statue. An actual solid readable foundation, no translucent ghost\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "ocean_library_stage1",
+      "filename": "ocean_library_stage1.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/ocean_library.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT white-stone ocean library with verdigris green dome in the reference: stage 1, early construction: foundation fully laid with lower masonry walls or lower statue plinth partly built, a few orderly timber scaffolds and stone blocks. No finished upper structure\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "ocean_library_stage2",
+      "filename": "ocean_library_stage2.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/ocean_library.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT white-stone ocean library with verdigris green dome in the reference: stage 2, halfway built: recognizable half-height structure, incomplete upper masonry or statue torso, restrained attached timber scaffolding and one ladder. No complete roof or full finished statue\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "ocean_library_stage3",
+      "filename": "ocean_library_stage3.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/ocean_library.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT white-stone ocean library with verdigris green dome in the reference: stage 3, almost finished: nearly complete final silhouette, only small unfinished areas, a modest attached scaffold and a few final construction materials. Keep finished design clearly recognizable\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "poseidon_statue_stage0",
+      "filename": "poseidon_statue_stage0.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/poseidon_statue.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT bronze-green Poseidon statue with gold trident on square stone plinth in the reference: stage 0, a planned construction site: only the complete existing foundation footprint and a few survey stakes and small neatly stacked materials. No finished upper walls, roof, dome or full statue. An actual solid readable foundation, no translucent ghost\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "poseidon_statue_stage1",
+      "filename": "poseidon_statue_stage1.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/poseidon_statue.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT bronze-green Poseidon statue with gold trident on square stone plinth in the reference: stage 1, early construction: foundation fully laid with lower masonry walls or lower statue plinth partly built, a few orderly timber scaffolds and stone blocks. No finished upper structure\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "poseidon_statue_stage2",
+      "filename": "poseidon_statue_stage2.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/poseidon_statue.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT bronze-green Poseidon statue with gold trident on square stone plinth in the reference: stage 2, halfway built: recognizable half-height structure, incomplete upper masonry or statue torso, restrained attached timber scaffolding and one ladder. No complete roof or full finished statue\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "wonder",
+      "id": "poseidon_statue_stage3",
+      "filename": "poseidon_statue_stage3.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/wonders/poseidon_statue.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a construction-stage version of the EXACT bronze-green Poseidon statue with gold trident on square stone plinth in the reference: stage 3, almost finished: nearly complete final silhouette, only small unfinished areas, a modest attached scaffold and a few final construction materials. Keep finished design clearly recognizable\nReference defines the exact building identity, camera, front entrance orientation, foundation footprint and material colors. Keep the same attached foundation and lower stair/sea-edge treatment, no extra island, terrain or detached props. Square native 1254 canvas, bottom foundation tip near (627,1190), original full final-footprint width about 1100 pixels. Build upward from a constant foundation; early phases stay low. One stage only, not a sheet, no text labels."
+    },
+    {
+      "kind": "icon",
+      "id": "wood",
+      "filename": "wood.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: three bundled oak logs with readable growth rings\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "stone",
+      "filename": "stone.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a small stack of three rough warm-gray building stones\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "radish",
+      "filename": "radish.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two white daikon radishes with fresh green tops\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "mushroom",
+      "filename": "mushroom.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two brown edible mushrooms\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "onion",
+      "filename": "onion.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one golden brown onion and one small onion\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "chili",
+      "filename": "chili.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two glossy red chili peppers with green stems\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "cucumber",
+      "filename": "cucumber.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one long dark-green cucumber\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "cucumber_pickling",
+      "filename": "cucumber_pickling.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: three short bumpy green pickling cucumbers\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "lettuce",
+      "filename": "lettuce.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one loose leafy light-green lettuce head\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "pear",
+      "filename": "pear.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one yellow-green pear\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "wheat",
+      "filename": "wheat.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one tied sheaf of ripe golden wheat\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "carrot",
+      "filename": "carrot.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two orange carrots with green leafy tops\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "tomato",
+      "filename": "tomato.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two ripe red tomatoes with green calyxes\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "strawberry",
+      "filename": "strawberry.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: three ripe red strawberries with green tops\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "corn",
+      "filename": "corn.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one golden corn cob with partly opened green husk\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "cabbage",
+      "filename": "cabbage.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one dense round pale-green cabbage head\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "pumpkin",
+      "filename": "pumpkin.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one intact orange ribbed pumpkin with curled stem, no carved face\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "watermelon",
+      "filename": "watermelon.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one oblong dark-green striped watermelon with one small triangular red-fleshed slice beside it\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "grapes",
+      "filename": "grapes.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one compact bunch of purple grapes with one vine leaf\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "sunflower",
+      "filename": "sunflower.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one ripe sunflower head with golden petals and brown seeds\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "bread",
+      "filename": "bread.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one golden crusty oval bread loaf with three scoring marks\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "ironTools",
+      "filename": "ironTools.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one crossed iron hammer and iron tongs with wooden handles\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "egg",
+      "filename": "egg.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: three cream eggs nestled together\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "roastPork",
+      "filename": "roastPork.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one medieval wooden plate holding cooked browned pork with two small herb leaves\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "meat",
+      "filename": "meat.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one fresh pink pork cut with white fat edge\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "milk",
+      "filename": "milk.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one rustic cream ceramic milk jug with a blue cloth cap\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "wool",
+      "filename": "wool.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one fluffy tied bundle of off-white sheared sheep wool, no animal\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "fabric",
+      "filename": "fabric.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two folded bolts of muted blue and plum woven cloth\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "butter",
+      "filename": "butter.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one golden butter block on a small wooden dish\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "wine",
+      "filename": "wine.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one dark glass wine bottle and a small wooden goblet\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "apple",
+      "filename": "apple.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one ripe red apple with a green leaf\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "coconut",
+      "filename": "coconut.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one brown hairy coconut with one white-fleshed half beside it\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "tamarind",
+      "filename": "tamarind.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: three brown curved tamarind pods, one partly open\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "cacao",
+      "filename": "cacao.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one ridged reddish orange cacao pod and two cacao beans\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "cherry",
+      "filename": "cherry.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: two red cherries connected by green stems\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "blueberry",
+      "filename": "blueberry.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: a small cluster of deep blue blueberries with one leaf\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "durian",
+      "filename": "durian.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one oval green spiky durian with a small cream-fleshed opened wedge\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    },
+    {
+      "kind": "icon",
+      "id": "orange",
+      "filename": "orange.png",
+      "reference": "C:/Users/ntduy/.gemini/antigravity/scratch/isometric-town-builder-remix/public/assets/crops/growth-v1/pumpkin_ripe.png",
+      "prompt": "Use case: stylized-concept. Production PNG asset for the existing medieval isometric farming town game. Match the supplied reference style: detailed crisp pixel-art clusters, muted earthy palette, dark readable contours, light from upper left, strict 2:1 dimetric camera. No photo, glossy 3D, smooth airbrush, blur, oversized mosaic blocks, neon colors, text, watermark or logo. Output ONE isolated fully visible subject on genuine transparent alpha, square canvas, generous transparent margin. No external cast shadow, painted checkerboard or scenery.\nSubject: one ripe orange with a green leaf\nReference is pixel-art style and lighting ONLY, not plant composition. This is a WAREHOUSE / MARKET INVENTORY ICON: a compact harvested item, no growing plant or full vine. Center a single small coherent item group occupying 75% of the canvas; readable at 32px. Muted natural colors with clear discrete highlights, transparent surrounding padding. No border, badge, background square, letters, price, soil, scenery or shadow."
+    }
+  ]
+}

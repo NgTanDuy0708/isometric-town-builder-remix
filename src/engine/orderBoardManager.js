@@ -1,3 +1,5 @@
+import {getDeliveryPose,drawDeliveryTruck,drawDeliveryBoard,preloadDeliveryArt} from './deliveryAnimation.js';
+import {resourceIconHtml,visitorPortraitHtml} from '../data/resourceIcons.js';
 /**
  * orderBoardManager.js - Quản Lý Bảng Đơn Hàng Giao Cho NPC & Xe Tải Giao Hàng (Delivery Truck)
  * 
@@ -40,7 +42,7 @@ export function createOrderBoardManager(ctx) {
     homeRow: 18.5,
     homeCol: 15.3,
     boardRow: 18.25,
-    boardCol: 15.15
+    boardCol: 16.1
   };
 
   const modalEl = document.getElementById("order-board-modal");
@@ -459,7 +461,7 @@ export function createOrderBoardManager(ctx) {
         const hasEnough = owned >= it.amount;
         return `
           <div class="order-item-row ${hasEnough ? 'item-sufficient' : 'item-missing'}">
-            <span class="order-item-ico">${it.icon}</span>
+            <span class="order-item-ico">${resourceIconHtml(it.resourceId,it.name,24,it.icon)}</span>
             <span class="order-item-name">${it.name}</span>
             <span class="order-item-qty ${hasEnough ? 'qty-ok' : 'qty-need'}">
               ${owned}/${it.amount} ${hasEnough ? '✔️' : '❌'}
@@ -502,7 +504,7 @@ export function createOrderBoardManager(ctx) {
 
         <div class="order-npc-header">
           <div class="order-npc-avatar" style="border-color: ${slot.npc.accentColor || '#f59e0b'}">
-            ${slot.npc.avatar}
+            ${visitorPortraitHtml(slot.npc.id,slot.npc.name,52,slot.npc.avatar)}
           </div>
           <div class="order-npc-meta">
             <div class="order-npc-name">${slot.npc.name}</div>
@@ -546,72 +548,18 @@ export function createOrderBoardManager(ctx) {
     }
 
     // Bảng đơn hàng và xe giao hàng đứng ở đầu tuyến, ngoài footprint quảng trường.
-    if (cell && cell.row === 18 && cell.col === 15) {
+    if (cell && ((cell.row === 18 && cell.col === 15) ||
+      (cell.row === Math.round(truckState.boardRow) && cell.col === Math.round(truckState.boardCol)))) {
       return true;
     }
 
     return false;
   }
 
-  // Cache cho hình ảnh Bảng Đơn Hàng & Xe Tải Giao Hàng
-  let orderBoardImage = null;
-  function getOrderBoardImage() {
-    if (!orderBoardImage) {
-      orderBoardImage = new Image();
-      orderBoardImage.onload = () => {
-        if (ctx && ctx.requestRender) ctx.requestRender();
-      };
-      orderBoardImage.src = "/assets/buildings/order_board.png";
-    }
-    return orderBoardImage;
-  }
-
-  let deliveryTruckImage = null;
-  let deliveryTruckReturnImage = null;
-
-  function getDeliveryTruckImage(isReturn = false) {
-    if (isReturn) {
-      if (!deliveryTruckReturnImage) {
-        deliveryTruckReturnImage = new Image();
-        deliveryTruckReturnImage.onload = () => {
-          if (ctx && ctx.requestRender) ctx.requestRender();
-        };
-        deliveryTruckReturnImage.src = "/assets/vehicles/delivery_truck_return.png";
-      }
-      return deliveryTruckReturnImage;
-    }
-    if (!deliveryTruckImage) {
-      deliveryTruckImage = new Image();
-      deliveryTruckImage.onload = () => {
-        if (ctx && ctx.requestRender) ctx.requestRender();
-      };
-      deliveryTruckImage.src = "/assets/vehicles/delivery_truck.png";
-    }
-    return deliveryTruckImage;
-  }
+  preloadDeliveryArt(() => ctx.requestRender?.());
 
   function getTruckCell() {
-    let r = truckState.homeRow;
-    let c = truckState.homeCol;
-    let isVisible = true;
-
-    if (truckState.isDelivering) {
-      const elapsed = Date.now() - truckState.startedAt;
-      const p = Math.min(1.0, elapsed / truckState.tripDurationMs);
-
-      if (p < 0.44) {
-        const prog = p / 0.44;
-        r = truckState.homeRow + (40.0 - truckState.homeRow) * prog;
-        c = prog < 0.1 ? truckState.homeCol + (15.0 - truckState.homeCol) * (prog / 0.1) : 15.0;
-      } else if (p < 0.56) {
-        isVisible = false;
-      } else {
-        const prog = (p - 0.56) / 0.44;
-        r = 40.0 - (40.0 - truckState.homeRow) * prog;
-        c = prog > 0.9 ? 15.0 + (truckState.homeCol - 15.0) * ((prog - 0.9) / 0.1) : 15.0;
-      }
-    }
-    return { row: r, col: c, isVisible };
+    return getDeliveryPose(truckState, Date.now());
   }
 
   function getBoardCell() {
@@ -622,7 +570,6 @@ export function createOrderBoardManager(ctx) {
    * Vẽ Bảng Đơn Hàng và Xe Tải Giao Hàng trên Canvas
    */
   function renderWorldTruckAndBoard(c2d, originX, originY, halfW, quarterW, animTime, opts = {}) {
-    const now = Date.now();
     const renderBoardOnly = opts && opts.only === "board";
     const renderTruckOnly = opts && opts.only === "truck";
     const renderBoth = !renderBoardOnly && !renderTruckOnly;
@@ -641,23 +588,7 @@ export function createOrderBoardManager(ctx) {
       c2d.ellipse(boardX, boardY + 6, 16, 8, 0, 0, Math.PI * 2);
       c2d.fill();
 
-      const boardImg = getOrderBoardImage();
-      const isBoardReady = boardImg && boardImg.complete && boardImg.naturalWidth > 0;
-
-      if (isBoardReady) {
-        c2d.save();
-        c2d.translate(boardX, boardY);
-        c2d.scale(-1, 1);
-        c2d.drawImage(boardImg, -32, -58, 64, 64);
-        c2d.restore();
-      } else {
-        // 2 cột gỗ cắm đất dự phòng
-        c2d.fillStyle = "#78350f";
-        c2d.fillRect(boardX - 8, boardY - 20, 2, 22);
-        c2d.fillRect(boardX + 5, boardY - 20, 2, 22);
-        c2d.fillStyle = "#92400e";
-        c2d.fillRect(boardX - 12, boardY - 22, 24, 16);
-      }
+      drawDeliveryBoard(c2d, boardX, boardY, animTime, () => ctx.requestRender?.());
 
       const drawOverlay = () => {
         c2d.save();
@@ -697,70 +628,10 @@ export function createOrderBoardManager(ctx) {
     // 2. VẼ XE TẢI GIAO HÀNG (DELIVERY TRUCK)
     // =========================================================================
     if (renderBoth || renderTruckOnly) {
-      let truckR = truckState.homeRow;
-      let truckC = truckState.homeCol;
-      let isVisible = true;
-      let isReturning = false;
-
-      if (truckState.isDelivering) {
-        const elapsed = now - truckState.startedAt;
-        const p = Math.min(1.0, elapsed / truckState.tripDurationMs);
-
-        if (p < 0.44) {
-          // Giai đoạn 1: Xe chạy từ Đài Phun Nước xuống con đường xuyên rừng phía Nam (Row 40.0)
-          const prog = p / 0.44;
-          truckR = truckState.homeRow + (40.0 - truckState.homeRow) * prog;
-          truckC = prog < 0.1 ? truckState.homeCol + (15.0 - truckState.homeCol) * (prog / 0.1) : 15.0;
-          isReturning = false;
-        } else if (p < 0.56) {
-          // Giai đoạn 2: Xe ở ngoài thị trấn giao hàng
-          isVisible = false;
-        } else {
-          // Giai đoạn 3: Xe chạy ngược từ con đường xuyên rừng (Row 40.0) về lại Đài Phun Nước
-          const prog = (p - 0.56) / 0.44;
-          truckR = 40.0 - (40.0 - truckState.homeRow) * prog;
-          truckC = prog > 0.9 ? 15.0 + (truckState.homeCol - 15.0) * ((prog - 0.9) / 0.1) : 15.0;
-          isReturning = true;
-        }
-      }
-
-      if (isVisible) {
-        const tx = originX + (truckC - truckR) * halfW + 64;
-        const ty = originY + (truckR + truckC) * quarterW + 96;
-
-        c2d.save();
-
-        // Bóng xe tải nhỏ gọn
-        c2d.fillStyle = "rgba(0, 0, 0, 0.28)";
-        c2d.beginPath();
-        c2d.ellipse(tx, ty + 6, 18, 9, 0, 0, Math.PI * 2);
-        c2d.fill();
-
-        // Khói bốc ra sau đuôi xe khi đang chạy
-        if (truckState.isDelivering) {
-          const puff = (animTime * 12.0) % 3;
-          c2d.fillStyle = "rgba(226, 232, 240, 0.75)";
-          c2d.beginPath();
-          c2d.arc(tx - (isReturning ? -10 : 10) - puff * 3, ty - 4 - puff * 2, 2.5 + puff * 1.5, 0, Math.PI * 2);
-          c2d.fill();
-        }
-
-        const truckImg = getDeliveryTruckImage(isReturning);
-        const isTruckReady = truckImg && truckImg.complete && truckImg.naturalWidth > 0;
-
-        if (isTruckReady) {
-          c2d.save();
-          c2d.translate(tx, ty);
-          c2d.drawImage(truckImg, -28, -46, 56, 56);
-          c2d.restore();
-        } else {
-          // Dự phòng
-          c2d.fillStyle = "#dc2626";
-          c2d.fillRect(tx - 10, ty - 12, 14, 10);
-        }
-
-        c2d.restore();
-      }
+      const pose = getTruckCell();
+      const tx = originX + (pose.col-pose.row)*halfW + 64;
+      const ty = originY + (pose.row+pose.col)*quarterW + 96;
+      drawDeliveryTruck(c2d,tx,ty,pose,animTime,()=>ctx.requestRender?.());
     }
   }
 

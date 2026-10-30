@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chuồng trại 2×1 — bộ ảnh mới</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#eff1df;color:#29352d;font:16px system-ui}
+  main{max-width:1320px;margin:auto;padding:26px}h1{font-size:26px;margin:0 0 10px}
+  .controls{display:flex;gap:24px;flex-wrap:wrap;margin:20px 0}label{cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  article{border:1px solid #c3cbb5;border-radius:12px;background:#fafbf4;overflow:hidden}
+  h2{font-size:18px;margin:15px 18px 0}canvas{width:100%;display:block}
+  p{margin:8px 0;color:#59664f}@media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style>
+<main>
+  <h1>Chuồng gà, bò, heo và cừu — mặt bằng 2×1 ô</h1>
+  <p>Cùng phong cách mái ngói và hàng rào; đàn vật nuôi được vẽ riêng trên sân.</p>
+  <div class="controls">
+    <label><input id="animals" type="checkbox" checked> Hiện vật nuôi</label>
+    <label><input id="outline" type="checkbox"> Hiện footprint</label>
+    <label><input id="mirror" type="checkbox"> Lật hướng</label>
+  </div>
+  <div class="grid" id="cards"></div>
+</main>
+<script type="module">
+  import {FARM_BUILDINGS,FARM_ANIMALS,drawFarmAnimal} from '/src/data/farmSprites.js';
+  import {getBuildingRenderAdjustment,getBuildingAnimalSlots} from '/src/data/buildingSprites.js';
+  import {getLivestockOutline} from '/src/data/livestockFootprint.js';
+  import {drawLivestockFence} from '/src/engine/livestockFenceRenderer.js';
+  import {FENCE_TEXTURE_URI} from '/src/engine/fenceRenderer.js';
+  const names={b21_chicken_coop:'Chuồng gà · 5 con',b22_cow_pasture:'Chuồng bò · 3 con',d33_pig_pen_barn:'Chuồng heo · 4 con',b57_sheep_pasture:'Chuồng cừu · 3 con'};
+  const load=src=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
+  const fence=await load(FENCE_TEXTURE_URI);
+  const cards=await Promise.all(Object.entries(names).map(async([id,name])=>{
+    const s=FARM_BUILDINGS[id],article=document.createElement('article'),title=document.createElement('h2'),canvas=document.createElement('canvas');
+    title.textContent=name;canvas.width=640;canvas.height=420;article.append(title,canvas);document.querySelector('#cards').append(article);
+    return {id,s,canvas,body:await load(s.uri),animal:await load(FARM_ANIMALS[s.animalType].uri)};
+  }));
+  function paint(time){
+    const mirror=document.querySelector('#mirror').checked;
+    for(const {id,s,canvas,body,animal} of cards){
+      const c=canvas.getContext('2d');c.setTransform(1,0,0,1,0,0);c.fillStyle='#899d55';c.fillRect(0,0,640,420);
+      const zoom=2.5,ox=160,oy=70;
+      c.setTransform(zoom,0,0,zoom,ox,oy);
+      c.strokeStyle='#697f45';c.lineWidth=.6;
+      for(let row=-4;row<5;row++)for(let col=-4;col<5;col++){
+        const x=(col-row)*64,y=(row+col)*32;c.beginPath();c.moveTo(x+64,y+64);c.lineTo(x+128,y+96);c.lineTo(x+64,y+128);c.lineTo(x,y+96);c.closePath();c.stroke();
+      }
+      if(document.querySelector('#outline').checked){c.beginPath();getLivestockOutline(0,0,mirror,0,0,64,32).forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle='#6affad55';c.fill();c.strokeStyle='#9affc0';c.lineWidth=1.5;c.stroke();}
+      const a=getBuildingRenderAdjustment(id);
+      drawLivestockFence(c,fence,0,0,mirror,'back');
+      c.save();if(mirror){c.translate(128,0);c.scale(-1,1);}c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(body,a.dx,a.dy,a.dw,a.dh);c.restore();
+      if(document.querySelector('#animals').checked){
+        for(const [index,slot] of getBuildingAnimalSlots(id).entries()){
+          const rect={...slot,x:mirror?128-slot.x-slot.w:slot.x,y:slot.y-Math.abs(Math.sin(time*.002+index))*1.2,flip:mirror?!slot.flip:slot.flip};
+          drawFarmAnimal(c,animal,rect);
+        }
+      }
+      drawLivestockFence(c,fence,0,0,mirror,'front');
+    }
+    requestAnimationFrame(paint);
+  }
+  requestAnimationFrame(paint);
+</script>
+</html>
