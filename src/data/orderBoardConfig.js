@@ -1,5 +1,20 @@
 // Configuration for Order Board, NPC Customers, and Order Generation Logic
 import { RESOURCES_CONFIG } from "./resourcesConfig.js";
+import { getTileRequiredLevel } from './gameEconomy.js';
+import { CROPS_CONFIG } from './cropsConfig.js';
+
+export const RESOURCE_PRODUCERS = {
+  egg: 'b21_chicken_coop', milk: 'b22_cow_pasture', meat: 'd33_pig_pen_barn',
+  roastPork: 'b64_bbq_restaurant', bread: 'b06_bakery', ironTools: 'b03_blacksmith_forge', wool: 'b57_sheep_pasture',
+  fabric: 'b58_textile_mill', butter: 'b59_dairy_factory', wine: 'b47_winery_press_barn_sw',
+  apple: 'd21_apple_tree', coconut: 'd22_coconut_palm', tamarind: 'd23_tamarind_tree'
+};
+const RESOURCE_INPUTS = { egg: ['wheat'], milk: ['corn'], meat: ['corn'], bread: ['wheat'], wool: ['carrot'], fabric: ['wool'], butter: ['milk'], wine: ['grapes'], roastPork: ['meat', 'carrot'] };
+export function getResourceUnlockLevel(id) {
+  return Math.max(CROPS_CONFIG[id]?.requiredLevel || 1,
+    RESOURCE_PRODUCERS[id] ? getTileRequiredLevel(RESOURCE_PRODUCERS[id]) : 1,
+    ...(RESOURCE_INPUTS[id] || []).map(getResourceUnlockLevel));
+}
 
 export const ORDER_BOARD_SLOTS_COUNT = 6;
 export const ORDER_DISCARD_COOLDOWN_SEC = 180; // 3 phút đếm ngược khi xé đơn bằng thùng rác
@@ -32,7 +47,7 @@ export const NPC_CUSTOMERS = [
       "Ta đang rèn mẻ khiên giáp mới, cần tiếp tế thêm chút năng lượng.",
       "Đồ ăn trang trại nuôi dưỡng cánh tay lực lưỡng của người thợ rèn!"
     ],
-    preferred: ["corn", "cabbage", "ironTools", "bread", "wheat", "pumpkin"]
+    preferred: ["corn", "cabbage", "ironTools", "bread", "wheat", "pumpkin", "meat", "roastPork"]
   },
   {
     id: "npc_lily",
@@ -123,7 +138,7 @@ export const NPC_CUSTOMERS = [
       "Món súp hầm gia truyền của quán trọ nhất định phải có các nguyên liệu này.",
       "Giao nhanh giúp ta nhé, bia bơ và rượu vang đang chờ bạn bên quán trọ!"
     ],
-    preferred: ["egg", "milk", "bread", "butter", "carrot", "tomato", "wine"]
+    preferred: ["egg", "milk", "bread", "butter", "carrot", "tomato", "wine", "meat", "roastPork"]
   },
   {
     id: "npc_jack",
@@ -148,7 +163,7 @@ export const LEVEL_UNLOCKED_RESOURCES = {
   2: ["tomato", "strawberry", "bread"],
   3: ["corn", "cabbage", "milk"],
   4: ["pumpkin", "watermelon", "apple", "ironTools", "butter"],
-  5: ["grapes"],
+  5: ["grapes", "meat", "roastPork"],
   6: ["sunflower", "wool", "tamarind"],
   7: ["coconut"],
   8: ["fabric"],
@@ -163,8 +178,8 @@ export function getUnlockedResourcesForLevel(playerLevel = 1) {
   const res = [];
   for (const [reqLvlStr, items] of Object.entries(LEVEL_UNLOCKED_RESOURCES)) {
     const reqLvl = parseInt(reqLvlStr, 10);
-    if (lvl >= reqLvl) {
-      res.push(...items);
+    {
+      res.push(...items.filter(id => lvl >= Math.max(reqLvl, getResourceUnlockLevel(id))));
     }
   }
   return res.length > 0 ? res : ["wheat", "carrot", "egg"];

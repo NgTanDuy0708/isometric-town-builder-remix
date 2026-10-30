@@ -1,4 +1,6 @@
 import { isLivestockTile } from "../data/livestockConfig.js";
+import { drawWorkshopActivity } from './workshopEffects.js';
+import { scaleObjectRect } from '../data/renderScale.js';
 import { FARM_ANIMALS, FARM_BUILDINGS, drawFarmAnimal } from "../data/farmSprites.js";
 /**
  * canvasRenderer.js - Module kết xuất đồ họa Canvas 2D Isometric
@@ -47,7 +49,7 @@ import { getTerrainSprite, getBaseTerrainTile } from "../data/terrainConfig.js";
 import { drawTerrainTile } from "./terrainRenderer.js";
 import { drawTownHallSprite } from "./townHallTuning.js";
 import { drawWarehouseSprite } from "./warehouseTuning.js";
-import { SHIP_DOCK_ROW, SHIP_DOCK_COL, SHIP_WATER_ROW, SHIP_WATER_COL } from "../data/harborShipConfig.js";
+import { getHarborDepth, getHarborFootprint, getHarborOutline } from '../data/harborLayout.js';
 import { playCoinFlyHitSound } from "./audioEngine.js";
 
 /**
@@ -206,7 +208,9 @@ export function getSurroundingForestTile(row, col) {
 /**
  * Vẽ một ô ngoại vi (Đại Dương bao la hoặc Rừng đại ngàn) bao quanh vương quốc
  */
-export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNightWeather) {
+export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNightWeather, opts = {}) {
+  const ground = opts.only !== 'objects';
+  const objects = opts.only !== 'ground';
   // A. Ô ĐẠI DƯƠNG NGOẠI VI (Vùng biển Tây và tiếp nối Bắc/Nam)
   if (isSurroundingOcean(row, col)) {
     const oceanTile = getSurroundingOceanTile(row, col);
@@ -215,10 +219,10 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
 
     // 1. Luôn vẽ nước biển xanh lam trong vắt làm nền
     const baseSea = imageCache["m30_sea_var2_coral_reef"];
-    drawTerrainTile(c2d, baseSea, 'm30_sea_var2_coral_reef', ox, oy);
+    if (ground) drawTerrainTile(c2d, baseSea, 'm30_sea_var2_coral_reef', ox, oy);
 
     // 2. Vẽ sprite biển/đảo/sinh vật nếu không phải nền san hô cơ bản
-    if (!getTerrainSprite(sTid)) {
+    if (objects && !isFlatGroundTile(sTid)) {
       const sImg = imageCache[sTid];
       if (isImageReady(sImg)) {
         c2d.save();
@@ -234,7 +238,7 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
     }
 
     // 3. Hiệu ứng ánh sáng / phát quang biển ban đêm
-    if (dayNightWeather) {
+    if (ground && dayNightWeather) {
       if (sTid === "m05_lighthouse_island") {
         dayNightWeather.renderLightGlow(c2d, ox + 64, oy + 40, 120, 1.0);
       } else if (sTid === "m31_sea_var3_bell_buoy") {
@@ -249,7 +253,7 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
   // B. Ô BÃI CÁT BỜ BIỂN TIẾP NỐI
   if (isSurroundingBeach(row, col)) {
     const beachId = getBaseTerrainTile(col);
-    drawTerrainTile(c2d, imageCache[beachId], beachId, ox, oy);
+    if (ground) drawTerrainTile(c2d, imageCache[beachId], beachId, ox, oy);
     return;
   }
 
@@ -260,10 +264,11 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
 
   // 1. Luôn vẽ thảm cỏ hoa đồng nội bên dưới làm nền đất xanh mướt liền mạch
   const baseMeadow = imageCache["d12_meadow_wildflowers"];
-  drawTerrainTile(c2d, baseMeadow, 'd12_meadow_wildflowers', ox, oy);
+  if (ground) drawTerrainTile(c2d, baseMeadow, 'd12_meadow_wildflowers', ox, oy);
 
   // 2. Vẽ sprite cây cối / con đường / cột đèn
-  if (fTid !== "d12_meadow_wildflowers") {
+  const flat = isFlatGroundTile(fTid, imageCache[fTid]?.src);
+  if (fTid !== "d12_meadow_wildflowers" && ((flat && ground) || (!flat && objects))) {
     const fImg = imageCache[fTid];
     if (isImageReady(fImg)) {
       c2d.save();
@@ -273,19 +278,17 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
       } else if (a) {
         if (fFlipped) { c2d.translate(ox + 128, oy); c2d.scale(-1, 1); }
         c2d.drawImage(fImg, (fFlipped ? 0 : ox) + a.dx, (fFlipped ? 0 : oy) + a.dy, a.dw, a.dh);
-      } else if (fFlipped) {
-        c2d.translate(ox + 128, oy);
-        c2d.scale(-1, 1);
-        c2d.drawImage(fImg, 0, 0);
       } else {
-        c2d.drawImage(fImg, ox, oy);
+        const rect = flat ? {dx:0,dy:0,dw:128,dh:128} : scaleObjectRect({dx:0,dy:0,dw:128,dh:128});
+        if (fFlipped) { c2d.translate(ox + 128, oy); c2d.scale(-1, 1); }
+        c2d.drawImage(fImg, (fFlipped?0:ox)+rect.dx, (fFlipped?0:oy)+rect.dy,rect.dw,rect.dh);
       }
       c2d.restore();
     }
   }
 
   // 3. Ánh đèn đường phát sáng ấm áp về đêm
-  if (dayNightWeather && fTid === "d07_streetlamps_signpost") {
+  if (objects && dayNightWeather && fTid === "d07_streetlamps_signpost") {
     dayNightWeather.renderLightGlow(c2d, ox + 64, oy + 82, 75, 0.95);
   }
 }
@@ -572,18 +575,12 @@ export function createCanvasRenderer(ctx) {
   /**
    * Vẽ hoạt hình Đàn gà trong Chuồng Gà (Sử dụng Sprite Gà Pixel Art mới)
    */
-  function renderLivestockChickens(c2d, ox, oy, animTime, pState, ls, level = 1, flipped = false) {
+  function renderLivestockChickens(c2d, ox, oy, animTime, pState, ls, level = 1, flipped = false, opts = {}) {
     c2d.save();
 
     const count = ls ? (ls.animalCount || 0) : 0;
-    if (ls && ls.state === "producing") {
-      const dur = ls.durationMs || 40000;
-      if (Date.now() - (ls.feedTime || 0) >= dur) {
-        ls.state = "ready";
-      }
-    }
-
-    const state = count === 0 ? "empty" : (ls ? ls.state : "empty");
+    const readyByTime = ls?.state === 'producing' && Date.now() - (ls.feedTime || 0) >= (ls.durationMs || 40000);
+    const state = count === 0 ? 'empty' : readyByTime ? 'ready' : (ls?.state || 'empty');
     const isHungry = state === "hungry";
     const isProducing = state === "producing";
     const isReady = state === "ready";
@@ -621,6 +618,9 @@ export function createCanvasRenderer(ctx) {
 
     if (count > 0) renderFarmForeground(c2d, "b21_chicken_coop", ox, oy, level, flipped);
 
+    if (opts.suppressOverlay) { c2d.restore(); return; }
+    const drawOverlay = () => {
+    c2d.save();
     if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
@@ -704,25 +704,23 @@ export function createCanvasRenderer(ctx) {
     }
 
     c2d.restore();
+    };
+    if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+    else drawOverlay();
+    c2d.restore();
   }
 
   /**
    * Vẽ hoạt hình Đàn bò trong Trang Trại Bò Sữa (Sử dụng Sprite Bò Pixel Art mới)
    */
-  function renderDairyCows(c2d, ox, oy, animTime, pState, buildingTid, ls, level = 1, flipped = false) {
+  function renderDairyCows(c2d, ox, oy, animTime, pState, buildingTid, ls, level = 1, flipped = false, opts = {}) {
     const isPig = buildingTid === "d33_pig_pen_barn";
     const animalType = isPig ? "pig" : "cow";
     c2d.save();
 
     const count = ls ? (ls.animalCount || 0) : 0;
-    if (ls && ls.state === "producing") {
-      const dur = ls.durationMs || 75000;
-      if (Date.now() - (ls.feedTime || 0) >= dur) {
-        ls.state = "ready";
-      }
-    }
-
-    const state = count === 0 ? "empty" : (ls ? ls.state : "empty");
+    const readyByTime = ls?.state === 'producing' && Date.now() - (ls.feedTime || 0) >= (ls.durationMs || 75000);
+    const state = count === 0 ? 'empty' : readyByTime ? 'ready' : (ls?.state || 'empty');
     const isHungry = state === "hungry";
     const isProducing = state === "producing";
     const isReady = state === "ready";
@@ -755,6 +753,9 @@ export function createCanvasRenderer(ctx) {
 
     if (count > 0) renderFarmForeground(c2d, buildingTid, ox, oy, level, flipped);
 
+    if (opts.suppressOverlay) { c2d.restore(); return; }
+    const drawOverlay = () => {
+    c2d.save();
     if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
@@ -838,23 +839,21 @@ export function createCanvasRenderer(ctx) {
     }
 
     c2d.restore();
+    };
+    if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+    else drawOverlay();
+    c2d.restore();
   }
 
   /**
    * Vẽ hoạt hình Đàn cừu trong Chuồng Cừu (Sử dụng Sprite Cừu Pixel Art mới)
    */
-  function renderLivestockSheep(c2d, ox, oy, animTime, pState, ls, level = 1, flipped = false) {
+  function renderLivestockSheep(c2d, ox, oy, animTime, pState, ls, level = 1, flipped = false, opts = {}) {
     c2d.save();
 
     const count = ls ? (ls.animalCount || 0) : 0;
-    if (ls && ls.state === "producing") {
-      const dur = ls.durationMs || 60000;
-      if (Date.now() - (ls.feedTime || 0) >= dur) {
-        ls.state = "ready";
-      }
-    }
-
-    const state = count === 0 ? "empty" : (ls ? ls.state : "empty");
+    const readyByTime = ls?.state === 'producing' && Date.now() - (ls.feedTime || 0) >= (ls.durationMs || 60000);
+    const state = count === 0 ? 'empty' : readyByTime ? 'ready' : (ls?.state || 'empty');
     const isHungry = state === "hungry";
     const isProducing = state === "producing";
     const isReady = state === "ready";
@@ -887,6 +886,9 @@ export function createCanvasRenderer(ctx) {
 
     if (count > 0) renderFarmForeground(c2d, "b57_sheep_pasture", ox, oy, level, flipped);
 
+    if (opts.suppressOverlay) { c2d.restore(); return; }
+    const drawOverlay = () => {
+    c2d.save();
     if (isReady && count > 0) {
       // Harvest Bubble
       const bounceY = Math.sin(animTime * 3.5) * 4;
@@ -969,6 +971,10 @@ export function createCanvasRenderer(ctx) {
       c2d.fillText(`⏳ ${secLeft}s ⚡💎`, ox + 64, barY - 3);
     }
 
+    c2d.restore();
+    };
+    if (opts.deferOverlay) opts.deferOverlay(drawOverlay);
+    else drawOverlay();
     c2d.restore();
   }
 
@@ -1190,6 +1196,7 @@ export function createCanvasRenderer(ctx) {
   // - Cờ hiệu: đặt chân đế đá vào đúng tâm của ô đất (ox + 64, oy + 96)
   // - Luống hoa tulip, hàng rào gỗ, lối đi cẩm thạch: hạ sát xuống nền đất, không bị bay lơ lửng
   const TILE_RENDER_ADJUSTMENTS = {
+    d13_farmland_plot: {dx:-8,dy:-8,dw:144,dh:144},
     // Tòa thị chính 2x3: native sprite geometry is in buildingSprites.js.
     // Quảng trường 3x3 ô: ảnh 512x376 thu về 392x288 (đúng tỉ lệ, KHÔNG ép về khung vuông) và neo tại tâm (16, 15); đỉnh trái/phải/dưới khớp hình thoi 3x3.
     // Khuôn viên 3x3: chỉ còn cây/giếng/ghế/hoa, không vẽ nền riêng —
@@ -1218,8 +1225,10 @@ export function createCanvasRenderer(ctx) {
   };
 
   function getTileRenderAdjustment(tileId, level = 1) {
-    return getBuildingRenderAdjustment(tileId, level) || getExpansionRenderAdjustment(tileId, level) || TILE_RENDER_ADJUSTMENTS[tileId] ||
-      { dx: 0, dy: 0, dw: 128, dh: 128 };
+    const measured = getBuildingRenderAdjustment(tileId, level) || getExpansionRenderAdjustment(tileId, level);
+    if (measured) return measured;
+    const rect = TILE_RENDER_ADJUSTMENTS[tileId] || { dx:0,dy:0,dw:128,dh:128 };
+    return isFlatGroundTile(tileId) || isFenceTile(tileId) || tileId.includes('bridge') ? rect : scaleObjectRect(rect);
   }
 
   function setSpriteSampling(c2d, adjustment) {
@@ -1415,8 +1424,9 @@ export function createCanvasRenderer(ctx) {
    */
   function drawProductionBubble(c2d, item, animTime) {
     const { ox, oy, tid, prod, p, bLvl, i, j } = item;
+    if (p.queueMode && !p.activeBatch && !p.ready) return;
     const speedMult = bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0);
-    const pIntervalMs = Math.round((prod.intervalSec * 1000) / speedMult);
+    const pIntervalMs = p.activeBatch?.durationMs || Math.round((prod.intervalSec * 1000) / speedMult);
     const pElapsed = Date.now() - (p.lastHarvest || 0);
 
     if (p.paused && (p.pauseReason === "missing_wheat" || p.pauseReason === "missing_corn" || p.pauseReason === "missing_carrot" || p.pauseReason === "missing_wool" || p.pauseReason === "missing_milk" || p.pauseReason === "missing_grapes")) {
@@ -1486,7 +1496,7 @@ export function createCanvasRenderer(ctx) {
       c2d.font = "16px sans-serif";
       c2d.textAlign = "center";
       c2d.textBaseline = "middle";
-      c2d.fillText(prod.icon || "🪙", bubbleX, bubbleY);
+      c2d.fillText(p.completedBatches?.[0]?.icon || prod.icon || "🪙", bubbleX, bubbleY);
 
       const uCfg = UPGRADES_CONFIG[tid];
       const upgradeCfg = uCfg ? uCfg[bLvl] : null;
@@ -1515,6 +1525,7 @@ export function createCanvasRenderer(ctx) {
         badgeText = `+${yieldQty}🍈 +${curGoldGain}🪙`;
       }
 
+      if (p.queueMode) badgeText = `${p.completedBatches.length} mẻ xong`;
       c2d.fillStyle = "#15803d";
       c2d.beginPath();
       c2d.roundRect(bubbleX - 28, bubbleY + 12, 56, 13, 4);
@@ -1799,11 +1810,11 @@ export function createCanvasRenderer(ctx) {
             c2d.save();
             c2d.globalAlpha = 0.75;
             if (movingBuilding.tileId === "b21_chicken_coop") {
-              renderLivestockChickens(c2d, hOx, hOy, animTime, null, ls, movingBuilding.level || 1, !!movingBuilding.flipped);
+              renderLivestockChickens(c2d, hOx, hOy, animTime, null, ls, movingBuilding.level || 1, !!movingBuilding.flipped, {suppressOverlay:true});
             } else if ((movingBuilding.tileId === "b22_cow_pasture" || movingBuilding.tileId === "d33_pig_pen_barn")) {
-              renderDairyCows(c2d, hOx, hOy, animTime, null, movingBuilding.tileId, ls, movingBuilding.level || 1, !!movingBuilding.flipped);
+              renderDairyCows(c2d, hOx, hOy, animTime, null, movingBuilding.tileId, ls, movingBuilding.level || 1, !!movingBuilding.flipped, {suppressOverlay:true});
             } else if (movingBuilding.tileId === "b57_sheep_pasture") {
-              renderLivestockSheep(c2d, hOx, hOy, animTime, null, ls, movingBuilding.level || 1, !!movingBuilding.flipped);
+              renderLivestockSheep(c2d, hOx, hOy, animTime, null, ls, movingBuilding.level || 1, !!movingBuilding.flipped, {suppressOverlay:true});
             }
             c2d.restore();
           }
@@ -1928,7 +1939,7 @@ export function createCanvasRenderer(ctx) {
               const b = getChunkBounds(cId);
               if (isAdjacent && b && i === (b.startRow + 1) && j === (b.startCol + 1)) {
                 deferOverlay(() => {
-                const chunkCost = getNextChunkCost(landUnlockedChunks.length);
+                const chunkCost = getNextChunkCost(landUnlockedChunks);
                 const markOx = ox + 64;
                 const markOy = oy + 92;
 
@@ -1971,6 +1982,16 @@ export function createCanvasRenderer(ctx) {
       // Vẽ toàn bộ thảm cỏ nền trước khi vẽ công trình: nền đất luôn nằm dưới chân công trình,
       // tránh ô cỏ phía trước (depth lớn hơn) phủ lên chân nhà kho/công trình.
       {
+        // Ngoại vi cũng thuộc cùng ground pass; không được vẽ ô biển sau tàu.
+        for (let depth = minDepth; depth <= maxDepth; depth++) {
+          for (let i = Math.max(minI, depth-maxJ); i <= Math.min(maxI, depth-minJ); i++) {
+            const j = depth-i;
+            if (i>=0 && i<ROWS && j>=0 && j<COLS) continue;
+            const bx=ORIGIN_X+(j-i)*HALF_W, by=ORIGIN_Y+(i+j)*QUARTER_W;
+            if (!isTileInViewport(bx,by,camera,viewW,viewH,320)) continue;
+            renderSurroundingTile(c2d,i,j,bx,by,imageCache,dayNightWeather,{only:'ground'});
+          }
+        }
         for (let i = 0; i < ROWS; i++) {
           for (let j = 0; j < COLS; j++) {
             const bx = ORIGIN_X + (j - i) * HALF_W;
@@ -1988,12 +2009,29 @@ export function createCanvasRenderer(ctx) {
               } else if (flippedGrid[`${i}_${j}`]) {
                 c2d.translate(bx + 128, by);
                 c2d.scale(-1, 1);
-                c2d.drawImage(groundImg, 0, 0, 128, 128);
+                const rect = getTileRenderAdjustment(groundId);
+                c2d.drawImage(groundImg, rect.dx, rect.dy, rect.dw, rect.dh);
               } else {
-                c2d.drawImage(groundImg, bx, by, 128, 128);
+                const rect = getTileRenderAdjustment(groundId);
+                c2d.drawImage(groundImg, bx+rect.dx, by+rect.dy, rect.dw, rect.dh);
               }
               c2d.restore();
               if (AESTHETIC_TILE_IDS.includes(groundId)) renderAestheticTileDetails(c2d, bx, by, animTime, groundId);
+            }
+            const construction = constructions[`${i}_${j}`];
+            if (construction && isFlatGroundTile(construction.targetTileId)) {
+              const image = getTileImage(construction.targetTileId);
+              const progress = Math.min(1,(Date.now()-construction.startTime)/construction.durationMs);
+              c2d.save();
+              c2d.globalAlpha=.35+progress*.45;
+              if (getTerrainSprite(construction.targetTileId)) drawTerrainTile(c2d,image,construction.targetTileId,bx,by,construction.flipped);
+              else if (isExpansionGround(construction.targetTileId)) drawExpansionGround(c2d,image,construction.targetTileId,bx,by,construction.flipped);
+              else if (isImageReady(image)) {
+                const rect=getTileRenderAdjustment(construction.targetTileId);
+                if (construction.flipped) { c2d.translate(bx+128,by); c2d.scale(-1,1); }
+                c2d.drawImage(image,(construction.flipped?0:bx)+rect.dx,(construction.flipped?0:by)+rect.dy,rect.dw,rect.dh);
+              }
+              c2d.restore();
             }
           }
         }
@@ -2011,6 +2049,8 @@ export function createCanvasRenderer(ctx) {
         const key = `${hoverCell.row}_${hoverCell.col}`;
         const tid = currentGrid[hoverCell.row]?.[hoverCell.col];
         const placing = !!(activeBrush || movingBuilding);
+        const harborFootprint = !movingBuilding && !kingdomWondersManager?.movingWonderId
+          ? getHarborFootprint(hoverCell.row,hoverCell.col) : null;
         let footprint = movingBuilding?.footprint === 2 ? 2 : 1;
         if (!placing && tid === 'b60_combined_warehouse') {
           for (let r=hoverCell.row-1;r<=hoverCell.row;r++) for (let c=hoverCell.col-1;c<=hoverCell.col;c++) {
@@ -2038,10 +2078,17 @@ export function createCanvasRenderer(ctx) {
         }
         c2d.save();
         c2d.beginPath();
+        if (harborFootprint) {
+          if (placing) valid=false;
+          getHarborOutline(harborFootprint,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W).forEach(([x,y],index)=> {
+            if (index===0) c2d.moveTo(x,y); else c2d.lineTo(x,y);
+          });
+        } else {
         c2d.moveTo(hx + 64, hy + 128 - 64*footprint);
         c2d.lineTo(hx + 64 + 64*footprint, hy + 128 - 32*footprint);
         c2d.lineTo(hx + 64, hy + 128);
         c2d.lineTo(hx + 64 - 64*footprint, hy + 128 - 32*footprint);
+        }
         c2d.closePath();
         if (kingdomWondersManager?.movingWonderId) {
           const unlocked = isCellUnlocked(hoverCell.row, hoverCell.col, landUnlockedChunks, gameMode);
@@ -2105,6 +2152,10 @@ export function createCanvasRenderer(ctx) {
         c2d.restore();
       }
 
+      const ghostTileId = movingBuilding?.tileId || activeBrush;
+      const groundGhost = hoverCell && !kingdomWondersManager?.movingWonderId && isFlatGroundTile(ghostTileId);
+      if (groundGhost) drawGhostPreview();
+
       for (let depth = minDepth; depth <= maxDepth; depth++) {
         const startI = Math.max(minI, depth - maxJ);
         const endI = Math.min(maxI, depth - minJ);
@@ -2123,7 +2174,7 @@ export function createCanvasRenderer(ctx) {
           queueWorld(isHallAnchor ? 15 : i, isHallAnchor ? 15 : j, () => {
             const isPlayable = (i >= 0 && i < ROWS && j >= 0 && j < COLS);
             if (!isPlayable) {
-              renderSurroundingTile(c2d, i, j, ox, oy, imageCache, dayNightWeather);
+              renderSurroundingTile(c2d, i, j, ox, oy, imageCache, dayNightWeather, {only:'objects'});
               return;
             }
 
@@ -2139,7 +2190,7 @@ export function createCanvasRenderer(ctx) {
                 c2d.save();
 
                 const cImg = getTileImage(c.targetTileId);
-                if (isImageReady(cImg)) {
+                if (isImageReady(cImg) && !isFlatGroundTile(c.targetTileId)) {
                   const cAdj = getTileRenderAdjustment(c.targetTileId);
                   const cDx = cAdj.dx || 0;
                   const cDy = cAdj.dy || 0;
@@ -2216,25 +2267,6 @@ export function createCanvasRenderer(ctx) {
                 const farmDim = (movingBuilding && movingBuilding.fromRow === i && movingBuilding.fromCol === j) || (selectedObj && selectedObj.row === i && selectedObj.col === j);
                 c2d.save();
                 if (farmDim) c2d.globalAlpha = 0.35;
-                const farmImg = imageCache["d13_farmland_plot"];
-                if (isImageReady(farmImg)) {
-                  c2d.drawImage(farmImg, ox - 8, oy - 8, 144, 144);
-                } else {
-                  c2d.save();
-                  c2d.beginPath();
-                  c2d.moveTo(ox + 64, oy + 64);
-                  c2d.lineTo(ox + 128, oy + 96);
-                  c2d.lineTo(ox + 64, oy + 128);
-                  c2d.lineTo(ox, oy + 96);
-                  c2d.closePath();
-                  c2d.fillStyle = "#553018";
-                  c2d.fill();
-                  c2d.strokeStyle = "#3e210e";
-                  c2d.lineWidth = 1;
-                  c2d.stroke();
-                  c2d.restore();
-                }
-
                 const farmData = farmlandState[key];
                 if (farmData) {
                   const cropCfg = CROPS_CONFIG[farmData.seedId];
@@ -2264,6 +2296,7 @@ export function createCanvasRenderer(ctx) {
                       }
 
                       // Harvest Bubble
+                      deferOverlay(() => {
                       c2d.save();
                       c2d.fillStyle = "rgba(0, 0, 0, 0.3)";
                       c2d.beginPath();
@@ -2299,6 +2332,7 @@ export function createCanvasRenderer(ctx) {
                       c2d.fillStyle = "#ffffff";
                       c2d.fillText(badgeText, bubbleX, bubbleY + 19);
                       c2d.restore();
+                      });
 
                     } else if (isCropJustSown(elapsed, getCropGrowDurationMs(farmData))) {
                       const seeds = sownCropImages[getSownCropSpriteId(farmData.seedId)];
@@ -2489,14 +2523,15 @@ export function createCanvasRenderer(ctx) {
                   c2d.restore();
                 }
 
+                if (!isCellBeingMoved && !constructions[key]) drawWorkshopActivity(c2d, tid, buildingLevels[key] || 1, ox, oy, !!flippedGrid[key], productionState[key], animTime);
                 const ls = (livestockState && livestockState[key]) ? livestockState[key] : null;
                 if (isCellBeingMoved) c2d.save(), c2d.globalAlpha = 0.35;
                 if (tid === "b21_chicken_coop") {
-                  renderLivestockChickens(c2d, ox, oy, animTime, productionState[key], ls, buildingLevels[key] || 1, !!flippedGrid[key]);
+                  renderLivestockChickens(c2d, ox, oy, animTime, productionState[key], ls, buildingLevels[key] || 1, !!flippedGrid[key], {deferOverlay});
                 } else if (tid === "b22_cow_pasture" || tid === "d33_pig_pen_barn") {
-                  renderDairyCows(c2d, ox, oy, animTime, productionState[key], tid, ls, buildingLevels[key] || 1, !!flippedGrid[key]);
+                  renderDairyCows(c2d, ox, oy, animTime, productionState[key], tid, ls, buildingLevels[key] || 1, !!flippedGrid[key], {deferOverlay});
                 } else if (tid === "b57_sheep_pasture") {
-                  renderLivestockSheep(c2d, ox, oy, animTime, productionState[key], ls, buildingLevels[key] || 1, !!flippedGrid[key]);
+                  renderLivestockSheep(c2d, ox, oy, animTime, productionState[key], ls, buildingLevels[key] || 1, !!flippedGrid[key], {deferOverlay});
                 } else if (tid === "b58_textile_mill" && !BUILDING_LEVEL_SPRITES[tid]) {
                   renderTextileMillDetails(c2d, ox, oy, animTime);
                 } else if (tid === "b59_dairy_factory" && !BUILDING_LEVEL_SPRITES[tid]) {
@@ -2653,9 +2688,10 @@ export function createCanvasRenderer(ctx) {
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" }));
       }
       if (harborShipManager?.renderWorldShipAndDock) {
-        queueWorld(SHIP_DOCK_ROW, SHIP_DOCK_COL, () => harborShipManager.renderWorldShipAndDock(
+        const dockDepth=getHarborDepth('dock'),shipDepth=getHarborDepth('ship');
+        queueWorld(dockDepth.row, dockDepth.col, () => harborShipManager.renderWorldShipAndDock(
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "dock", deferOverlay }));
-        queueWorld(SHIP_WATER_ROW, SHIP_WATER_COL, () => harborShipManager.renderWorldShipAndDock(
+        queueWorld(shipDepth.row, shipDepth.col, () => harborShipManager.renderWorldShipAndDock(
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "ship", deferOverlay }));
       }
       for (const site of Object.values(kingdomWondersManager?.wonderSites || {})) {
@@ -2668,7 +2704,7 @@ export function createCanvasRenderer(ctx) {
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, camera, isNight,
           { only: vehicle, deferOverlay }));
       }
-      if (hoverCell) queueWorld(hoverCell.row, hoverCell.col, drawGhostPreview, 2);
+      if (hoverCell && !groundGhost) queueWorld(hoverCell.row, hoverCell.col, drawGhostPreview, 2);
       worldQueue.sort(compareWorldDepth);
       for (const command of worldQueue) command.draw();
 

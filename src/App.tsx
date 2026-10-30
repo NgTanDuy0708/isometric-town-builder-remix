@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { initIsometricStudio } from './studioEngine.js';
 import './styles.css';
+import './productionPanel.css';
 import { FENCE_ITEMS } from './data/fenceConfig.js';
 
 const STUDIO_MARKUP = `
@@ -29,6 +30,10 @@ const STUDIO_MARKUP = `
       <span class="circle-btn-icon"><img src="/assets/ui/icon_mission.png" alt="Nhiệm vụ" class="deck-shop-icon-img" /></span>
       <span class="quest-badge hidden" id="quest-notify-badge">0</span>
       <span class="circle-btn-tooltip">Sổ Nhiệm Vụ</span>
+    </button>
+
+    <button type="button" class="deck-circle-btn" id="btn-production-overview" title="Quản lý sản xuất, hàng đợi và nguyên liệu">
+      <span class="circle-btn-icon">🏭</span><span class="circle-btn-tooltip">Sản xuất</span>
     </button>
 
     <!-- Season Indicator & Switcher Widget -->
@@ -358,6 +363,9 @@ const STUDIO_MARKUP = `
             <button type="button" class="settings-util-btn" id="settings-redo-btn" title="Làm lại thao tác vừa hoàn tác (Ctrl+Y)">
               <span class="util-icon">↪️</span>
               <span>Làm Lại</span>
+            </button>
+            <button type="button" class="settings-util-btn" id="btn-restore-backup" title="Khôi phục bản lưu dự phòng trước đó; game sẽ tải lại">
+              <span class="util-icon">🛟</span><span>Khôi phục save dự phòng</span>
             </button>
             <button type="button" class="settings-util-btn" id="builder-export-json-btn" title="Lưu và tải file bản đồ JSON về máy">
               <span class="util-icon">💾</span>

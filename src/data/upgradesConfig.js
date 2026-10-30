@@ -4,6 +4,11 @@ import { EXPANSION_UPGRADES } from './expansionCatalog.js';
 export const MAX_BUILDING_LEVEL = 3;
 
 export const UPGRADES_CONFIG = {
+  b64_bbq_restaurant: {
+    maxLevel: 3,
+    2: { costGold:240,costResources:{ironTools:2,bread:3},durationSec:90,population:3,desc:'Mở rộng bếp nướng và quầy phục vụ. Nhà hàng cấp 2, tốc độ chế biến tăng 30%.' },
+    3: { costGold:480,costResources:{ironTools:4,bread:6},durationSec:150,population:4,desc:'Nhà hàng hai tầng với ban công và ba tầng bếp nướng. Tốc độ chế biến tăng 60%.' }
+  },
   ...EXPANSION_UPGRADES,
   // Nhà tranh ấm cúng
   "b01_cottage_red": {

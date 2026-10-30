@@ -56,6 +56,9 @@ import { createTownEventsManager } from "./engine/townEvents.js";
 import { createFarmToolsManager } from "./engine/farmTools.js";
 import { createOrderBoardManager } from "./engine/orderBoardManager.js";
 import { createProductionManager } from "./engine/productionManager.js";
+import { createProductionPanel } from './engine/productionPanel.js';
+import { getRecipesForBuilding } from './data/productionRecipes.js';
+import { restoreBackupSave } from './engine/storage.js';
 import { TownVisitorManager } from "./engine/townVisitors.js";
 import { TownCaretakerManager } from "./engine/townCaretaker.js";
 import { HarborShipManager } from "./engine/harborShipManager.js";
@@ -66,7 +69,7 @@ import { DailyWheelManager } from "./engine/dailyWheel.js";
 import { SeasonalThemeManager } from "./engine/seasonalThemes.js";
 import { AESTHETIC_TILE_URIS } from "./data/aestheticTileIcons.js";
 import { getBuildingSpriteUri } from "./data/buildingSprites.js";
-import { applyCoastTerrainLayout } from "./data/terrainConfig.js";
+import { applyCoastTerrainLayout, getTerrainSprite } from "./data/terrainConfig.js";
 import { TERRAIN_MAP_KEY, readTerrainMap, syncTerrainToGrid, createTerrainMap, writeTerrainMap, isValidTerrainMap } from "./engine/terrainEditing.js";
 import { WAREHOUSE_TUNING_KEY } from "./engine/warehouseTuning.js";
 import { isFenceTile, migrateGridFences, FENCE_ITEM_BY_ID } from "./data/fenceConfig.js";
@@ -198,7 +201,8 @@ export function initIsometricStudio() {
     let tutorialManager = null;
     let productionManager = null;
     const starterMapGrid = createStarterTownMap32();
-    const initialSave = loadGameSave(starterMapGrid) || getDefaultSaveState(starterMapGrid);
+    const loadedSave = loadGameSave(starterMapGrid);
+    const initialSave = loadedSave || getDefaultSaveState(starterMapGrid);
     let currentGrid = (initialSave.grid && initialSave.grid.length === 16) ? expandGrid16to32(initialSave.grid) : (initialSave.grid || starterMapGrid);
     
     // Di trú save cũ: Kho Barn (b12) & Kho Silo (b13) đã được gộp hẳn vào Kho Tổng Hợp 2×2 (b60).
@@ -208,13 +212,7 @@ export function initIsometricStudio() {
     // 2. Đặt lại khu trung tâm theo footprint tòa thị chính 2x3 và quảng trường 3x3.
     applyTownCenterLayout(currentGrid);
 
-    // Bản đồ trống một lần: xoá toàn bộ công trình cũ, chỉ giữ tòa thị chính,
-    // khuôn viên và trục đường đá.
-    const BLANK_MAP_MARKER = "isometric_town_builder_blank_map_v1";
-    if (!localStorage.getItem(BLANK_MAP_MARKER)) {
-      currentGrid = createStarterTownMap32();
-      localStorage.setItem(BLANK_MAP_MARKER, "1");
-    }
+    // Chỉ nút Chơi lại mới được xoá bản đồ; cờ giao diện không quyết định dữ liệu save.
 
     // Đồng bộ bờ col 4 và cát cols 5..6 cho save cũ, giữ công trình.
     applyCoastTerrainLayout(currentGrid);
@@ -253,6 +251,8 @@ export function initIsometricStudio() {
     // Quản lý sản xuất: sở hữu productionState, tick chín, tiêu nguyên liệu, thu hoạch.
     // CanvasRenderer chỉ đọc state này để vẽ bong bóng, không tự sửa nữa.
     productionManager = createProductionManager({
+      getPlayerLevel: () => playerLevel,
+      getConstructions: () => constructions,
       getCurrentGrid: () => currentGrid,
       getBuildingLevels: () => buildingLevels,
       getPlayerResources: () => playerResources,
@@ -391,9 +391,6 @@ export function initIsometricStudio() {
       if (!landUnlockedChunks.includes(ch)) landUnlockedChunks.push(ch);
     }
     let playerResources = initialSave.resources || { wheat: 0, egg: 0, milk: 0, bread: 0, ironTools: 5 };
-    if ((playerResources.ironTools || 0) < 5) {
-      playerResources.ironTools = 5;
-    }
 
     // Building Levels State
     let buildingLevels = (initialSave.buildingLevels && typeof initialSave.buildingLevels === 'object') ? initialSave.buildingLevels : {};
@@ -484,7 +481,7 @@ export function initIsometricStudio() {
 
     const saveStatusEl = document.getElementById("builder-save-status");
     if (saveStatusEl) {
-      saveStatusEl.textContent = initialSave ? "✓ Đã nạp tiến trình v2" : "Tự động lưu: Sẵn sàng";
+      saveStatusEl.textContent = initialSave ? "✓ Đã nạp tiến trình" : "Tự động lưu: Sẵn sàng";
     }
 
     let saveTimeout = null;
@@ -1705,6 +1702,7 @@ export function initIsometricStudio() {
       renderCanvas,
       getWarehouseCapacity: () => warehouseCapacity,
       getActiveFarmlandCell: () => activeFarmlandCell,
+      showStorageFullModal,
       setActiveFarmlandCell: (cell) => { activeFarmlandCell = cell; },
       activateBulkSeedBrush: (crop) => {
         if (farmToolsManager) farmToolsManager.activateBulkSeedBrush(crop);
@@ -2208,6 +2206,29 @@ export function initIsometricStudio() {
       triggerAutoSave
     });
 
+    const productionPanel = createProductionPanel({
+      manager: productionManager,
+      getCurrentGrid: () => currentGrid, getConstructions: () => constructions,
+      getTileMap: () => tileMap, getPlayerResources: () => playerResources,
+      getPlayerLevel: () => playerLevel, getWarehouseCapacity: () => warehouseCapacity,
+      getBuildingLevels: () => buildingLevels,
+      getFarmlandState: () => farmlandState, getLivestockState: () => livestockState,
+      openLivestockModal, openUpgradeModal: (r, c) => upgradeManager.openUpgradeModal(r, c), showToast,
+      focusCell: (r, c) => {
+        const vp = getViewportSize();
+        camera.x = vp.width / 2 - (ORIGIN_X + (c-r) * HALF_W + 64) * camera.zoom;
+        camera.y = vp.height / 2 - (ORIGIN_Y + (r+c) * QUARTER_W + 96) * camera.zoom;
+        requestRender();
+      }
+    });
+    document.getElementById('btn-production-overview')?.addEventListener('click', () => productionPanel.open(), { signal });
+    document.getElementById('btn-restore-backup')?.addEventListener('click', () => {
+      try {
+        if (restoreBackupSave()) window.location.reload();
+        else showToast('Chưa có bản lưu dự phòng hợp lệ.', 'warning');
+      } catch { showToast('Không thể khôi phục bản dự phòng.', 'error'); }
+    }, { signal });
+
     function placeFence(tileId, row, col, flipped = false) {
       return placeFenceOnEdges({
         getFences: () => fences, getCurrentGrid: () => currentGrid,
@@ -2264,7 +2285,13 @@ export function initIsometricStudio() {
     function eraseCell(row, col) {
       if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
       const tid = constructions[`${row}_${col}`]?.targetTileId || currentGrid[row]?.[col];
-      if (isProtectedTile(row, col, tid)) {
+      // Hàng rào là lớp riêng trên nền cố định; gỡ rào không làm thay đổi nền.
+      if (getTerrainSprite(tid) && !constructions[`${row}_${col}`] &&
+          fences.some(f => f.row === row && f.col === col)) {
+        if (gameMode === 'game' && !isCellUnlocked(row,col,landUnlockedChunks,gameMode)) return false;
+        return removeFenceAt(row,col);
+      }
+      if (getTerrainSprite(tid) || isProtectedTile(row, col, tid)) {
         if (col <= 5) {
           showToast("🌊 Vùng biển đại dương & bờ cảng tự nhiên của vương quốc, không thể gỡ bỏ!", "warning");
         } else {
@@ -2649,12 +2676,12 @@ export function initIsometricStudio() {
       const reqListEl = document.getElementById("land-req-items-list");
       const confirmBtn = document.getElementById("land-modal-confirm-btn");
 
-      const cost = getNextChunkCost(landUnlockedChunks.length);
+      const cost = getNextChunkCost(landUnlockedChunks);
       const goldOk = playerGold >= cost.gold;
 
       const bounds = getChunkBounds(chunkId);
       if (subTitleEl) {
-        subTitleEl.textContent = `Vùng đất mới [Cột ${bounds.minCol}-${bounds.maxCol}, Hàng ${bounds.minRow}-${bounds.maxRow}] (16 ô đất màu mỡ)`;
+        subTitleEl.textContent = `Vùng đất mới [Cột ${bounds.startCol}-${bounds.endCol}, Hàng ${bounds.startRow}-${bounds.endRow}] (16 ô đất màu mỡ)`;
       }
 
       if (goldBoxEl) {
@@ -2737,7 +2764,7 @@ export function initIsometricStudio() {
         closeLandExpansionModal();
         return;
       }
-      const cost = getNextChunkCost(landUnlockedChunks.length);
+      const cost = getNextChunkCost(landUnlockedChunks);
       const goldOk = playerGold >= cost.gold;
 
       let allResOk = true;
@@ -3456,6 +3483,21 @@ export function initIsometricStudio() {
 
     // Gói 3: Vòng Quay May Mắn Hoàng Gia (Daily Lucky Wheel Manager)
     dailyWheelManager = new DailyWheelManager({
+      commitSpin: (slice, cost) => {
+        if (playerGems < cost) return false;
+        const oldGold = playerGold, oldGems = playerGems;
+        playerGems -= cost;
+        if (slice.type === 'gold') playerGold += slice.amount;
+        else playerGems += slice.amount;
+        if (!saveGameSave(getFullSaveData())) {
+          playerGold = oldGold;
+          playerGems = oldGems;
+          return false;
+        }
+        updateGoldDisplay();
+        updateGemsDisplay();
+        return true;
+      },
       addPlayerGold: (amt) => {
         playerGold += amt;
         updateGoldDisplay();
@@ -3510,7 +3552,7 @@ export function initIsometricStudio() {
       rotateActiveBrush,
       getMovingBuilding: () => movingBuilding,
       setMovingBuilding: (val) => {
-        if (val && isProtectedTile(val.fromRow, val.fromCol, val.tileId)) {
+        if (val && (getTerrainSprite(val.tileId) || isProtectedTile(val.fromRow, val.fromCol, val.tileId))) {
           if (val.fromCol <= 5) {
             showToast("🌊 Vùng biển đại dương & bờ cảng tự nhiên của vương quốc, không thể di chuyển!", "warning");
           } else {
@@ -3526,6 +3568,7 @@ export function initIsometricStudio() {
       rotateCellAt,
       getCurrentGrid: () => currentGrid,
       getConstructions: () => constructions,
+      getUpgradesInProgress: () => upgradesInProgress,
       getTileMap: () => tileMap,
       getBuildingLevels: () => buildingLevels,
       getProductionState: () => productionManager.getState(),
@@ -3568,7 +3611,8 @@ export function initIsometricStudio() {
       openMarketModal,
       openSeedModal,
       inspectGrowingCrop: (r, c) => farmToolsManager && farmToolsManager.inspectGrowingCrop(r, c),
-      openUpgradeModal: (r, c) => upgradeManager.openUpgradeModal(r, c),
+      openUpgradeModal: (r, c) => getRecipesForBuilding(currentGrid[r]?.[c]).length
+        ? productionPanel.open(r, c) : upgradeManager.openUpgradeModal(r, c),
       openAchievementsModal: () => uiModalController.openAchievementsModal(),
       hasClaimableAchievements: () => (uiModalController ? uiModalController.hasClaimableAchievements() : false),
       openConstructionSpeedupModal,
@@ -3835,7 +3879,7 @@ export function initIsometricStudio() {
     }
 
     // Initialize UI and render - tự động reset mới nếu là người chơi mới hoặc chưa có Save v3
-    if (!localStorage.getItem('isometric_town_builder_save_v3')) {
+    if (!loadedSave) {
       resetToInitialGameState();
     } else {
       updateGoldDisplay();
@@ -3880,13 +3924,14 @@ export function initIsometricStudio() {
     }, 700);
 
     return function cleanup() {
+      productionPanel.destroy();
       upgradeManager.destroy();
       uiModalController.destroy();
       inputHandler.destroy();
       if (farmToolsManager) farmToolsManager.destroy();
       if (townCaretakerManager) townCaretakerManager.destroy();
       if (harborShipManager) harborShipManager.destroy();
-      if (dailyWheelManager) dailyWheelManager.stopCountdownLoop();
+      if (dailyWheelManager) dailyWheelManager.destroy();
       if (fishingManager && fishingManager.animFrameId) cancelAnimationFrame(fishingManager.animFrameId);
       if (canvasRenderer) canvasRenderer.destroy();
       tutorialManager.destroy();

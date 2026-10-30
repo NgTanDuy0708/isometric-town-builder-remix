@@ -14,7 +14,7 @@ export function compareWorldDepth(a, b) {
 // trees stay in the world queue even when their catalog category is "road".
 const FLAT_GROUND_IDS = new Set([
   ...EXPANSION_GROUND_IDS,
-  "d12_meadow_wildflowers", "g01_grass_flat", "s13_sand_ground",
+  "d12_meadow_wildflowers", "g01_grass_flat", "s13_sand_ground", "d13_farmland_plot",
   "r03_royal_marble_pavement", "d11_canal_straight",
   "r01_road_straight_ns", "r02_road_straight_ew", "r03_road_cross",
   "r04_road_tee_nes", "r05_road_tee_nsw", "r06_road_tee_ewn",

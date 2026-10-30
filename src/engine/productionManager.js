@@ -1,4 +1,5 @@
 import { LIVESTOCK_TILE_IDS } from "../data/livestockConfig.js";
+import { PRODUCTION_RECIPES, MAX_PRODUCTION_QUEUE, getRecipesForBuilding } from '../data/productionRecipes.js';
 /**
  * productionManager.js
  * ------------------------------------------------------------------
@@ -106,8 +107,10 @@ export function createProductionManager(ctx) {
       state[key] = { lastHarvest: 0, ready: true };
       return;
     }
-    if (PRODUCTION_BUILDINGS[tileId]) {
-      state[key] = { lastHarvest: when, ready: false };
+    if (PRODUCTION_BUILDINGS[tileId] && !LIVESTOCK_TILES.has(tileId)) {
+      state[key] = PRODUCTION_BUILDINGS[tileId].manualQueue
+        ? { lastHarvest:when,ready:false,queueMode:true,queue:[],completedBatches:[] }
+        : { lastHarvest: when, ready: false };
     }
   }
 
@@ -134,7 +137,7 @@ export function createProductionManager(ctx) {
             ready: elapsedSec >= (FRUIT_TREES_CONFIG[tid].intervalSec || 45)
           };
         } else {
-          state[key] = { lastHarvest: when, ready: false };
+          markBuilt(key, tid, when);
         }
       }
     }
@@ -153,6 +156,7 @@ export function createProductionManager(ctx) {
     const buildingLevels = ctx.getBuildingLevels() || {};
     const resources = ctx.getPlayerResources() || {};
     let resourcesChanged = false;
+    let stateChanged = false;
 
     for (const key of Object.keys(state)) {
       const p = state[key];
@@ -162,30 +166,58 @@ export function createProductionManager(ctx) {
       const tid = grid[pos.row] ? grid[pos.row][pos.col] : null;
       const prod = PRODUCTION_BUILDINGS[tid];
       if (!prod || LIVESTOCK_TILES.has(tid)) continue;
+      if (tid === 'b02_tudor_inn' && p.queueMode && !p.retiredKitchen) {
+        // Nhà trọ không còn bếp: giữ món đã xong, hoàn nguyên liệu dưới dạng
+        // các gói chờ nhận để không làm tràn kho hay mất nguyên liệu đã giữ.
+        const refunds = {};
+        for (const batch of [p.activeBatch, ...(p.queue || [])]) {
+          for (const [id, qty] of Object.entries(batch?.inputs || {})) refunds[id] = (refunds[id] || 0) + qty;
+        }
+        p.completedBatches ||= [];
+        for (const [id, qty] of Object.entries(refunds)) p.completedBatches.push({ name:RESOURCES_CONFIG[id].name,icon:RESOURCES_CONFIG[id].icon,resource:id,qty,gold:0,xp:0 });
+        p.activeBatch = null;
+        p.queue = [];
+        p.retiredKitchen = true;
+        p.ready = p.completedBatches.length > 0;
+        if (!p.ready) { delete p.queueMode; p.lastHarvest = when; }
+        stateChanged = true;
+      }
+      if (prod.manualQueue && !p.queueMode) {
+        Object.assign(p, { queueMode:true,queue:[],completedBatches:[],ready:false });
+      }
+      if (p.queueMode) {
+        stateChanged = updateQueue(p, when) || stateChanged;
+        continue;
+      }
       if (p.ready || p.paused) continue;
 
       const bLvl = buildingLevels[key] || 1;
       const speedMult = bLvl === 3 ? 1.6 : (bLvl === 2 ? 1.3 : 1.0);
       const intervalMs = Math.round((prod.intervalSec * 1000) / speedMult);
-      if (when - (p.lastHarvest || 0) < intervalMs) continue;
-
       const inputRes = INPUT_RESOURCES[tid];
-      if (inputRes) {
+      if (inputRes && !p.inputPaid) {
         const reqQty = getBuildingInputReq(tid, bLvl);
         if ((resources[inputRes] || 0) < reqQty) {
           p.paused = true;
           p.pauseReason = `missing_${inputRes}`;
+          stateChanged = true;
           continue;
         }
         resources[inputRes] -= reqQty;
         resourcesChanged = true;
+        p.inputPaid = true;
+        p.lastHarvest = when;
       }
 
+      if (when - (p.lastHarvest || 0) < intervalMs) continue;
+
       p.ready = true;
+      stateChanged = true;
       delete p.pauseReason;
     }
 
     if (resourcesChanged && ctx.updateResourcesUI) ctx.updateResourcesUI();
+    if ((resourcesChanged || stateChanged) && ctx.persistGameState) ctx.persistGameState();
   }
 
   /**
@@ -200,7 +232,7 @@ export function createProductionManager(ctx) {
 
     for (const key of Object.keys(state)) {
       const p = state[key];
-      if (!p || !p.paused) continue;
+      if (!p || !p.paused || p.queueMode) continue;
       const pos = parseKey(key);
       if (!pos) continue;
       const tid = grid[pos.row] ? grid[pos.row][pos.col] : null;
@@ -219,6 +251,7 @@ export function createProductionManager(ctx) {
       if ((resources[inputRes] || 0) < reqQty) continue;
 
       resources[inputRes] -= reqQty;
+      p.inputPaid = true;
       p.paused = false;
       delete p.pauseReason;
       p.lastHarvest = when;
@@ -265,6 +298,7 @@ export function createProductionManager(ctx) {
     const key = cellKey(row, col);
     const p = state[key];
     if (!prod || !p || !p.ready) return false;
+    if (p.queueMode) return harvestQueued(row, col, p, silent);
 
     const buildingLevels = ctx.getBuildingLevels() || {};
     const bLvl = buildingLevels[key] || 1;
@@ -284,6 +318,7 @@ export function createProductionManager(ctx) {
 
     p.ready = false;
     p.lastHarvest = Date.now();
+    p.inputPaid = false;
 
     if (ctx.incrementHarvestCount) ctx.incrementHarvestCount();
 
@@ -340,7 +375,132 @@ export function createProductionManager(ctx) {
     return true;
   }
 
+  function updateQueue(p, when) {
+    p.queue ||= [];
+    p.completedBatches ||= [];
+    let changed = false;
+    while (true) {
+      if (!p.activeBatch && p.queue.length) {
+        p.activeBatch = p.queue.shift();
+        p.activeBatch.startedAt = p.nextBatchAt || when;
+        delete p.nextBatchAt;
+        changed = true;
+      }
+      if (!p.activeBatch) break;
+      p.lastHarvest = p.activeBatch.startedAt;
+      const end = p.activeBatch.startedAt + p.activeBatch.durationMs;
+      if (when < end) break;
+      p.completedBatches.push(p.activeBatch);
+      p.activeBatch = null;
+      if (p.queue.length) p.nextBatchAt = end;
+      changed = true;
+    }
+    p.ready = p.completedBatches.length > 0;
+    p.paused = false;
+    delete p.pauseReason;
+    return changed;
+  }
+
+  function enqueue(row, col, recipeId) {
+    const tid = ctx.getCurrentGrid()[row]?.[col];
+    const recipe = PRODUCTION_RECIPES[recipeId];
+    if (!recipe || !getRecipesForBuilding(tid).includes(recipe) || ctx.getConstructions?.()[cellKey(row, col)]) return { ok: false, error: 'Công trình chưa sẵn sàng.' };
+    if ((ctx.getPlayerLevel?.() ?? 1) < recipe.requiredLevel) return { ok: false, error: `Cần Cấp ${recipe.requiredLevel}.` };
+    const key = cellKey(row, col);
+    const p = state[key] ||= { lastHarvest: Date.now(), ready: false };
+    const size = (p.queue?.length || 0) + (p.completedBatches?.length || 0) + (p.activeBatch ? 1 : 0);
+    if (size >= MAX_PRODUCTION_QUEUE) return { ok: false, error: 'Đã đủ 5 mẻ. Hãy thu sản phẩm trước.' };
+    const resources = ctx.getPlayerResources();
+    if (Object.entries(recipe.inputs).some(([id, qty]) => (resources[id] || 0) < qty)) return { ok: false, error: 'Chưa đủ nguyên liệu cho mẻ này.' };
+    // Giữ mẻ tự động đã trả nguyên liệu / sản phẩm đã chín khi chuyển sang hàng đợi.
+    if (!p.queueMode && (p.ready || p.inputPaid)) {
+      const level = ctx.getBuildingLevels()[key] || 1;
+      const prod = PRODUCTION_BUILDINGS[tid];
+      const oldBatch = {
+        name: prod.productName, icon: prod.icon, resource: HARVEST_RULES[tid]?.resourceId,
+        qty: getBuildingYield(tid, level), gold: UPGRADES_CONFIG[tid]?.[level]?.revenueGold ?? (prod.rewardGold + (UPGRADES_CONFIG[tid]?.[level]?.goldBonus || 0)),
+        xp: prod.rewardXP || 15, startedAt: p.lastHarvest,
+        durationMs: Math.round(prod.intervalSec * 1000 / (level === 3 ? 1.6 : level === 2 ? 1.3 : 1))
+      };
+      if (p.ready) p.completedBatches = [oldBatch];
+      else p.activeBatch = oldBatch;
+    }
+    const currentSize = (p.queue?.length || 0) + (p.completedBatches?.length || 0) + (p.activeBatch ? 1 : 0);
+    if (currentSize >= MAX_PRODUCTION_QUEUE) return { ok: false, error: 'Đã đủ 5 mẻ.' };
+    p.queueMode = true;
+    p.queue ||= [];
+    const level = ctx.getBuildingLevels()[key] || 1;
+    for (const [id, qty] of Object.entries(recipe.inputs)) resources[id] -= qty;
+    p.queue.push({ recipeId, name: recipe.name, icon: recipe.icon, inputs: { ...recipe.inputs }, resource: recipe.resource, qty: 1, gold: recipe.gold, xp: recipe.xp,
+      durationMs: Math.round(recipe.durationSec * 1000 / (level === 3 ? 1.6 : level === 2 ? 1.3 : 1)) });
+    updateQueue(p, Date.now());
+    ctx.updateResourcesUI?.();
+    ctx.persistGameState?.();
+    ctx.requestRender?.();
+    return { ok: true };
+  }
+
+  function cancelQueued(row, col, index) {
+    const p = state[cellKey(row, col)];
+    const batch = p?.queue?.[index];
+    if (!batch) return false;
+    const resources = ctx.getPlayerResources();
+    const entries = Object.entries(batch.inputs || {});
+    const amount = entries.reduce((sum, [, n]) => sum + n, 0);
+    if (getWarehouseUsed(resources) + amount > (ctx.getWarehouseCapacity?.() ?? 300) || entries.some(([id, n]) => (resources[id] || 0) + n > RESOURCE_MAX_CAPACITY)) {
+      ctx.showStorageFullModal?.();
+      return false;
+    }
+    p.queue.splice(index, 1);
+    for (const [id, qty] of entries) resources[id] = (resources[id] || 0) + qty;
+    ctx.updateResourcesUI?.();
+    ctx.persistGameState?.();
+    return true;
+  }
+
+  function harvestQueued(row, col, p, silent) {
+    const batch = p.completedBatches?.[0];
+    if (!batch) return false;
+    const resources = ctx.getPlayerResources();
+    if (batch.resource && (getWarehouseUsed(resources) + batch.qty > (ctx.getWarehouseCapacity?.() ?? 300) || (resources[batch.resource] || 0) + batch.qty > RESOURCE_MAX_CAPACITY)) {
+      if (!silent) ctx.showStorageFullModal?.();
+      return false;
+    }
+    p.completedBatches.shift();
+    p.ready = p.completedBatches.length > 0;
+    if (p.retiredKitchen && !p.ready) {
+      delete p.queueMode;
+      p.inputPaid = false;
+      p.lastHarvest = Date.now();
+    }
+    if (batch.resource) resources[batch.resource] = (resources[batch.resource] || 0) + batch.qty;
+    ctx.incrementHarvestCount?.();
+    ctx.addPlayerGold?.(Math.round(batch.gold * (ctx.getGoldMultiplier?.() ?? 1)));
+    ctx.addPlayerXP?.(Math.round(batch.xp * (ctx.getXpMultiplier?.() ?? 1)), batch.name);
+    ctx.updateResourcesUI?.();
+    if (!silent) {
+      ctx.showToast?.(`Đã thu ${batch.qty} ${batch.icon} ${batch.name}`, 'success');
+      ctx.spawnFlyingProduce?.(col, row, batch.icon);
+    }
+    ctx.checkQuestsProgress?.();
+    ctx.persistGameState?.();
+    ctx.requestRender?.();
+    return true;
+  }
+
+  function resumeAutomatic(row, col) {
+    const key = cellKey(row, col), p = state[key];
+    if (PRODUCTION_BUILDINGS[ctx.getCurrentGrid()[row]?.[col]]?.manualQueue) return false;
+    if (!p?.queueMode || p.activeBatch || p.queue.length || p.completedBatches.length) return false;
+    state[key] = { lastHarvest: Date.now(), ready: false };
+    ctx.persistGameState?.();
+    return true;
+  }
+
   return {
+    enqueue,
+    cancelQueued,
+    resumeAutomatic,
     init,
     getState,
     setState,

@@ -19,6 +19,7 @@ export function getGemSpeedupCost(secondsRemaining) {
 
 // Specific price overrides for distinctive buildings and landmarks
 export const TILE_PRICE_OVERRIDES = {
+  b64_bbq_restaurant: 300,
   ...EXPANSION_PRICE_OVERRIDES,
   ...FENCE_PRICE_OVERRIDES,
   d33_pig_pen_barn: 120,
@@ -74,6 +75,7 @@ export const TILE_PRICE_OVERRIDES = {
 
 // Tile unlock requirement by player level
 export const TILE_REQUIRED_LEVELS = {
+  b64_bbq_restaurant: 5,
   ...EXPANSION_REQUIRED_LEVELS,
   // Cấp 1 (Khởi điểm)
   "d12_meadow_wildflowers": 1,
@@ -385,6 +387,7 @@ export const TILE_BUILD_DURATIONS = {
 
 // Specific build duration overrides (in seconds)
 export const DURATION_OVERRIDES = {
+  b64_bbq_restaurant: 90,
   ...EXPANSION_DURATIONS,
   ...FENCE_DURATIONS,
   "d12_meadow_wildflowers": 0,
@@ -421,6 +424,7 @@ export const DURATION_OVERRIDES = {
 
 // Productive buildings that generate gold/resources periodically
 export const PRODUCTION_BUILDINGS = {
+  b64_bbq_restaurant: { name:'Nhà Hàng Thịt Nướng',productName:'Thịt heo nướng',icon:'🍖',intervalSec:90,rewardGold:35,rewardXP:25,requiredResource:'meat',requiredQty:2,yieldResource:'roastPork',yieldQty:1,manualQueue:true },
   "b04_windmill": {
     name: "Cối xay gió",
     productName: "Bao lúa mì",
@@ -615,6 +619,7 @@ export function getTileBuildDuration(tileId, category = "building") {
 
 // Residential population provided by buildings
 export const BUILDING_POPULATION = {
+  b64_bbq_restaurant: 2,
   ...EXPANSION_POPULATION,
   "b01_cottage_red": 4,
   "b02_tudor_inn": 8,
@@ -655,6 +660,7 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
   let decorCount = 0;
   let productionPerMin = 0;
   let underConstructionCount = Object.keys(constructions).length;
+  const countedFootprints = new Set();
 
   const rows = grid.length;
   const cols = grid[0] ? grid[0].length : 0;
@@ -663,10 +669,24 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
     for (let c = 0; c < cols; c++) {
       const tileId = grid[r][c];
       const key = `${r}_${c}`;
+      if (countedFootprints.has(key)) continue;
+      let footprintLevel = buildingLevels[key] || 1;
+      // Một công trình nhiều ô chỉ đóng góp dân số/thống kê một lần.
+      if (tileId === 'b14_town_hall' || tileId === 'b60_combined_warehouse') {
+        const pending = [[r, c]];
+        while (pending.length) {
+          const [rr, cc] = pending.pop();
+          const partKey = `${rr}_${cc}`;
+          if (countedFootprints.has(partKey) || grid[rr]?.[cc] !== tileId) continue;
+          countedFootprints.add(partKey);
+          footprintLevel = Math.max(footprintLevel, buildingLevels[partKey] || 1);
+          pending.push([rr-1,cc], [rr+1,cc], [rr,cc-1], [rr,cc+1]);
+        }
+      }
       const isUnderConstruction = !!constructions[key];
       const tile = tileMap[tileId];
       const category = tile ? tile.category : "building";
-      const level = buildingLevels[key] || 1;
+      const level = footprintLevel;
 
       // Finished structures only count toward stats & economy
       if (!isUnderConstruction) {

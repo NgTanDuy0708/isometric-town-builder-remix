@@ -1,10 +1,9 @@
 import { getTerrainSprite, getBaseTerrainTile } from '../data/terrainConfig.js';
 import { isProtectedTile } from '../data/starterMap.js';
-import { SHIP_DOCK_ROW, SHIP_DOCK_COL, SHIP_WATER_ROW, SHIP_WATER_COL } from '../data/harborShipConfig.js';
+import { isHarborCell } from '../data/harborLayout.js';
 
 export function isPlacementProtected(tileId, row, col, currentId) {
-  if ((row === SHIP_DOCK_ROW && col === SHIP_DOCK_COL) ||
-      (row === SHIP_WATER_ROW && col === SHIP_WATER_COL)) return true;
+  if (isHarborCell(row,col)) return true;
   if (!isProtectedTile(row, col, currentId)) return false;
   // Only the open coast admits aquatic objects. Keep the hall, delivery road
   // and harbor protected, and never allow replacing an occupied coast cell.
@@ -14,8 +13,8 @@ export function isPlacementProtected(tileId, row, col, currentId) {
 }
 
 export function getClearedSurface(tileId, row, col, terrainMap) {
-  return ['a01_whale', 'a02_flamingo_flock', 'r12_road_bridge_stone'].includes(tileId)
-    ? terrainMap?.[row]?.[col] || getBaseTerrainTile(col) : 'd12_meadow_wildflowers';
+  // Đồ vật/đường là lớp phủ. Khi nhấc lên luôn trả lại đúng nền bên dưới.
+  return terrainMap?.[row]?.[col] || getBaseTerrainTile(col);
 }
 
 export function canPlaceOnSurface(tileId, currentId) {

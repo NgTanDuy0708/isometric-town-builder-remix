@@ -14,7 +14,7 @@ export const SILO_RESOURCE_IDS = [
 
 // Danh mục sản phẩm chăn nuôi & thành phẩm nhà máy chứa trong Kho Barn
 export const BARN_RESOURCE_IDS = [
-  "egg", "milk", "meat", "wool", "bread", "butter", "fabric", "ironTools", "wine"
+  "egg", "milk", "meat", "roastPork", "wool", "bread", "butter", "fabric", "ironTools", "wine"
 ];
 
 // Kho Tổng Hợp chứa toàn bộ tài nguyên mà Silo và Barn cũ từng tách riêng.
@@ -184,6 +184,7 @@ export const RESOURCES_CONFIG = {
     unitName: "quả",
     desc: "Thu hoạch từ Chuồng gà (tiêu hao 1 Lúa mì). Nông sản đắt giá được dân làng ưa chuộng."
   },
+  roastPork: { id: "roastPork", name: "Thịt heo nướng", category: "crafted", icon: "🍖", sellPrice: 110, maxCapacity: RESOURCE_MAX_CAPACITY, unitName: "đĩa", desc: "Chế biến tại Nhà Hàng Thịt Nướng từ 2 thịt heo và 1 cà rốt." },
   meat: { id: "meat", name: "Thịt heo", category: "livestock", icon: "🥩", sellPrice: 35, maxCapacity: RESOURCE_MAX_CAPACITY, unitName: "phần", desc: "Thu hoạch từ Chuồng Heo sau khi cho ăn bắp ngô. Cất trong Kho Tổng Hợp hoặc bán tại Chợ." },
   milk: {
     id: "milk",

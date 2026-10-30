@@ -7,7 +7,7 @@
 | Nhà | Nhà đất sét, lều, nhà dài Bắc Âu, biệt thự Địa Trung Hải |
 | Sản xuất | Xưởng mộc, xưởng dệt, xưởng bơ sữa, phòng giả kim, nhà kính |
 | Nông trại | Táo, dừa, me có sẵn; ca cao, cherry, việt quất, sầu riêng, cam mới |
-| Đường & cầu | Đường thẳng, ngã tư, ngã ba, góc L, cầu đá, kênh đào, suối |
+| Đường & cầu | Đường thẳng, ngã tư, ngã ba, góc L trái/phải, góc L trên/dưới, cầu đá, kênh đào, suối |
 | Phong cảnh | Giếng, quầy chợ, công viên, thông, vườn anh đào, đèn, tượng, xe hàng, vườn hồng, đồng cỏ hoa, núi băng, hồ băng, cá voi, suối nóng, hồng hạc |
 | Kỳ quan | Tháp pháp sư, chùa gỗ, thư viện, cổng thành, hải đăng; giữ nguyên ba Đại Kỳ Quan hiện có |
 
@@ -26,13 +26,16 @@
 
 - 20 ảnh cây còn thiếu. Ba cây táo/dừa/me vẫn dùng bộ ảnh và chu kỳ thu hoạch hiện có; năm loài mới có nhãn **Cây trang trí**, chưa cho thu hoạch.
 - Chùa Lv3 tạm dùng hình Lv2 vì PNG Lv3 cắt mất móng; lợi ích nâng cấp vẫn áp dụng.
-- Nguồn đường có sai số hình học: renderer dùng texture đá gốc với hành lang chuẩn và hai trục isometric, thumbnail cửa hàng dùng cùng renderer. Ngã ba và góc L xoay đủ bốn hướng qua các ID nội bộ, không thêm sản phẩm trùng trong cửa hàng. Kênh/suối chưa phải autotile đầy đủ.
-- Không tạo hoặc sửa PNG trong lần tích hợp này.
+- Bộ đường dùng chung mẫu đá và viền từ PNG đường thẳng đã duyệt. `roadGeometry.js` dựng hành lang rộng đúng 60% cạnh ô, đầu nối ở giữa cạnh, góc L vuông và bốn hướng có cùng diện tích. Không phóng/xén riêng từng PNG L/T/X vì cách đó làm cong phình góc và đổi cỡ đá.
+- `roadMaterial.js` lấy phần lát và đá viền từ ảnh gốc, giữ cùng tỉ lệ cho mọi loại đường, cache vật liệu và căn pha theo tọa độ bản đồ. Chỉ cạnh kín có viền; các đầu nối luôn mở. Ảnh PNG gốc không bị sửa.
+- Có hai mục góc L trong tab Đường & cầu: `r08_road_corner_ne` cho trái/phải và `r09_road_corner_es` cho trên/dưới. Giữ đủ bốn hướng xoay và ID cũ trong bản lưu. Map, preview đặt/di chuyển và thumbnail dùng cùng renderer. Xem toàn bộ bộ đường ghép vòng kín tại `/assets/expansion/roads.html`.
 
 ## Mã liên quan
 
 - `src/data/expansionCatalog.js`: metadata, ảnh, geometry, giá, cấp, nâng cấp.
 - `src/data/shopCatalog.js`: phân tab duy nhất, dùng chung với cửa hàng.
 - `src/engine/expansionRenderer.js`: vẽ module đất và thumbnail.
+- `src/engine/roadGeometry.js`, `roadMaterial.js`: khuôn đường chung và vật liệu đá gốc.
 - `src/engine/placementSurface.js`: mặt nền hợp lệ và khôi phục nền nước.
 - `tests/expansion.test.mjs`, `tests/renderLayers.test.mjs`: kiểm tra catalog, mua/đặt, nâng cấp, layer và preview.
+- `tests/roadKit.test.mjs`: độ rộng, đầu nối giữa mọi cặp hướng, đối xứng bốn góc L và nguồn đá chung.

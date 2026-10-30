@@ -4,6 +4,10 @@ import { EXPANSION_TILES, EXPANSION_VARIANT_TILES } from "./expansionCatalog.js"
 
 export const TILES_DATA = [
   {
+    id: 'b64_bbq_restaurant', label: 'Nhà Hàng Thịt Nướng', category: 'building', shopCategory: 'production',
+    doc: 'Nhà hàng thịt nướng có 3 cấp độ. Chế biến 2 thịt heo và 1 cà rốt thành 1 đĩa thịt heo nướng; nâng cấp để nấu nhanh hơn.'
+  },
+  {
     "id": "d33_pig_pen_barn",
     "label": "Chuồng Heo",
     "category": "building",

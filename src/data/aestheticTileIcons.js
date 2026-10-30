@@ -8,6 +8,7 @@ import { FENCE_ITEMS } from "./fenceConfig.js";
 import { EXPANSION_TILE_URIS, EXPANSION_VARIANT_URIS } from "./expansionCatalog.js";
 
 export const AESTHETIC_TILE_URIS = {
+  b64_bbq_restaurant: getBuildingSpriteUri('b64_bbq_restaurant'),
   ...EXPANSION_TILE_URIS,
   ...EXPANSION_VARIANT_URIS,
   ...Object.fromEntries(FENCE_ITEMS.map(item => [item.id, item.uri])),

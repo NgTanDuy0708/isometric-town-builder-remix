@@ -1,10 +1,11 @@
 import { isFenceTile, canAddFence } from "../data/fenceConfig.js";
 import { getTileCost } from "../data/gameEconomy.js";
 import { isCellUnlocked } from "../data/landConfig.js";
+import { isHarborCell } from '../data/harborLayout.js';
 
 export function placeFenceOnEdges(ctx, tileId, row, col, flipped = false) {
   const fences = ctx.getFences();
-  if (!isFenceTile(tileId) || !ctx.getCurrentGrid()[row]?.[col] ||
+  if (!isFenceTile(tileId) || isHarborCell(row,col) || !ctx.getCurrentGrid()[row]?.[col] ||
       !isCellUnlocked(row, col, ctx.getLandUnlockedChunks(), ctx.getGameMode()) ||
       !canAddFence(fences, tileId, row, col, flipped)) return false;
   const cost = ctx.getGameMode() === "game" ? getTileCost(tileId, "decoration") : 0;

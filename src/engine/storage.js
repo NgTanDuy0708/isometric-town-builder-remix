@@ -9,6 +9,24 @@ export const SAVE_VERSION = 3;
 export const STORAGE_KEY_V3 = 'isometric_town_builder_save_v3';
 export const STORAGE_KEY_V2 = 'isometric_town_builder_save_v3'; // Alias backward compatibility
 export const STORAGE_KEY = STORAGE_KEY_V3;
+export const BACKUP_STORAGE_KEY = `${STORAGE_KEY_V3}_backup`;
+
+function validSnapshot(raw) {
+  try {
+    const data = JSON.parse(raw);
+    return data?.version === SAVE_VERSION && isValidGrid(data.grid);
+  } catch { return false; }
+}
+
+export function restoreBackupSave() {
+  const backup = localStorage.getItem(BACKUP_STORAGE_KEY);
+  if (!validSnapshot(backup)) return false;
+  // Giữ snapshot hiện tại để có thể xuất cứu hộ, trước khi khôi phục bản dự phòng.
+  const current = localStorage.getItem(STORAGE_KEY_V3);
+  if (current) localStorage.setItem(`${STORAGE_KEY_V3}_before_restore`, current);
+  localStorage.setItem(STORAGE_KEY_V3, backup);
+  return true;
+}
 
 // Legacy keys for migration & cleanup
 export const LEGACY_KEYS = {
@@ -268,7 +286,9 @@ export function migrateLegacyStorage(fallbackGrid) {
  */
 export function loadGameSave(fallbackGrid) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_V3);
+    const current = localStorage.getItem(STORAGE_KEY_V3);
+    const backup = localStorage.getItem(BACKUP_STORAGE_KEY);
+    const raw = validSnapshot(current) ? current : (validSnapshot(backup) ? backup : null);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.version === SAVE_VERSION && isValidGrid(parsed.grid)) {
@@ -433,7 +453,13 @@ export function saveGameSave(state) {
         ? { ...state.resources }
         : { wheat: 0, bread: 0, ironTools: 0 }
     };
+    const previous = localStorage.getItem(STORAGE_KEY_V3);
+    const backup = localStorage.getItem(BACKUP_STORAGE_KEY);
+    // Ghi save chính trước; lỗi ghi bản dự phòng không được huỷ giao dịch đã lưu.
     localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(payload));
+    if (validSnapshot(previous) && (!validSnapshot(backup) || Date.now() - JSON.parse(backup).savedAt >= 30000)) {
+      try { localStorage.setItem(BACKUP_STORAGE_KEY, previous); } catch {}
+    }
     return true;
   } catch (err) {
     console.warn('[Storage] saveGameSave failed (storage full or blocked):', err);

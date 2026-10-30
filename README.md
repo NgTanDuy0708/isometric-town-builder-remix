@@ -1,5 +1,7 @@
 # Isometric Town Builder - Đại Vương Quốc Pixel Art
 
+Kế hoạch phát triển gameplay tiếp theo: [Roadmap dân số, khai thác, phòng thủ và mở map](docs/GAMEPLAY_ROADMAP.md).
+
 Ứng dụng mô phỏng và xây dựng đại vương quốc phong cách nghệ thuật điểm ảnh (Pixel Art) phối cảnh isometric 2:1 dimetric, lưới đại lục mở rộng **32×32 (1.024 ô gạch)** với **265 loại ô gạch**, hệ thống nông trại quét chuột liên hoàn, chuỗi sản xuất chăn nuôi, cây ăn quả, thú cưng, sự kiện lễ hội vương quốc, âm thanh 8-bit, chu kỳ ngày/đêm và thời tiết sống động.
 
 ---

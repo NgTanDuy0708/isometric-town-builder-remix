@@ -54,7 +54,7 @@ test('rotation never changes an expansion purchase into a missing catalog entry'
   for(const id of Object.keys(EXPANSION_TILE_URIS)) for(const flipped of [true,false]) assert.ok(ids.has(getRotatedTileIdAndFlip(id,flipped).nextId),id);
 });
 
-test('T-junctions and L-corners rotate through four unique consistent connector orientations without extra shop items',()=>{
+test('T-junctions and both L families rotate through four consistent connector orientations',()=>{
   for(const [start,count] of [['r04_road_tee_nes',3],['r08_road_corner_ne',2]]) {
     let id=start;
     const exits=[];
@@ -64,11 +64,20 @@ test('T-junctions and L-corners rotate through four unique consistent connector 
       assert.equal(connections.length,count);
       assert.equal(new Set(connections).size,count);
       exits.push(connections.slice().sort().join(''));
-      if(turn>0) assert.equal(getShopCategory(TILES_DATA.find(t=>t.id===id)),'hidden');
+      if(turn>0) assert.equal(getShopCategory(TILES_DATA.find(t=>t.id===id)),id==='r09_road_corner_es'?'roads':'hidden');
       id=getRotatedTileIdAndFlip(id,false).nextId;
     }
     assert.equal(id,start);assert.equal(new Set(exits).size,4);
   }
+});
+
+test('the road shop offers both L families using existing save IDs',()=>{
+  for(const id of ['r08_road_corner_ne','r09_road_corner_es']){
+    const tile=TILES_DATA.find(t=>t.id===id);
+    assert.equal(getShopCategory(tile),'roads');
+    assert.ok(getTileCost(id,tile.category)>0);
+  }
+  assert.notEqual(TILES_DATA.find(t=>t.id==='r08_road_corner_ne').label,TILES_DATA.find(t=>t.id==='r09_road_corner_es').label);
 });
 
 function placement(id, ground='d12_meadow_wildflowers', gold=1000, cell={row:20,col:20}) {
@@ -114,7 +123,7 @@ test('coastal animals remain placeable and removable without allowing the hall, 
     assert.equal(isProtectedTile(20,2,id),false,'Player water objects remain removable');
     assert.equal(isPlacementProtected(id,13,15,'b14_town_hall'),true);
     assert.equal(isPlacementProtected(id,20,15,'r03_royal_marble_pavement'),true);
-    assert.equal(isPlacementProtected(id,13,5,'s13_sand_ground'),true);
+    assert.equal(isPlacementProtected(id,13,5,'s13_sand_ground'),false,'Sand outside the actual dock is not reserved harbor space');
     assert.equal(isPlacementProtected(id,14,3,'m30_sea_var2_coral_reef'),true,'Keep the actual dock clear');
     assert.equal(isPlacementProtected(id,15,3,'m30_sea_var2_coral_reef'),true,'Keep the ship berth clear');
     const s=placement(id,'m30_sea_var2_coral_reef',1000,{row:20,col:2});

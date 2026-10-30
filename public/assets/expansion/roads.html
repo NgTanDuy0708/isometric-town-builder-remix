@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Bộ đường đá đồng bộ</title>
+<style>body{margin:24px;background:#f3f1e8;color:#293b2b;font:15px system-ui}h1{font-size:24px}canvas{display:block;max-width:100%;height:auto;background:#829b53;border-radius:12px}a{color:#24614b}button{padding:8px;margin-bottom:12px}.pieces{display:flex;gap:12px;flex-wrap:wrap}figure{margin:12px 0;width:160px}figcaption{margin-bottom:6px}</style>
+<h1>Bộ đường đá đồng bộ · rộng 60% ô đất</h1>
+<p>Đường thẳng, ngã tư, ngã ba và hai dạng góc L cùng cỡ đá, viền và đầu nối. Bốn góc cân nhau theo lưới isometric.</p>
+<button id="grid">Ẩn/hiện lưới</button> <button id="zoom">Cả bộ / cận cảnh ngã tư</button> <a href="./index.html">Toàn bộ ảnh</a>
+<canvas id="network" width="840" height="520" aria-label="Bộ đường nối thành vòng kín với bốn góc L, bốn ngã ba và ngã tư"></canvas>
+<p id="status">Đang tải ảnh…</p><div class="pieces" id="pieces"></div>
+<script type="module">
+import {drawExpansionGround,paintExpansionGroundThumbnail} from '/src/engine/expansionRenderer.js';
+import {ROAD_SHAPES} from '/src/engine/roadGeometry.js';
+import {EXPANSION_TILE_URIS,EXPANSION_VARIANT_URIS} from '/src/data/expansionCatalog.js';
+const canvas=document.querySelector('#network'),ctx=canvas.getContext('2d');
+const names={
+r01_road_straight_ns:'Đường thẳng',r02_road_straight_ew:'Đường thẳng xoay',r03_road_cross:'Ngã tư',
+r04_road_tee_nes:'Ngã ba',r07_road_tee_ews:'Ngã ba xoay',r05_road_tee_nsw:'Ngã ba xoay',r06_road_tee_ewn:'Ngã ba xoay',
+r08_road_corner_ne:'Góc L — phải',r09_road_corner_es:'Góc L — dưới',r10_road_corner_sw:'Góc L — trái',r11_road_corner_wn:'Góc L — trên'};
+const images=Object.fromEntries(await Promise.all(Object.keys(ROAD_SHAPES).map(async id=>{const image=new Image();image.src=EXPANSION_VARIANT_URIS[id]||EXPANSION_TILE_URIS[id];await image.decode();return[id,image]})));
+for(const [id,label] of Object.entries(names)){
+ const figure=document.createElement('figure'),caption=document.createElement('figcaption'),thumbnail=document.createElement('canvas');
+ caption.textContent=label;thumbnail.width=160;thumbnail.height=100;thumbnail.dataset.id=id;thumbnail.setAttribute('aria-label',label);
+ figure.append(caption,thumbnail);document.querySelector('#pieces').append(figure);paintExpansionGroundThumbnail(thumbnail,id);
+}
+let grid=true,detail=false;
+function roadAt(u,v){
+ if(detail)return u===0&&v===0?'r03_road_cross':u===0?'r01_road_straight_ns':v===0?'r02_road_straight_ew':null;
+ if(u===-2&&v===-2)return 'r09_road_corner_es';
+ if(u===2&&v===-2)return 'r10_road_corner_sw';
+ if(u===2&&v===2)return 'r11_road_corner_wn';
+ if(u===-2&&v===2)return 'r08_road_corner_ne';
+ if(u===0&&v===-2)return 'r07_road_tee_ews';
+ if(u===0&&v===2)return 'r06_road_tee_ewn';
+ if(u===-2&&v===0)return 'r04_road_tee_nes';
+ if(u===2&&v===0)return 'r05_road_tee_nsw';
+ if(u===0&&v===0)return 'r03_road_cross';
+ if(Math.abs(u)===2||u===0)return 'r01_road_straight_ns';
+ if(Math.abs(v)===2||v===0)return 'r02_road_straight_ew';
+ return null;
+}
+function draw(){
+ ctx.clearRect(0,0,840,520);ctx.save();ctx.translate(420,260);const scale=detail?2.8:1.18;ctx.scale(scale,scale);
+ const extent=detail?1:2;
+ for(let u=-extent;u<=extent;u++)for(let v=-extent;v<=extent;v++){
+  const x=(u-v)*64,y=(u+v)*32;
+  ctx.fillStyle=(u+v)%2?'#879f57':'#8ca65b';ctx.beginPath();ctx.moveTo(x,y-32);ctx.lineTo(x+64,y);ctx.lineTo(x,y+32);ctx.lineTo(x-64,y);ctx.closePath();ctx.fill();
+  if(grid){ctx.strokeStyle='#637c4144';ctx.lineWidth=.7;ctx.stroke()}
+  const id=roadAt(u,v);if(id)drawExpansionGround(ctx,images[id],id,x-64,y-96);
+ }
+ ctx.restore();
+}
+document.querySelector('#grid').onclick=()=>{grid=!grid;draw()};
+document.querySelector('#zoom').onclick=()=>{detail=!detail;draw()};
+draw();document.querySelector('#status').textContent='Đã ghép vòng kín và thử đủ bốn hướng góc L/ngã ba · cùng renderer với game, preview và cửa hàng.';
+</script></html>

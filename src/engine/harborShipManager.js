@@ -1,8 +1,9 @@
+import { getHarborLayout, isShipCell, isHarborCell } from '../data/harborLayout.js';
 /**
  * harborShipManager.js - Quản Lý Bến Cảng Đường Thủy & Tàu Buôn Giao Thương (Cargo Boat)
  * 
  * - Mở khóa ở Cấp 6 (Lãnh Chúa Khai Hoang).
- * - Cầu tàu gỗ và Thuyền Buồm Caravel tọa lạc cố định tại Row 14, Col 6 (bờ nước phía Tây).
+ * - Cảng và tàu dùng footprint hai ô cố định ở bờ biển phía Tây (harborLayout.js).
  * - Tàu mang theo 3 khoang hàng × 3 thùng = 9 thùng hàng (Crates).
  * - Đóng từng thùng nhận Vàng & XP tức thì.
  * - Đóng đủ 9/9 thùng và nhổ neo nhận: 3-5 Ruby 💎, 2 vật tư hiếm, lượng lớn Vàng & XP!
@@ -10,8 +11,6 @@
 
 import {
   HARBOR_UNLOCK_LEVEL,
-  SHIP_DOCK_ROW,
-  SHIP_DOCK_COL,
   SHIP_STAY_DURATION_MS,
   SHIP_COOLDOWN_MS,
   SHIP_CALL_EARLY_GEMS,
@@ -588,18 +587,17 @@ export class HarborShipManager {
    */
   checkWorldClick(worldX, worldY, cell, originX, originY, halfW, quarterW) {
     if (!cell) return false;
-    // Khi tàu cập bến: chỉ ô [15, 3] mở bảng giao thương
+    // Cả hai ô dọc thân tàu đều mở cùng bảng giao thương.
     if (this.ship && this.ship.status === "docked") {
-      if (cell.row === SHIP_WATER_ROW && cell.col === SHIP_WATER_COL) {
+      if (isShipCell(cell.row,cell.col)) {
         this.openModal();
         return true;
       }
       return false;
     }
-    // Khi tàu đi vắng: nhấn vào ô [14, 3] (bến đếm ngược) hoặc [15, 3] để mở bảng gọi tàu sớm
+    // Khi tàu đi vắng, cả footprint cảng và tàu đều mở bảng gọi tàu sớm.
     if (this.ship && this.ship.status === "away") {
-      if ((cell.row === SHIP_DOCK_ROW && cell.col === SHIP_DOCK_COL) ||
-          (cell.row === SHIP_WATER_ROW && cell.col === SHIP_WATER_COL)) {
+      if (isHarborCell(cell.row,cell.col)) {
         this.openModal();
         return true;
       }
@@ -611,51 +609,31 @@ export class HarborShipManager {
    * Vẽ Bến Tàu & Thuyền Buồm Caravel trên Canvas Isometric 2:1
    */
   renderWorldShipAndDock(c2d, originX, originY, halfW, quarterW, animTime, opts = {}) {
-    // Tọa độ bến cảng đá tại ô [14, 3] (đứng ra ngoài mặt nước, không lấn vào đường)
-    const dockRow = SHIP_DOCK_ROW;
-    const dockCol = SHIP_DOCK_COL;
-    const dockX = originX + (dockCol - dockRow) * halfW + 64;
-    const dockY = originY + (dockRow + dockCol) * quarterW + 96;
+    const layout = getHarborLayout(originX, originY, halfW, quarterW, animTime || 0);
+    // Dùng cùng điểm tiếp đất cho ảnh cảng và hình dự phòng khi ảnh chưa tải.
+    const dockX = layout.dockFoot.x;
+    const dockY = layout.dockFoot.y;
 
     // Tọa độ ô nước [15, 3] nơi Tàu Hoàng Gia neo đậu
-    const shipWaterRow = SHIP_WATER_ROW;
-    const shipWaterCol = SHIP_WATER_COL;
-    const shipWaterX = originX + (shipWaterCol - shipWaterRow) * halfW + 64;
-    const shipWaterY = originY + (shipWaterRow + shipWaterCol) * quarterW + 96;
+    const shipWaterX = layout.shipFoot.x;
+    const shipWaterY = layout.shipFoot.y;
 
     c2d.save();
 
-    // 1. Cầu Cảng Đá Hoàng Gia (Grand Stone Harbor Pier) tại ô [14, 3]
+    // 1. Cầu cảng hai ô, chân bậc thang neo tại đỉnh dưới ô bờ [14,4].
     const pierImg = getStonePierImage();
-    const pierDrawW = 264;
-    const pierDrawH = 264;
-    // Căn đế các vòm đá cầu cảng ngập vào mặt nước ô [14, 3]
-    const drawPierX = dockX - (pierDrawW * 0.469);
-    const drawPierY = (dockY + 8) - (pierDrawH * 0.791);
+    const pierDrawW = layout.pier.w;
+    const pierDrawH = layout.pier.h;
+    // Neo chân bậc thang phía đất liền vào bờ [14,4], không neo giữa thân cảng.
+    const drawPierX = layout.pier.x;
+    const drawPierY = layout.pier.y;
 
     if (opts.only !== "ship") {
     if (pierImg && pierImg.complete && pierImg.naturalWidth > 0) {
-      // Bóng cầu cảng đá trên mặt nước
-      c2d.fillStyle = "rgba(15, 23, 42, 0.35)";
-      c2d.beginPath();
-      c2d.ellipse(dockX, dockY + 10, 92, 24, 0.46, 0, Math.PI * 2);
-      c2d.fill();
-
-      // Sóng dập dềnh chân các vòm đá cầu cảng
-      c2d.strokeStyle = "rgba(255, 255, 255, 0.55)";
-      c2d.lineWidth = 1.4;
-      c2d.beginPath();
-      c2d.arc(dockX, dockY + 10, 36 + Math.sin((animTime || 0) * 3) * 2, 0.15, Math.PI * 0.85);
-      c2d.stroke();
-
       // Vẽ hình ảnh Cầu Cảng Đá chất lượng cao
       c2d.drawImage(pierImg, drawPierX, drawPierY, pierDrawW, pierDrawH);
     } else {
       // Dự phòng khi ảnh đang tải: Vẽ cầu tàu canvas
-      c2d.fillStyle = "rgba(0, 0, 0, 0.3)";
-      c2d.beginPath();
-      c2d.ellipse(dockX, dockY + 6, 28, 14, 0, 0, Math.PI * 2);
-      c2d.fill();
       c2d.fillStyle = "#78350f";
       c2d.fillRect(dockX - 32, dockY - 14, 48, 12);
       c2d.fillStyle = "#92400e";
@@ -698,31 +676,16 @@ export class HarborShipManager {
     if (opts.only === "dock") { c2d.restore(); return; }
 
     // 4. Khi Tàu Buôn Đang Cập Bến (status === "docked") -> Đậu trên mặt nước ô [15, 3]
-    const waveOffset = Math.sin((animTime || 0) * 2.2) * 2.5; // Nhấp nhô nhẹ nhàng theo sóng biển
+    const waveOffset = layout.wave; // Nhấp nhô nhẹ nhàng theo sóng biển
     const shipImg = getRoyalShipImage();
-    const shipDrawW = 184;
-    const shipDrawH = 184;
+    const shipDrawW = layout.ship.w;
+    const shipDrawH = layout.ship.h;
 
     // Căn chính xác đáy lườn tàu nằm ngay mặt nước ô [15, 3]
-    const waterlineX = shipWaterX;
-    const waterlineY = shipWaterY + waveOffset - 2;
-    const drawX = waterlineX - (shipDrawW * 0.595);
-    const drawY = waterlineY - (shipDrawH * 0.827);
+    const drawX = layout.ship.x;
+    const drawY = layout.ship.y;
 
     if (shipImg && shipImg.complete && shipImg.naturalWidth > 0) {
-      // Bóng thuyền trên mặt nước ô [15, 3]
-      c2d.fillStyle = "rgba(15, 23, 42, 0.32)";
-      c2d.beginPath();
-      c2d.ellipse(shipWaterX, shipWaterY + waveOffset + 2, 46, 16, -0.25, 0, Math.PI * 2);
-      c2d.fill();
-
-      // Sóng nước biển dập dềnh bọt trắng quanh mép thuyền
-      c2d.strokeStyle = "rgba(255, 255, 255, 0.65)";
-      c2d.lineWidth = 1.4;
-      c2d.beginPath();
-      c2d.arc(shipWaterX, shipWaterY + waveOffset + 4, 38, 0.1, Math.PI * 0.9);
-      c2d.stroke();
-
       // Vẽ hình ảnh Tàu Hoàng Gia chính diện, đặt đáy tàu ngập vừa vặn trong nước
       c2d.drawImage(shipImg, drawX, drawY, shipDrawW, shipDrawH);
 
@@ -771,25 +734,6 @@ export class HarborShipManager {
     // Dự phòng khi ảnh đang tải: Vẽ thân tàu canvas tại ô [15, 3]
     const shipX = shipWaterX;
     const shipY = shipWaterY + waveOffset;
-
-    // Bóng thuyền trên mặt nước
-    c2d.fillStyle = "rgba(15, 23, 42, 0.4)";
-    c2d.beginPath();
-    c2d.ellipse(shipX + 16, shipY + 18, 38, 14, -0.15, 0, Math.PI * 2);
-    c2d.fill();
-
-    // Sóng nước biển dập dềnh bọt trắng quanh mép thuyền
-    c2d.strokeStyle = "rgba(255, 255, 255, 0.75)";
-    c2d.lineWidth = 1.8;
-    c2d.beginPath();
-    c2d.arc(shipX + 16, shipY + 16, 28, 0.1, Math.PI * 0.9);
-    c2d.stroke();
-
-    c2d.strokeStyle = "rgba(147, 197, 253, 0.6)";
-    c2d.lineWidth = 1.2;
-    c2d.beginPath();
-    c2d.arc(shipX + 16, shipY + 20, 36, 0.15, Math.PI * 0.85);
-    c2d.stroke();
 
     // Thân tàu gỗ Caravel (Hull)
     c2d.fillStyle = "#78350f"; // Nâu gỗ đậm

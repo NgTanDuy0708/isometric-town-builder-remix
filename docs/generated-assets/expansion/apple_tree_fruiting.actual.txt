@@ -1,3 +1,5 @@
+STAGE EDIT PRIORITY: Preserve the reference mature trunk, primary branches, canopy outline, ground/root contact, camera, framing and pixel scale exactly. Replace its flowers with the requested species-specific ripe fruits only; do not grow, recenter, rotate or zoom the tree. Keep the complete silhouette visible and all space outside the plant genuinely transparent.
+
 STYLE
 Create a polished, detailed pixel-art asset for the SAME medieval fantasy
 isometric farming town-builder game as the provided village references.

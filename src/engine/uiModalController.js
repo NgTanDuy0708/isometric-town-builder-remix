@@ -1,6 +1,7 @@
 import { QUESTS_CONFIG, QUEST_CHAPTERS, isQuestUnlocked } from "../data/questsData.js";
 import { ACHIEVEMENTS_CONFIG } from "../data/achievementsConfig.js";
 import { RESOURCES_CONFIG, RESOURCE_MAX_CAPACITY, SILO_RESOURCE_IDS } from "../data/resourcesConfig.js";
+import { claimQuestRewards } from './questRewards.js';
 import { CROPS_CONFIG } from "../data/cropsConfig.js";
 import { CROP_PIXEL_SPRITES } from "../data/cropSprites.js";
 import { calculateVillageStats, INITIAL_GOLD } from "../data/gameEconomy.js";
@@ -163,6 +164,13 @@ export function createUIModalController(ctx) {
       rewardRow.appendChild(xpPill);
     }
 
+    for (const [id, qty] of Object.entries(q.rewardResources || {})) {
+      const pill = document.createElement('span');
+      pill.className = 'quest-reward-pill';
+      pill.textContent = `+${qty} ${RESOURCES_CONFIG[id]?.icon || '📦'}`;
+      rewardRow.appendChild(pill);
+    }
+
     if (isClaimed) {
       const claimedBadge = document.createElement("span");
       claimedBadge.className = "quest-claimed-badge";
@@ -174,10 +182,8 @@ export function createUIModalController(ctx) {
       claimBtn.className = "quest-claim-btn";
       claimBtn.textContent = `🎁 Nhận thưởng`;
       claimBtn.addEventListener("click", () => {
-        questsClaimed[q.id] = true;
-        ctx.addPlayerGold(q.rewardGold || 0);
-        const xpGain = q.rewardXP || 50;
-        ctx.addPlayerXP(xpGain, q.title);
+        if (!claimQuestRewards(ctx, q, questsClaimed)) return;
+        const xpGain = q.rewardXP ?? 50;
         playQuestRewardSound();
         ctx.updateGoldDisplay();
         ctx.saveGameEconomyState();

@@ -2,8 +2,14 @@ import { FARM_BUILDING_LEVELS, FARM_BUILDING_GEOMETRY, getFarmAnimalRect } from 
 import { applyTownHallTuning, readTownHallTuning, TOWN_HALL_ENTRANCE } from '../engine/townHallTuning.js';
 import { getWarehouseRenderAdjustment, readWarehouseTuning } from '../engine/warehouseTuning.js';
 import { EXPANSION_BUILDING_LEVELS, EXPANSION_BUILDING_GEOMETRY } from './expansionCatalog.js';
+import { WORLD_OBJECT_SCALE, scaleObjectRect } from './renderScale.js';
 // Level-specific building art. Each family shares a canvas and ground anchor.
 export const BUILDING_LEVEL_SPRITES = {
+  b64_bbq_restaurant: {
+    1: '/assets/buildings/bbq_restaurant_lv1.png',
+    2: '/assets/buildings/bbq_restaurant_lv2.png',
+    3: '/assets/buildings/bbq_restaurant_lv3.png'
+  },
   ...EXPANSION_BUILDING_LEVELS,
   // One finished warehouse, shared by every storage upgrade level.
   b60_combined_warehouse: {
@@ -74,6 +80,11 @@ export function getBuildingSpriteUri(tileId, level = 1) {
 // Original generated PNGs are kept byte-for-byte. Scale only at draw time;
 // source-space foot anchors preserve placement without shrinking the asset.
 export const BUILDING_SOURCE_GEOMETRY = {
+  b64_bbq_restaurant: {
+    1: { width:1254,height:1254,visibleWidth:1061,anchorX:691,anchorY:1052,worldWidth:128,worldAnchorX:64,worldAnchorY:128 },
+    2: { width:1254,height:1254,visibleWidth:1191,anchorX:788,anchorY:1107,worldWidth:144,worldAnchorX:64,worldAnchorY:128 },
+    3: { width:1254,height:1254,visibleWidth:1142,anchorX:800,anchorY:1160,worldWidth:160,worldAnchorX:64,worldAnchorY:128 }
+  },
   ...EXPANSION_BUILDING_GEOMETRY,
   b60_combined_warehouse: {
     // Three-storey replacement: actual straight foundation edges, no projecting
@@ -129,9 +140,14 @@ export const BUILDING_SOURCE_GEOMETRY = {
 export function getBuildingRenderAdjustment(tileId, level = 1, tuning = undefined) {
   const levels = BUILDING_SOURCE_GEOMETRY[tileId];
   const source = levels && (levels[level] || levels[1]);
-  if (!source) return undefined;
+  if (!source) {
+    if (['b01_cottage_red','b02_tudor_inn','b03_blacksmith_forge'].includes(tileId)) {
+      return scaleObjectRect({dx:-64,dy:-128,dw:256,dh:256});
+    }
+    return undefined;
+  }
   if (tileId === 'b60_combined_warehouse') return getWarehouseRenderAdjustment(source, tuning ?? readWarehouseTuning());
-  const scale = source.worldWidth / source.visibleWidth;
+  const scale = source.worldWidth / source.visibleWidth * (tileId === 'b14_town_hall' ? 1 : WORLD_OBJECT_SCALE);
   const adjustment = {
     dx: (source.worldAnchorX ?? 64) - source.anchorX * scale,
     dy: (source.worldAnchorY ?? 128) - source.anchorY * scale,
@@ -149,8 +165,8 @@ export function getBuildingAnimalSlots(tileId, level = 1) {
   const source = levels && (levels[level] || levels[1]);
   if (!source?.animalSlots) return [];
   const adjustment = getBuildingRenderAdjustment(tileId, level);
-  const scale = source.worldWidth / source.visibleWidth;
+  const scale = adjustment.dw / source.width;
   return source.animalSlots.map(([x, y], index) => getFarmAnimalRect(
     source.animalType, adjustment.dx + x * scale, adjustment.dy + y * scale,
-    source.animalWidth, index % 2 === 1));
+    source.animalWidth * WORLD_OBJECT_SCALE, index % 2 === 1));
 }

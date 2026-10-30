@@ -1,0 +1,12 @@
+.production-panel-backdrop[hidden] { display: none; }
+.production-panel-backdrop { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; padding: 20px; background: #162018a8; }
+.production-panel-card { width: min(720px, 100%); max-height: 85dvh; overflow-y: auto; background: #fff9ec; color: #3d3426; padding: 22px; border: 2px solid #c5a26a; border-radius: 18px; box-shadow: 0 20px 70px #0006; font: 14px/1.6 system-ui, sans-serif; }
+.production-panel-header, .production-panel-row { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+.production-panel-row { padding: 12px 0; border-bottom: 1px solid #ded2b8; }
+.production-panel-card h2 { margin: 0; font-size: 21px; }
+.production-panel-card h3 { margin: 16px 0 6px; }
+.production-panel-card button { cursor: pointer; border: 1px solid #9d7c43; background: #e8eecf; color: #30432c; padding: 9px 12px; border-radius: 9px; font: inherit; margin: 5px 3px; flex-shrink: 0; }
+.production-panel-card button:hover { background: #d4e4a8; }
+.production-panel-card button:disabled { opacity: .45; cursor: default; }
+.production-panel-card button:focus-visible { outline: 3px solid #4777ad; outline-offset: 2px; }
+@media (max-width: 520px) { .production-panel-row { flex-direction: column; align-items: stretch; gap: 3px; } .production-panel-card { padding: 15px; } }

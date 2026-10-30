@@ -15,8 +15,14 @@ export const INITIAL_UNLOCKED_CHUNKS = [
 ];
 
 // Price ladder per additional chunk unlocked (Gồm cả Vàng và Nguyên liệu)
-export function getNextChunkCost(unlockedChunksCount) {
-  const additional = Math.max(0, unlockedChunksCount - INITIAL_UNLOCKED_CHUNKS.length);
+export const WEST_FREE_CHUNKS = [0, 1, 8, 9, 16, 17, 24, 25, 32, 33, 40, 41, 48, 49, 56, 57];
+export const FREE_CHUNKS = [...new Set([...INITIAL_UNLOCKED_CHUNKS, ...WEST_FREE_CHUNKS])];
+
+export function getNextChunkCost(unlockedChunks) {
+  // Truyền danh sách để loại đúng đất miễn phí, kể cả save cũ chưa mở hết bờ biển.
+  const additional = Array.isArray(unlockedChunks)
+    ? [...new Set(unlockedChunks)].filter(id => !FREE_CHUNKS.includes(id)).length
+    : Math.max(0, unlockedChunks - FREE_CHUNKS.length);
   let gold = 250;
   const resources = {};
 

@@ -3,6 +3,8 @@
 // these defaults first, then retain their historical overrides.
 // All assets keep a one-cell logical footprint; only draw rectangles are scaled.
 
+import { WORLD_OBJECT_SCALE } from './renderScale.js';
+
 export const EXPANSION_TILES = [
   {"id":"b10_wizard_tower","label":"Tháp pháp sư cổ đại","category":"building","shopCategory":"wonders","doc":"Tháp đá cổ với mái xanh và điểm nhấn pha lê, có ba cấp nâng cấp."},
   {"id":"b11_carpenter_sawmill","label":"Xưởng mộc & cưa gỗ","category":"building","shopCategory":"production","doc":"Xưởng mộc và cưa gỗ với mái che, bàn thợ và vật liệu gỗ, có ba cấp nâng cấp."},
@@ -21,7 +23,7 @@ export const EXPANSION_TILES = [
   {"id":"r01_road_straight_ns","label":"Đường đá — đoạn thẳng","category":"road","shopCategory":"roads","doc":"Đoạn đường đá thẳng để ghép mạng lưới đường làng."},
   {"id":"r03_road_cross","label":"Ngã tư đường đá","category":"road","shopCategory":"roads","doc":"Ngã tư đường đá nối bốn nhánh đường."},
   {"id":"r04_road_tee_nes","label":"Ngã ba đường đá","category":"road","shopCategory":"roads","doc":"Ngã ba đường đá nối ba nhánh đường."},
-  {"id":"r08_road_corner_ne","label":"Góc chữ L đường đá","category":"road","shopCategory":"roads","doc":"Góc đường đá chữ L để chuyển hướng lối đi."},
+  {"id":"r08_road_corner_ne","label":"Góc L — trái/phải","category":"road","shopCategory":"roads","doc":"Góc đường đá chữ L hướng trái/phải; xoay để đổi hướng."},
   {"id":"r12_road_bridge_stone","label":"Cầu đá vòm","category":"road","shopCategory":"roads","doc":"Cầu đá vòm trang trí tuyến đường qua dòng nước."},
   {"id":"d02_village_well","label":"Giếng nước","category":"decoration","shopCategory":"decor","doc":"Giếng nước làng với mái che và kết cấu đá, gỗ."},
   {"id":"d03_market_stalls","label":"Quầy hàng chợ","category":"decoration","shopCategory":"decor","doc":"Quầy hàng chợ với mái che và hàng hóa trưng bày."},
@@ -64,7 +66,7 @@ export const EXPANSION_TILE_URIS = {
   b18_greenhouse_orangery: "/assets/expansion/props/royal_greenhouse.png",
   b19_lighthouse_dock: "/assets/expansion/props/harbor_lighthouse.png",
   r01_road_straight_ns: "/assets/expansion/terrain/stone_road_straight.png",
-  r03_road_cross: "/assets/expansion/terrain/stone_road_crossroads.png",
+  r03_road_cross: "/assets/expansion/terrain/stone_road_crossroads.png?v=open-ends-20261030",
   r04_road_tee_nes: "/assets/expansion/terrain/stone_road_t_junction.png",
   r08_road_corner_ne: "/assets/expansion/terrain/stone_road_l_corner.png",
   r12_road_bridge_stone: "/assets/expansion/props/arched_stone_bridge.png",
@@ -170,7 +172,7 @@ export const EXPANSION_GROUND_IDS = [
 // Source rectangles are [x, y, width, height], derived from opaqueBounds.
 const GROUND_SOURCE_BOUNDS = {
   r01_road_straight_ns: [161,412,932,603],
-  r03_road_cross: [74,324,1106,716],
+  r03_road_cross: [91,288,1074,739],
   r04_road_tee_nes: [159,403,965,616],
   r08_road_corner_ne: [468,378,616,601],
   d11_canal_straight: [32,298,1206,758],
@@ -405,7 +407,7 @@ export function getExpansionRenderAdjustment(id, level = 1) {
     ? (levels[Number.isInteger(level) && level >= 1 && level <= 3 ? level : 1] || levels[1])
     : (Object.hasOwn(EXPANSION_RENDER_GEOMETRY, id) ? EXPANSION_RENDER_GEOMETRY[id] : undefined);
   if (!source) return undefined;
-  const scale = source.worldWidth / source.visibleWidth;
+  const scale = source.worldWidth / source.visibleWidth * (id === 'r12_road_bridge_stone' ? 1 : WORLD_OBJECT_SCALE);
   return {
     dx: source.worldAnchorX - source.anchorX * scale,
     dy: source.worldAnchorY - source.anchorY * scale,
@@ -415,7 +417,13 @@ export function getExpansionRenderAdjustment(id, level = 1) {
   };
 }
 
-// Rotation-only aliases stay outside the 41 shop entries and 44 primary URIs.
+// All modular pieces share approved stone artwork and use roadGeometry's
+// common width, border and open connectors instead of independently scaled PNGs.
+for (const id of ['r03_road_cross','r04_road_tee_nes','r08_road_corner_ne']) {
+  EXPANSION_TILE_URIS[id] = EXPANSION_TILE_URIS.r01_road_straight_ns;
+}
+
+// The second L family has its own shop card; remaining rotations stay hidden.
 const ROAD_VARIANTS = {
   r02_road_straight_ew: 'r01_road_straight_ns',
   r09_road_corner_es: 'r08_road_corner_ne',
@@ -427,7 +435,10 @@ const ROAD_VARIANTS = {
 };
 
 export const EXPANSION_VARIANT_TILES = Object.entries(ROAD_VARIANTS).map(([id, baseId]) => ({
-  ...EXPANSION_TILES.find(tile => tile.id === baseId), id, shopCategory: 'hidden'
+  ...EXPANSION_TILES.find(tile => tile.id === baseId), id,
+  ...(id === 'r09_road_corner_es'
+    ? {shopCategory:'roads',label:'Góc L — trên/dưới',doc:'Góc đường đá chữ L hướng trên/dưới; xoay để đổi hướng.'}
+    : {shopCategory:'hidden'})
 }));
 
 export const EXPANSION_VARIANT_URIS = Object.fromEntries(

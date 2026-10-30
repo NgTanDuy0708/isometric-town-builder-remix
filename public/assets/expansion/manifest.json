@@ -1,6 +1,6 @@
 {
   "source": "docs/EXPANSION_ASSET_PROMPTS.md",
-  "sourceSha256": "e1d9d906619a42a1073cd0dc1d532c7e7e247db6114050d517b1f8ea96c2239b",
+  "sourceSha256": "acfe93a2cb3b8658287d0648b2408dd39abaedefe3d883157aa5c52d44f6ed85",
   "mode": "built-in imagegen",
   "total": 94,
   "items": [
@@ -974,7 +974,7 @@
       "folder": "terrain",
       "dependency": "stone_road_straight.png",
       "status": "generated",
-      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-a515cf26-2d4e-4177-8f0f-93cf58dc2454.png",
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-07525807-54e3-4636-9094-3fafbb20ee5b.png",
       "sourcePath": "assets-source\\expansion\\terrain\\stone_road_crossroads.png",
       "gameAssetPath": "public\\assets\\expansion\\terrain\\stone_road_crossroads.png",
       "metadata": {
@@ -984,16 +984,15 @@
         "alphaMin": 0,
         "alphaMax": 255,
         "opaqueBounds": [
-          74,
-          324,
-          1180,
-          1040
+          91,
+          288,
+          1165,
+          1027
         ]
       },
-      "sha256": "2cc9a1817aca19b77bbf2e7c7101394f46d6e93fc584bad9ce84046616782b09",
+      "sha256": "0530315e98f0ab5c5e80ed657ecb55ae53e0b8e2b9533ae586bbbc95d6d54f6b",
       "generationPromptPath": "docs/generated-assets/expansion/stone_road_crossroads.actual.txt",
       "reviewNotes": [
-        "Cần tạo lại: bốn nhánh đang theo trục màn hình, chưa đúng hai trục chéo của lưới isometric.",
         "Cần căn đầu nối và kiểm tra ghép ô trong runtime; chưa xác nhận khớp pixel."
       ]
     },
@@ -1682,10 +1681,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "apple_tree_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/apple_tree_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-dfc03720-e976-4e0f-8e36-c1b72a63aa4e.png",
+      "sourcePath": "assets-source\\expansion\\plants\\apple_tree_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\apple_tree_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          188,
+          227,
+          1095,
+          1185
+        ]
+      },
+      "sha256": "da8a4de8db89544705cca74f251c293374f7dfcda9111af847750ca47b8c79e2"
     },
     {
       "filename": "apple_tree_withered.png",
@@ -1695,10 +1710,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "apple_tree_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/apple_tree_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-9b4c9eb6-615f-408e-8319-c4b9c10625ce.png",
+      "sourcePath": "assets-source\\expansion\\plants\\apple_tree_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\apple_tree_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          191,
+          212,
+          1106,
+          1189
+        ]
+      },
+      "sha256": "9a56c41b49441a71602532cb1541bbc5ea0ef2cdafe2924b693cf79f3878c384",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "coconut_palm_seedling.png",
@@ -1795,10 +1827,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "coconut_palm_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-2764c76f-198e-4321-8f2f-165e488a0120.png",
+      "sourcePath": "assets-source\\expansion\\plants\\coconut_palm_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\coconut_palm_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          194,
+          79,
+          1063,
+          1178
+        ]
+      },
+      "sha256": "988748c94747084a714bcabbc0ea00cad6cb21e94211740a821855905dc5c24d"
     },
     {
       "filename": "coconut_palm_withered.png",
@@ -1808,10 +1856,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "coconut_palm_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/coconut_palm_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-725e3e73-e07b-4854-9038-cff9504daf53.png",
+      "sourcePath": "assets-source\\expansion\\plants\\coconut_palm_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\coconut_palm_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          186,
+          70,
+          1104,
+          1182
+        ]
+      },
+      "sha256": "807bcf692ef60351439ca71c1d1bec865abbc49c5bd217ef18cb0e68e739ca9f",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "tamarind_tree_seedling.png",
@@ -1908,10 +1973,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "tamarind_tree_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-01dc1d34-3616-4d75-a62a-990eb4ce428c.png",
+      "sourcePath": "assets-source\\expansion\\plants\\tamarind_tree_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\tamarind_tree_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          108,
+          292,
+          1159,
+          1178
+        ]
+      },
+      "sha256": "c33a40aca4d739eb9b2e2b2398502d0faace7d9910a217e98e904217004fd183"
     },
     {
       "filename": "tamarind_tree_withered.png",
@@ -1921,10 +2002,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "tamarind_tree_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/tamarind_tree_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-fce41c7c-3000-4428-bea1-c46ebfab4be6.png",
+      "sourcePath": "assets-source\\expansion\\plants\\tamarind_tree_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\tamarind_tree_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          109,
+          288,
+          1164,
+          1181
+        ]
+      },
+      "sha256": "0d53401bbc19825f71b6dea6b46b562b0177ee1bcb0886ee3346ee167d026982",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "cacao_tree_seedling.png",
@@ -2021,10 +2119,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "cacao_tree_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-f1954566-aa71-4ee3-b62f-e51dc13e6256.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cacao_tree_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cacao_tree_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          196,
+          370,
+          1105,
+          1131
+        ]
+      },
+      "sha256": "fd9f6f011d75257257a6bf2895b786dedff8d571e5e6c6bc65767c858f7cc0a9"
     },
     {
       "filename": "cacao_tree_withered.png",
@@ -2034,10 +2148,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "cacao_tree_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/cacao_tree_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-927c4c70-a271-4ad5-8821-6a3d3c1b6ccc.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cacao_tree_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cacao_tree_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          206,
+          370,
+          1101,
+          1135
+        ]
+      },
+      "sha256": "c874324d28bba70fe628a1211f55b35ff4d63e41ee8d5ac8128cc41cedd42e5d",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "cherry_tree_seedling.png",
@@ -2105,10 +2236,26 @@
       "stage": 3,
       "folder": "plants",
       "dependency": "cherry_tree_young.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_flowering.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-98f3e7bc-bb35-4432-a242-b4040a537253.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cherry_tree_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cherry_tree_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          262,
+          265,
+          1042,
+          1189
+        ]
+      },
+      "sha256": "803d899220f2c02e76f664318c560ef0d8243a81eaafa3cf232c4188b6b2dfb9"
     },
     {
       "filename": "cherry_tree_fruiting.png",
@@ -2118,10 +2265,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "cherry_tree_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-a7af081c-06e0-48b1-8c42-8e0fe659bb6f.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cherry_tree_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cherry_tree_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          261,
+          216,
+          1056,
+          1192
+        ]
+      },
+      "sha256": "faffe458f9f89862f60e60fda2674c91d5c6e33d4033afc6887e2d143a7d0522"
     },
     {
       "filename": "cherry_tree_withered.png",
@@ -2131,10 +2294,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "cherry_tree_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/cherry_tree_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-b3b92866-a856-48c7-8811-33f5ea161813.png",
+      "sourcePath": "assets-source\\expansion\\plants\\cherry_tree_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\cherry_tree_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          287,
+          215,
+          1058,
+          1195
+        ]
+      },
+      "sha256": "a56cee9198719849d182bc694d77985e54a677a3c277490fd5ed2e771a7f2f2d",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "blueberry_bush_seedling.png",
@@ -2202,10 +2382,26 @@
       "stage": 3,
       "folder": "plants",
       "dependency": "blueberry_bush_young.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_flowering.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-409cf5ab-4241-42d6-bc1a-2fbc0d170451.png",
+      "sourcePath": "assets-source\\expansion\\plants\\blueberry_bush_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\blueberry_bush_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          277,
+          506,
+          1003,
+          1151
+        ]
+      },
+      "sha256": "311710084933d73b8368125dd8cfe757cb123bb7921afe71e16d6529d36c4014"
     },
     {
       "filename": "blueberry_bush_fruiting.png",
@@ -2215,10 +2411,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "blueberry_bush_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-5707b599-e1c2-4d32-897d-62590c9ab1f4.png",
+      "sourcePath": "assets-source\\expansion\\plants\\blueberry_bush_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\blueberry_bush_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          274,
+          502,
+          1010,
+          1154
+        ]
+      },
+      "sha256": "ddcea7710101565d4a977e130936125a21651d84b0e5886c91d0bf6ae54886ce"
     },
     {
       "filename": "blueberry_bush_withered.png",
@@ -2228,10 +2440,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "blueberry_bush_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/blueberry_bush_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-58a93264-7a37-45b3-8e3c-2b1a185356e3.png",
+      "sourcePath": "assets-source\\expansion\\plants\\blueberry_bush_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\blueberry_bush_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          262,
+          468,
+          1049,
+          1157
+        ]
+      },
+      "sha256": "eaead511770a7fc8b3b83e8ec913f3a909431e06efaa99b14fee7f1a5243d7c2",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "durian_tree_seedling.png",
@@ -2299,10 +2528,26 @@
       "stage": 3,
       "folder": "plants",
       "dependency": "durian_tree_young.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/durian_tree_flowering.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-7fa725c9-a378-4779-a757-599084993b0c.png",
+      "sourcePath": "assets-source\\expansion\\plants\\durian_tree_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\durian_tree_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          196,
+          228,
+          1122,
+          1153
+        ]
+      },
+      "sha256": "d3dae8d704e3ebebdc44d4c586d63576916c407d2cf70ab00cf45c8a983ade8c"
     },
     {
       "filename": "durian_tree_fruiting.png",
@@ -2312,10 +2557,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "durian_tree_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/durian_tree_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-6382c738-0c74-4e6b-bec0-8704a8f6f5ba.png",
+      "sourcePath": "assets-source\\expansion\\plants\\durian_tree_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\durian_tree_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          178,
+          190,
+          1145,
+          1158
+        ]
+      },
+      "sha256": "5454ae97b623bd4046f9147152cb733cd6a48d73fa1ada324d784117f01d227b"
     },
     {
       "filename": "durian_tree_withered.png",
@@ -2325,10 +2586,27 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "durian_tree_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/durian_tree_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-3127e905-0c0f-47e1-b32c-7850d4f0b541.png",
+      "sourcePath": "assets-source\\expansion\\plants\\durian_tree_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\durian_tree_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          196,
+          177,
+          1132,
+          1162
+        ]
+      },
+      "sha256": "bada38f25d5cd5216a524f84f46d918861eaf6db988bea3c0caa8ce7eaed0193",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     },
     {
       "filename": "orange_tree_seedling.png",
@@ -2396,10 +2674,26 @@
       "stage": 3,
       "folder": "plants",
       "dependency": "orange_tree_young.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/orange_tree_flowering.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-0e89bdb4-8b61-496e-a8db-9de8b22f567d.png",
+      "sourcePath": "assets-source\\expansion\\plants\\orange_tree_flowering.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\orange_tree_flowering.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          279,
+          384,
+          1003,
+          1118
+        ]
+      },
+      "sha256": "c6012dc805bbd7d145a84a8a1dc5bf2d7beb45047d1bc6b7e59c61ac13dfabba"
     },
     {
       "filename": "orange_tree_fruiting.png",
@@ -2409,10 +2703,26 @@
       "stage": 4,
       "folder": "plants",
       "dependency": "orange_tree_flowering.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/orange_tree_fruiting.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-dc0ffb09-fc91-4080-a77b-f8c036def3a2.png",
+      "sourcePath": "assets-source\\expansion\\plants\\orange_tree_fruiting.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\orange_tree_fruiting.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          276,
+          382,
+          1006,
+          1120
+        ]
+      },
+      "sha256": "99304d434a17986e06c1bf62cac1985d45afa42589e0b6d3ecad7f87769bc30c"
     },
     {
       "filename": "orange_tree_withered.png",
@@ -2422,18 +2732,42 @@
       "stage": 5,
       "folder": "plants",
       "dependency": "orange_tree_fruiting.png",
-      "status": "pending",
+      "status": "generated",
       "generationPromptPath": "docs/generated-assets/expansion/orange_tree_withered.actual.txt",
       "reviewNotes": [],
-      "blockedReason": "imagegen usage_limit_reached"
+      "generatedPath": "C:\\Users\\ntduy\\.codex\\generated_images\\01a185f2-fa56-7752-96f5-784cee8a3696\\exec-97711641-dae7-48fc-851e-12b92f75b4a1.png",
+      "sourcePath": "assets-source\\expansion\\plants\\orange_tree_withered.png",
+      "gameAssetPath": "public\\assets\\expansion\\plants\\orange_tree_withered.png",
+      "metadata": {
+        "width": 1254,
+        "height": 1254,
+        "mode": "RGBA",
+        "alphaMin": 0,
+        "alphaMax": 255,
+        "opaqueBounds": [
+          290,
+          382,
+          1011,
+          1126
+        ]
+      },
+      "sha256": "796cdebb4114b5a537bab3bc704dbc3e74531ccf0289dbd02bb35ff4aab4e5b9",
+      "harvestedState": "All fruit already harvested; no remaining fruit, including dried produce."
     }
   ],
-  "completed": 74,
+  "completed": 94,
   "generationState": {
-    "status": "partial_usage_limit",
-    "remaining": 20,
-    "reportedReset": "2026-10-30T02:13:18+07:00",
-    "integration": "Assets saved for review; not registered in game renderer or economy.",
+    "status": "generated_pending_art_review",
+    "remaining": 0,
+    "previousLimitReset": "2026-10-30T02:13:18+07:00",
+    "integration": "44 subjects are registered in the shop; see docs/EXPANSION_INTEGRATION.md. New plant lifecycle art is stored separately and does not yet replace the existing harvest system.",
     "notes": "Native 1254x1254 PNG retained per source document rule 9. Working-box coordinates, anchors and relative scale still need runtime calibration. Some native cutout edges show coloured fringe; inspect against game backgrounds before integration."
-  }
+  },
+  "sourceHistory": [
+    {
+      "sha256": "e1d9d906619a42a1073cd0dc1d532c7e7e247db6114050d517b1f8ea96c2239b",
+      "archivedSource": "assets-source/expansion/revisions/prompts-before-fruitless-20261030.md",
+      "reason": "User clarified withered means all fruit has already been harvested."
+    }
+  ]
 }

@@ -1,0 +1,38 @@
+[
+  {
+    "level": 1,
+    "uri": "/assets/buildings/bbq_restaurant_lv1.png",
+    "sha256": "dcfcab2a5422766bd4206b7bc41bc30018de4974bcea92a562c6cbdd7c5521ea",
+    "bounds": {
+      "minX": 100,
+      "minY": 183,
+      "maxX": 1160,
+      "maxY": 1051
+    },
+    "transparentFraction": 0.6099352884167792
+  },
+  {
+    "level": 2,
+    "uri": "/assets/buildings/bbq_restaurant_lv2.png",
+    "sha256": "5d633e329160abf0bf1148f57d05b733bb4569d5e8ba8fd18a38a34fb245d9fa",
+    "bounds": {
+      "minX": 42,
+      "minY": 101,
+      "maxX": 1232,
+      "maxY": 1124
+    },
+    "transparentFraction": 0.47079584563845456
+  },
+  {
+    "level": 3,
+    "uri": "/assets/buildings/bbq_restaurant_lv3.png",
+    "sha256": "f7827c3576bb9d38762bae3a4e97e2b984e9a0af2bd7815051e2402071d7ea2c",
+    "bounds": {
+      "minX": 64,
+      "minY": 67,
+      "maxX": 1205,
+      "maxY": 1190
+    },
+    "transparentFraction": 0.43484772174019215
+  }
+]

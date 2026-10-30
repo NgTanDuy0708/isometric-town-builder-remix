@@ -9,7 +9,8 @@
  * - Nông trại, luống đất, nhà dân, đài phun nước và cây cối bố trí hài hòa xung quanh.
  */
 
-import { applyCoastTerrainLayout } from './terrainConfig.js';
+import { applyCoastTerrainLayout, getTerrainSprite } from './terrainConfig.js';
+import { isHarborCell } from './harborLayout.js';
 
 export function createStarterTownMap32() {
   const ROWS = 32;
@@ -79,12 +80,9 @@ export function isProtectedTile(row, col, tid) {
   // Trục đường đá cẩm thạch lớn của xe tải giao hàng (Row 18..31, Col 15)
   if (col === 15 && row >= 18 && row <= 31) return true;
 
-  // 3. Vùng Biển Đại Dương & Bến Cảng Hoàng Gia trải dài hết sườn Tây (không cho phép phá dỡ hay di dời)
-  if (col <= 3 && row >= 0 && row <= 31) {
-    // Player-owned water decorations can move and be removed; the sea stays.
-    return !['a01_whale', 'a02_flamingo_flock', 'r12_road_bridge_stone'].includes(tid);
-  }
-  if (col === 5 && row >= 11 && row <= 17) return true;
+  // Chỉ giữ vị trí cảng thật và mặt biển; không khóa đồ người chơi theo cả dải bờ.
+  if (isHarborCell(row,col)) return true;
+  if (col <= 3 && row >= 0 && row <= 31 && getTerrainSprite(tid)) return true;
 
   return false;
 }

@@ -85,7 +85,7 @@ test('thiếu nguyên liệu -> paused, có nguyên liệu -> tự chạy lại'
 
   mgr.update(120000 + 60000);
   assert.equal(state['5_5'].ready, true);
-  assert.equal(resources.wheat, 3);
+  assert.equal(resources.wheat, 4);
 });
 
 test('thu hoạch áp dụng vàng theo cấp nâng cấp', () => {
@@ -144,5 +144,5 @@ test('update() mặc định dùng Date.now, khớp với lastHarvest', () => {
   state['5_5'].lastHarvest = Date.now() - 61000;
   mgr.update();
   assert.equal(state['5_5'].ready, true);
-  assert.equal(resources.wheat, 3);
+  assert.equal(resources.wheat, 4);
 });

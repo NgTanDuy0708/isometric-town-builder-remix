@@ -13,6 +13,7 @@ import {
   ORDER_DISCARD_COOLDOWN_SEC,
   generateRandomOrder
 } from "../data/orderBoardConfig.js";
+import { getUnlockedResourcesForLevel } from '../data/orderBoardConfig.js';
 
 import {
   playQuestRewardSound,
@@ -80,6 +81,12 @@ export function createOrderBoardManager(ctx) {
     truckState.order = null;
   }
 
+  function replaceLockedOrders() {
+    const unlocked = new Set(getUnlockedResourcesForLevel(ctx.getPlayerLevel()));
+    orders = orders.map(order => order?.items?.some(item => !unlocked.has(item.resourceId))
+      ? generateRandomOrder(ctx.getPlayerLevel(), orders.filter(o => o?.items)) : order);
+  }
+
   function init(savedData = null) {
     if (savedData && Array.isArray(savedData.orders) && savedData.orders.length > 0) {
       orders = savedData.orders.slice(0, ORDER_BOARD_SLOTS_COUNT);
@@ -90,6 +97,7 @@ export function createOrderBoardManager(ctx) {
     }
 
     restorePendingTruck(savedData);
+    replaceLockedOrders();
 
     // Đảm bảo luôn có đủ 6 slots
     while (orders.length < ORDER_BOARD_SLOTS_COUNT) {
@@ -797,6 +805,7 @@ export function createOrderBoardManager(ctx) {
         totalOrdersDelivered = typeof data.totalOrdersDelivered === "number" ? data.totalOrdersDelivered : 0;
       }
       restorePendingTruck(data);
+      replaceLockedOrders();
       while (orders.length < ORDER_BOARD_SLOTS_COUNT) {
         orders.push(generateRandomOrder(ctx.getPlayerLevel(), orders.filter(o => o && o.items)));
       }

@@ -1,0 +1,32 @@
+{
+  "1": {
+    "width": 1254,
+    "height": 1254,
+    "visibleWidth": 1061,
+    "anchorX": 691,
+    "anchorY": 1052,
+    "worldWidth": 128,
+    "worldAnchorX": 64,
+    "worldAnchorY": 128
+  },
+  "2": {
+    "width": 1254,
+    "height": 1254,
+    "visibleWidth": 1191,
+    "anchorX": 788,
+    "anchorY": 1107,
+    "worldWidth": 144,
+    "worldAnchorX": 64,
+    "worldAnchorY": 128
+  },
+  "3": {
+    "width": 1254,
+    "height": 1254,
+    "visibleWidth": 1142,
+    "anchorX": 800,
+    "anchorY": 1160,
+    "worldWidth": 160,
+    "worldAnchorX": 64,
+    "worldAnchorY": 128
+  }
+}

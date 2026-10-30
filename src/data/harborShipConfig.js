@@ -12,10 +12,7 @@ import { RESOURCES_CONFIG } from "./resourcesConfig.js";
 import { getUnlockedResourcesForLevel } from "./orderBoardConfig.js";
 
 export const HARBOR_UNLOCK_LEVEL = 6;
-export const SHIP_DOCK_ROW = 14;
-export const SHIP_DOCK_COL = 3; // Cầu cảng đá bến biển (Row 14, Col 3)
-export const SHIP_WATER_ROW = 15; // Ô nước [15, 3] nơi Tàu Hoàng Gia đậu cố định
-export const SHIP_WATER_COL = 3;
+export { SHIP_DOCK_ROW, SHIP_DOCK_COL, SHIP_WATER_ROW, SHIP_WATER_COL } from './harborLayout.js';
 
 // Dải Biển & Vịnh Cảng Đại Dương (Royal Ocean Bay & Coast)
 export const OCEAN_BAY_TILES = [

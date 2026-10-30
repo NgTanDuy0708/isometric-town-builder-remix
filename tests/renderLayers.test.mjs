@@ -17,6 +17,10 @@ import { CROP_GROWTH_GEOMETRY } from '../src/data/cropGrowthGeometry.js';
 import { SOWN_CROP_IDS, SOWN_CROP_SPRITES, SOWN_CROP_DRAW, isCropJustSown } from '../src/data/cropVisuals.js';
 import { RESOURCES_CONFIG, WAREHOUSE_RESOURCE_IDS, getWarehouseUsed } from '../src/data/resourcesConfig.js';
 import { EXPANSION_BUILDING_LEVELS, EXPANSION_GROUND_IDS, getExpansionRenderAdjustment } from '../src/data/expansionCatalog.js';
+import { WORLD_OBJECT_SCALE } from '../src/data/renderScale.js';
+import { VehicleManager } from '../src/engine/trafficVehicles.js';
+import { HarborShipManager, ROYAL_SHIP_IMAGE_SRC, STONE_PIER_IMAGE_SRC } from '../src/engine/harborShipManager.js';
+import { HARBOR_FOOTPRINTS, getHarborOutline } from '../src/data/harborLayout.js';
 
 // Digests were captured from the original PNGs after byte-for-byte comparison.
 // The original source archive is local-only; CI needs only the public assets.
@@ -96,9 +100,10 @@ function renderScene(overrides = {}) {
 }
 
 function cellFromHouse(event) {
-  const sum = (event.y + 128 - ORIGIN_Y) / QUARTER_W;
-  const difference = (event.x + 64 - ORIGIN_X) / HALF_W;
-  return [(sum - difference) / 2, (sum + difference) / 2];
+  const rect = getBuildingRenderAdjustment('b01_cottage_red');
+  const sum = (event.y - rect.dy - ORIGIN_Y) / QUARTER_W;
+  const difference = (event.x - rect.dx - ORIGIN_X) / HALF_W;
+  return [Math.round((sum-difference)/2), Math.round((sum+difference)/2)];
 }
 
 test('expansion building levels and props use the same measured rectangle in the map and preview', () => {
@@ -121,14 +126,22 @@ test('expansion building levels and props use the same measured rectangle in the
 });
 
 test('expansion ground modules sample native source bounds and paint before raised objects',()=>{
+  const isRoadDraw=e=>e.kind==='asset'&&e.src?.includes('/expansion/terrain/stone_road_');
+  const surroundingRoads=renderScene({traceAssets:true,setup({grid}){grid[21][20]='b01_cottage_red'}}).filter(isRoadDraw).length;
   for(const id of EXPANSION_GROUND_IDS) {
     const events=renderScene({traceAssets:true,setup({grid}){grid[20][20]=id;grid[21][20]='b01_cottage_red'}});
     const index=events.findIndex(e=>e.src===AESTHETIC_TILE_URIS[id]&&e.args.length===8);
     const house=events.findIndex(e=>e.kind==='house');
     assert.ok(index>=0&&index<house,id);
     const draw=events[index];
-    assert.ok(draw.args[2]>300&&draw.args[3]>300,'Crop native source before scaling');
-    assert.deepEqual(draw.args.slice(-2),id==='r03_road_cross'?[64,64]:[128,64]);
+    if (id.startsWith('r')) {
+      assert.equal(draw.src,AESTHETIC_TILE_URIS.r01_road_straight_ns,'Every road uses the same approved paving artwork');
+      const roadDraws=events.filter(isRoadDraw);
+      assert.equal(roadDraws.length-surroundingRoads,1,'Do not cover the native road with another road texture');
+    } else {
+      assert.ok(draw.args[2]>300&&draw.args[3]>300,'Crop native source before scaling');
+      assert.deepEqual(draw.args.slice(-2),[128,64]);
+    }
   }
 });
 
@@ -232,6 +245,102 @@ test('actual renderer paints ground first, back houses next, front houses last',
   } });
   assert.deepEqual(events.filter(e => e.kind === 'house').map(cellFromHouse), [[0, 0], [30, 31], [31, 30], [31, 31]]);
   assert.equal(events[0].kind, 'ground');
+});
+
+test('all sea and shore tiles, inside and outside the grid, paint before moving fishing boats and docked ships', () => {
+  for (const [r,c,direction] of [[8,-2.2,1],[8.25,-2.2,1],[21,-3.8,-1],[-.2,3.1,1],[31.2,3.1,-1]]) {
+    const events = renderScene({traceAssets:true,setup({ctx}) {
+      const vehicles=new VehicleManager();
+      vehicles.boats=[{r,c,direction,bobTimer:0}];
+      ctx.getVehicleManager=()=>vehicles;
+      const harbor=new HarborShipManager({getPlayerLevel:()=>10});
+      harbor.ship={status:'docked',cargoHolds:[]};
+      ctx.getHarborShipManager=()=>harbor;
+    }});
+    const boat=events.findIndex(e=>e.src?.includes('/vehicles/fishing_boat'));
+    const ship=events.findIndex(e=>e.src===ROYAL_SHIP_IMAGE_SRC);
+    const pier=events.findIndex(e=>e.src===STONE_PIER_IMAGE_SRC);
+    assert.ok(boat>=0&&ship>=0&&pier>=0);
+    const terrain=events.map((e,i)=>e.src?.startsWith('/assets/terrain/')?i:-1).filter(i=>i>=0);
+    assert.ok(terrain.length>32*32,'Includes the surrounding ocean');
+    assert.ok(Math.max(...terrain)<Math.min(boat,ship,pier),`No foreground sea clips a hull at ${r},${c}`);
+  }
+});
+
+test('water construction and a terrain brush ghost also stay below boats', () => {
+  const events=renderScene({traceAssets:true,setup({ctx}) {
+    const vehicles=new VehicleManager();vehicles.boats=[{r:8,c:-2.2,direction:1,bobTimer:0}];ctx.getVehicleManager=()=>vehicles;
+    ctx.getHoverCell=()=>({row:8,col:0});ctx.getActiveBrush=()=> 'm30_sea_var2_coral_reef';
+    ctx.getConstructions=()=>({'8_1':{row:8,col:1,targetTileId:'m30_sea_var2_coral_reef',startTime:Date.now(),durationMs:10000}});
+  }});
+  const boat=events.findIndex(e=>e.src?.includes('/vehicles/fishing_boat'));
+  assert.ok(boat>=0);
+  assert.ok(events.some(e=>e.src==='/assets/terrain/sea.png'&&e.alpha<1),'Includes translucent construction/ghost water');
+  assert.ok(events.every((e,i)=>!e.src?.startsWith('/assets/terrain/')||i<boat));
+});
+
+test('hovering either half of a harbor footprint outlines both cells below its sprite', () => {
+  for (const [kind, footprint] of Object.entries(HARBOR_FOOTPRINTS)) {
+    const expected=getHarborOutline(footprint,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W);
+    for (let col=footprint.col;col<footprint.col+footprint.cols;col++) {
+      const events=renderScene({tracePaths:true,traceAssets:true,setup({ctx}) {
+        ctx.getHoverCell=()=>({row:footprint.row,col});
+        const harbor=new HarborShipManager({getPlayerLevel:()=>10});
+        harbor.ship={status:'docked',cargoHolds:[]};ctx.getHarborShipManager=()=>harbor;
+      }});
+      const outline=events.findIndex(e=>e.kind==='outline'&&JSON.stringify(e.points)===JSON.stringify(expected));
+      const sprite=events.findIndex(e=>e.src===(kind==='ship'?ROYAL_SHIP_IMAGE_SRC:STONE_PIER_IMAGE_SRC));
+      assert.ok(outline>=0&&outline<sprite,`${kind}: full footprint under the sprite from col ${col}`);
+    }
+  }
+});
+
+test('harbor depth uses the new foot contact, behind front objects and in front of back objects', () => {
+  const events=renderScene({traceAssets:true,setup({grid,ctx}) {
+    grid[14][2]='b01_cottage_red';grid[16][4]='b01_cottage_red';
+    const harbor=new HarborShipManager({getPlayerLevel:()=>10});
+    harbor.ship={status:'docked',cargoHolds:[]};ctx.getHarborShipManager=()=>harbor;
+  }});
+  const back=events.findIndex(e=>e.kind==='house'),front=events.findLastIndex(e=>e.kind==='house');
+  const pier=events.findIndex(e=>e.src===STONE_PIER_IMAGE_SRC),ship=events.findIndex(e=>e.src===ROYAL_SHIP_IMAGE_SRC);
+  assert.ok(back>=0&&back<pier&&pier<ship&&ship<front);
+});
+
+test('soil is ground and crop harvest UI is above buildings in front', () => {
+  const events=renderScene({traceAssets:true,traceText:true,setup({grid,ctx}) {
+    grid[20][20]='d13_farmland_plot';grid[19][20]='b01_cottage_red';grid[21][20]='b01_cottage_red';
+    ctx.getFarmlandState=()=>({'20_20':Object.freeze({seedId:'wheat',plantTime:Date.now()-30000,growDurationMs:25000})});
+  }});
+  const soil=events.findIndex(e=>e.src?.endsWith('/farmland_plot.png'));
+  const back=events.findIndex(e=>e.kind==='house'),front=events.findLastIndex(e=>e.kind==='house');
+  const badge=events.findIndex(e=>e.kind==='text'&&e.text.includes('Chín!'));
+  assert.ok(soil>=0&&soil<back&&badge>front);
+  assert.equal(events.filter(e=>e.src?.endsWith('/farmland_plot.png')).length,1);
+});
+
+test('livestock drawing never mutates simulation state and harvest badges stay above front buildings', () => {
+  for(const tid of ['b21_chicken_coop','b22_cow_pasture','b57_sheep_pasture','d33_pig_pen_barn']) {
+    const ls=Object.freeze({animalCount:1,fedCount:1,state:'producing',feedTime:Date.now()-80000,durationMs:45000});
+    const states=Object.freeze({'20_20':ls});
+    const events=renderScene({traceAssets:true,traceText:true,setup({grid,ctx}) {
+      grid[20][20]=tid;grid[21][20]='b01_cottage_red';ctx.getLivestockState=()=>states;
+    }});
+    assert.equal(ls.state,'producing');
+    const frontHouse=events.findLastIndex(e=>e.kind==='house');
+    const label=events.findIndex(e=>e.kind==='text'&&e.text.startsWith('+1'));
+    assert.ok(label>frontHouse,'UI paints after every foreground house');
+  }
+});
+
+test('single-cell assets shrink 20 percent about their feet while terrain and connected fences retain their dimensions', () => {
+  for(const id of ['b64_bbq_restaurant','b06_bakery','b21_chicken_coop','b58_textile_mill']) for(const level of [1,2,3]) {
+    const source=BUILDING_SOURCE_GEOMETRY[id][level]||BUILDING_SOURCE_GEOMETRY[id][1];
+    const a=getBuildingRenderAdjustment(id,level);
+    assert.ok(Math.abs(a.dw/source.width*source.visibleWidth-source.worldWidth*WORLD_OBJECT_SCALE)<1e-6);
+    assert.ok(Math.abs(a.dx+source.anchorX*a.dw/source.width-64)<1e-6);
+    assert.ok(Math.abs(a.dy+source.anchorY*a.dh/source.height-128)<1e-6);
+  }
+  assert.equal(getBuildingRenderAdjustment('b01_cottage_red').dw,256*WORLD_OBJECT_SCALE);
 });
 
 test('missing object sprites never cover the terrain with green fallback diamonds', () => {
@@ -347,7 +456,7 @@ test('separate livestock follow the new pens when upgraded, mirrored and moved',
       const footY = b * (x + w * animal.anchorX / animal.width) + d * (y + h * animal.anchorY / animal.height) + ty;
       const source = BUILDING_SOURCE_GEOMETRY[tileId][level];
       const adjustment = getBuildingRenderAdjustment(tileId, level);
-      const scale = source.worldWidth / source.visibleWidth;
+      const scale = adjustment.dw / source.width;
       const [sourceX, sourceY] = source.animalSlots[0];
       const runX = adjustment.dx + sourceX * scale;
       assert.ok(Math.abs(footX - (ORIGIN_X + (flipped ? 128 - runX : runX))) < 1e-6);

@@ -44,7 +44,9 @@ YOUNG: approximately 60% of mature height, developing woody structure.
 FLOWERING: mature trunk and canopy, recognizable species-specific flowers.
 FRUITING: SAME mature trunk scaffold and canopy position, harvestable fruits.
 WITHERED: SAME mature trunk and primary branches, sparse dry foliage and
-clear decline; do not turn it back into a small seedling or a cut stump.
+clear decline AFTER ALL FRUIT HAS BEEN HARVESTED. ZERO fruit remains,
+including dried or shrivelled fruit, berries, nuts or pods. Do not turn it
+back into a small seedling or a cut stump. No fallen produce on the ground.
 Flowering and fruiting are NOT different tree sizes.
 A withered plant may look visually narrower after leaf loss but retains
 its mature woody scaffold. Keep seedling/young images small in the canvas.

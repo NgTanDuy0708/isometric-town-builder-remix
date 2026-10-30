@@ -44,7 +44,9 @@ YOUNG: approximately 60% of mature height, developing woody structure.
 FLOWERING: mature trunk and canopy, recognizable species-specific flowers.
 FRUITING: SAME mature trunk scaffold and canopy position, harvestable fruits.
 WITHERED: SAME mature trunk and primary branches, sparse dry foliage and
-clear decline; do not turn it back into a small seedling or a cut stump.
+clear decline AFTER ALL FRUIT HAS BEEN HARVESTED. ZERO fruit remains,
+including dried or shrivelled fruit, berries, nuts or pods. Do not turn it
+back into a small seedling or a cut stump. No fallen produce on the ground.
 Flowering and fruiting are NOT different tree sizes.
 A withered plant may look visually narrower after leaf loss but retains
 its mature woody scaffold. Keep seedling/young images small in the canvas.
@@ -56,7 +58,7 @@ IMAGE PROMPT
 SPECIES IDENTITY: ONE fruit-producing sweet cherry orchard tree, with a slender warm-brown trunk, a light spreading crown and oval finely serrated green leaves. Preserve one distinctive Y-shaped main fork. This is a harvestable fruit tree, separate from the ornamental cherry-blossom garden decoration.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature cherry tree with the Y-shaped fork exposed, sparse curled ochre-brown leaves and two small shrivelled dark cherries on attached stems. Preserve the mature size and branch positions. No healthy green crown or fresh flowers.
+The SAME mature apple tree in a visibly withered state AFTER ALL FRUIT HAS BEEN HARVESTED. Preserve trunk height and main fork; reveal more of its bare branch structure. Sparse curled ochre-brown leaves remain attached. ZERO apples remain, including dried, rotten or shrivelled fruit. No healthy green foliage, fresh blossoms, fallen fruit or chopped stump.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.

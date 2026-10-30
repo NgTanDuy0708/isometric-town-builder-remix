@@ -32,9 +32,15 @@ export class DailyWheelManager {
     this.isSpinning = false;
     this.currentRotation = 0;
     this.countdownTimerId = null;
+    this.spinTimerId = null;
+    this.lastSpinTime = null;
   }
 
   init(savedState) {
+    this.lastSpinTime = savedState?.lastSpinTime ?? localStorage.getItem(STORAGE_KEY_LAST_SPIN) ?? null;
+    if (this.bound) { this.render(); return; }
+    this.bound = true;
+    this.abortController = new AbortController();
     this.bindEvents();
     this.drawWheelDisk();
     this.updateBadge();
@@ -46,7 +52,7 @@ export class DailyWheelManager {
 
   getSaveState() {
     return {
-      lastSpinTime: localStorage.getItem(STORAGE_KEY_LAST_SPIN) || null
+      lastSpinTime: this.lastSpinTime
     };
   }
 
@@ -56,10 +62,10 @@ export class DailyWheelManager {
     const dismissBtn = document.getElementById("wheel-modal-dismiss-btn");
     const spinBtn = document.getElementById("wheel-spin-btn");
 
-    if (openBtn) openBtn.addEventListener("click", () => this.openModal());
-    if (closeBtn) closeBtn.addEventListener("click", () => this.closeModal());
-    if (dismissBtn) dismissBtn.addEventListener("click", () => this.closeModal());
-    if (spinBtn) spinBtn.addEventListener("click", () => this.spin());
+    if (openBtn) openBtn.addEventListener("click", () => this.openModal(), { signal: this.abortController.signal });
+    if (closeBtn) closeBtn.addEventListener("click", () => this.closeModal(), { signal: this.abortController.signal });
+    if (dismissBtn) dismissBtn.addEventListener("click", () => this.closeModal(), { signal: this.abortController.signal });
+    if (spinBtn) spinBtn.addEventListener("click", () => this.spin(), { signal: this.abortController.signal });
   }
 
   drawWheelDisk() {
@@ -119,7 +125,7 @@ export class DailyWheelManager {
 
   isFreeSpinAvailable() {
     try {
-      const last = localStorage.getItem(STORAGE_KEY_LAST_SPIN);
+      const last = this.lastSpinTime;
       if (!last) return true;
       const lastTime = Number(last);
       if (!Number.isFinite(lastTime) || lastTime <= 0) return true;
@@ -131,7 +137,7 @@ export class DailyWheelManager {
 
   getRemainingCooldownMs() {
     try {
-      const last = localStorage.getItem(STORAGE_KEY_LAST_SPIN);
+      const last = this.lastSpinTime;
       if (!last) return 0;
       const lastTime = parseInt(last, 10);
       const diff = COOLDOWN_MS - (Date.now() - lastTime);
@@ -221,6 +227,12 @@ export class DailyWheelManager {
     }
   }
 
+  destroy() {
+    this.stopCountdownLoop();
+    clearTimeout(this.spinTimerId);
+    this.abortController?.abort();
+  }
+
   spin() {
     if (this.isSpinning) return;
 
@@ -233,18 +245,23 @@ export class DailyWheelManager {
         }
         return;
       }
-      if (this.ctx.deductPlayerGems) this.ctx.deductPlayerGems(5);
+
     }
-    // Lượt free chỉ được ghi cooldown SAU khi animation kết thúc và trao thưởng (trong setTimeout bên dưới).
-    // Ghi ngay tại đây sẽ khiến người chơi F5 giữa animation bị mất lượt mà không nhận được thưởng.
 
-    this.isSpinning = true;
-    const spinBtn = document.getElementById("wheel-spin-btn");
-    if (spinBtn) spinBtn.disabled = true;
 
-    // Chọn ngẫu nhiên lát trúng thưởng (0 -> 7)
     const winningIndex = Math.floor(Math.random() * WHEEL_SLICES.length);
     const winningSlice = WHEEL_SLICES[winningIndex];
+    const previousSpinTime = this.lastSpinTime;
+    if (isFree) this.lastSpinTime = String(Date.now());
+    // Chi phí, thưởng và cooldown cùng một snapshot. Animation chỉ trình diễn kết quả.
+    if (!this.ctx.commitSpin?.(winningSlice, isFree ? 0 : 5)) {
+      this.lastSpinTime = previousSpinTime;
+      this.ctx.showToast?.('Không lưu được lượt quay. Chưa trừ Ruby.', 'error');
+      return;
+    }
+    this.isSpinning = true;
+    const spinBtn = document.getElementById('wheel-spin-btn');
+    if (spinBtn) spinBtn.disabled = true;
 
     // Tính góc xoay: mỗi ô 45 độ, xoay ít nhất 5-8 vòng (1800 - 2880 độ)
     const sliceAngle = 360 / WHEEL_SLICES.length;
@@ -262,23 +279,9 @@ export class DailyWheelManager {
 
     if (this.ctx.playCoinSound) this.ctx.playCoinSound();
 
-    setTimeout(() => {
+    this.spinTimerId = setTimeout(() => {
       this.isSpinning = false;
       if (spinBtn) spinBtn.disabled = false;
-
-      // Chỉ chốt cooldown khi đã thực sự trao thưởng.
-      if (isFree) {
-        try {
-          localStorage.setItem(STORAGE_KEY_LAST_SPIN, Date.now().toString());
-        } catch (e) {}
-      }
-
-      // Trao thưởng
-      if (winningSlice.type === "gold" && this.ctx.addPlayerGold) {
-        this.ctx.addPlayerGold(winningSlice.amount);
-      } else if (winningSlice.type === "ruby" && this.ctx.addPlayerGems) {
-        this.ctx.addPlayerGems(winningSlice.amount);
-      }
 
       if (this.ctx.playQuestRewardSound) this.ctx.playQuestRewardSound();
       if (this.ctx.showToast) {

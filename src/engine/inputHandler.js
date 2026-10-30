@@ -16,6 +16,7 @@ import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
 import { FRUIT_TREES_CONFIG } from "../data/resourcesConfig.js";
 import { canPlaceOnSurface, getClearedSurface, isPlacementProtected } from './placementSurface.js';
 import { isProtectedTile, isIndestructibleTile } from "../data/starterMap.js";
+import { getTerrainSprite } from '../data/terrainConfig.js';
 import {
   initAudio, getAudioState, startBGM, playVillagerSpeakSound,
   playLandExpandSound, playErrorSound, playBuildSound
@@ -584,6 +585,12 @@ export function initInputHandler(container, ctx) {
     const gameMode = ctx.getGameMode();
     const constructions = ctx.getConstructions ? ctx.getConstructions() : {};
 
+    if (!isFenceTile(movingBuilding.tileId) && (getTerrainSprite(movingBuilding.tileId) ||
+        isProtectedTile(movingBuilding.fromRow, movingBuilding.fromCol, movingBuilding.tileId))) {
+      ctx.showToast('Nền và công trình cố định không thể di chuyển.', 'warning');
+      return false;
+    }
+
     if (targetRow === movingBuilding.fromRow && targetCol === movingBuilding.fromCol) {
       ctx.setMovingBuilding(null);
       ctx.showToast("Đã giữ nguyên vị trí vật phẩm.", "info");
@@ -716,8 +723,21 @@ export function initInputHandler(container, ctx) {
       return false;
     }
 
+    const targetKey = `${targetRow}_${targetCol}`;
+    const upgrades = ctx.getUpgradesInProgress ? ctx.getUpgradesInProgress() : {};
+    const wonders = ctx.getKingdomWondersManager?.();
+    if (constructions[targetKey] || upgrades[targetKey] || wonders?.getWonderAt(targetRow, targetCol)) {
+      ctx.showToast("🏗️ Vị trí này đang thi công hoặc có Đại Kỳ Quan!", "warning");
+      return false;
+    }
+
     const oldKey = `${movingBuilding.fromRow}_${movingBuilding.fromCol}`;
     const newKey = `${targetRow}_${targetCol}`;
+
+    if (upgrades[oldKey]) {
+      upgrades[newKey] = { ...upgrades[oldKey], row: targetRow, col: targetCol };
+      delete upgrades[oldKey];
+    }
 
     currentGrid[movingBuilding.fromRow][movingBuilding.fromCol] = getClearedSurface(movingBuilding.tileId, movingBuilding.fromRow, movingBuilding.fromCol, ctx.getTerrainMap?.());
     delete buildingLevels[oldKey];
@@ -1250,7 +1270,7 @@ export function initInputHandler(container, ctx) {
           pendingSpecialClick = null;
           pendingDecorationClick = null;
 
-          if (isProtectedTile(cell.row, cell.col, curTid)) {
+          if (getTerrainSprite(curTid) || isProtectedTile(cell.row, cell.col, curTid)) {
             if (cell.col <= 5) {
               ctx.showToast("🌊 Vùng biển đại dương & bờ cảng tự nhiên của vương quốc, không thể di chuyển hoặc phá dỡ!", "warning");
             } else {

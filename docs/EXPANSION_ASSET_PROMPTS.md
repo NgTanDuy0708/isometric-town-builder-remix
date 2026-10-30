@@ -19,7 +19,7 @@ Nguồn danh sách: `New Text Document (3).txt`. Bộ này **chỉ soạn prompt
 
 3. Công trình ba cấp: cùng vị trí cửa và điểm tiếp đất; cấp sau phát triển từ cấp trước. Công trình một mẫu: chỉ một thiết kế hoàn thiện, không tự thêm cấp.
 
-4. Cây: **cây con → cây lớn còn non → trổ hoa → kết trái chín → cây héo**. Chọn trổ hoa ở giai đoạn 3 để phân biệt rõ với giai đoạn 4. Ba giai đoạn cuối giữ cùng thân và cành chính.
+4. Cây: **cây con → cây lớn còn non → trổ hoa → kết trái chín → cây héo sau thu hoạch**. Chọn trổ hoa ở giai đoạn 3 để phân biệt rõ với giai đoạn 4. Ba giai đoạn cuối giữ cùng thân và cành chính. Giai đoạn héo đã thu hoạch hết trái: không còn quả, quả khô, quả hỏng, quả me hay quả ca cao trên thân/cành và không có quả rơi dưới đất.
 
 5. Hiểu “cheri” là **cherry**, “berry” là **việt quất / blueberry**, “rừng thôg xanh” là **rừng thông xanh**. “Nhà đất sét” là nhà ở bằng đất/adobe; “lều” là lều vải; “chùa gỗ” là chùa Phật giáo bằng gỗ.
 
@@ -177,7 +177,9 @@ YOUNG: approximately 60% of mature height, developing woody structure.
 FLOWERING: mature trunk and canopy, recognizable species-specific flowers.
 FRUITING: SAME mature trunk scaffold and canopy position, harvestable fruits.
 WITHERED: SAME mature trunk and primary branches, sparse dry foliage and
-clear decline; do not turn it back into a small seedling or a cut stump.
+clear decline AFTER ALL FRUIT HAS BEEN HARVESTED. ZERO fruit remains,
+including dried or shrivelled fruit, berries, nuts or pods. Do not turn it
+back into a small seedling or a cut stump. No fallen produce on the ground.
 Flowering and fruiting are NOT different tree sizes.
 A withered plant may look visually narrower after leaf loss but retains
 its mature woody scaffold. Keep seedling/young images small in the canvas.
@@ -1049,7 +1051,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE orchard apple tree with a short warm-brown branching trunk, a rounded spreading crown and oval serrated leaves in muted olive and fresh green. A recognizable trunk fork leans slightly to the right. Preserve that same fork and rounded canopy identity across the five stages.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature apple tree in a visibly withered state. Preserve trunk height and main fork; reveal more of its bare branch structure. Sparse curled ochre-brown leaves remain attached, with two small shrivelled dark-brown apples. No healthy green foliage, fresh blossoms, loose fruit piles or chopped stump.
+The SAME mature apple tree in a visibly withered state AFTER ALL FRUIT HAS BEEN HARVESTED. Preserve trunk height and main fork; reveal more of its bare branch structure. Sparse curled ochre-brown leaves remain attached. ZERO apples remain, including dried, rotten or shrivelled fruit. No healthy green foliage, fresh blossoms, fallen fruit or chopped stump.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1113,7 +1115,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE coconut palm with a slender gently curved ringed tan trunk, long arching feather-like green fronds and a single crown at the top. Preserve the same slight leftward trunk curve and crown orientation throughout the lifecycle. Coconuts grow attached in clusters immediately beneath the crown, never along the lower trunk.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature coconut palm, visibly withered, retaining its curved ringed trunk and single crown position. Most fronds are dry ochre-brown, collapsed and hanging downward; a few dry frond bases remain near the top. No healthy green crown, large coconut clusters, fallen-frond carpet or broken trunk.
+The SAME mature coconut palm, visibly withered AFTER ALL COCONUTS HAVE BEEN HARVESTED, retaining its curved ringed trunk and single crown position. Most fronds are dry ochre-brown, collapsed and hanging downward; a few dry frond bases remain near the top. ZERO coconuts remain, including small or dried nuts and hanging clusters. No healthy green crown, fallen coconuts, fallen-frond carpet or broken trunk.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1177,7 +1179,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE tamarind tree with a sturdy textured brown trunk, a low spreading branch structure and an airy rounded crown made of small paired pinnate leaflets. Preserve the same broad left branch and finer right branch in all mature stages. Avoid large apple-like leaves or green bean-vine anatomy.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature tamarind tree with bare branching increasingly visible, sparse dry ochre compound leaf sprays and two shrivelled dark-brown pods still attached. Preserve the mature trunk and broad branch spread. No lush green foliage, fresh flowers or fruit piles.
+The SAME mature tamarind tree AFTER ALL PODS HAVE BEEN HARVESTED, with bare branching increasingly visible and sparse dry ochre compound leaf sprays. Preserve the mature trunk and broad branch spread. ZERO tamarind pods remain, including dried or shrivelled pods. No lush green foliage, fresh flowers or fallen fruit.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1241,7 +1243,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE cacao tree with a relatively short warm-brown trunk, several low upright branches and a layered crown of large elongated pointed dark-green leaves. Flowers and pods attach directly to the main trunk and thicker branches, not to the outer leaf tips. Preserve the same low branching scaffold across mature stages.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature cacao tree with the trunk and low branch scaffold preserved, many leaves missing and the remaining elongated leaves curled ochre-brown. Two dark shrivelled ridged pods remain attached to thick wood. No healthy green canopy, fresh flowers or produce on the ground.
+The SAME mature cacao tree AFTER ALL PODS HAVE BEEN HARVESTED, with the trunk and low branch scaffold preserved, many leaves missing and the remaining elongated leaves curled ochre-brown. ZERO cacao pods remain on the trunk or branches, including dried or shrivelled pods. No healthy green canopy, fresh flowers or produce on the ground.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1305,7 +1307,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE fruit-producing sweet cherry orchard tree, with a slender warm-brown trunk, a light spreading crown and oval finely serrated green leaves. Preserve one distinctive Y-shaped main fork. This is a harvestable fruit tree, separate from the ornamental cherry-blossom garden decoration.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature cherry tree with the Y-shaped fork exposed, sparse curled ochre-brown leaves and two small shrivelled dark cherries on attached stems. Preserve the mature size and branch positions. No healthy green crown or fresh flowers.
+The SAME mature cherry tree AFTER ALL FRUIT HAS BEEN HARVESTED, with the Y-shaped fork exposed and sparse curled ochre-brown leaves. Preserve the mature size and branch positions. ZERO cherries remain, including dried, rotten or shrivelled cherries. No healthy green crown, fresh flowers or fallen fruit.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1369,7 +1371,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE cultivated blueberry bush, not a tall tree and not a strawberry plant. Multiple slender woody brown stems rise from one root crown into a compact rounded shrub with small oval green leaves. Preserve the same multi-stem base and rounded branching silhouette throughout the mature stages.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature blueberry bush with exposed fine woody stems, sparse curled rust-brown leaves and a few shrivelled dark berries still attached. Retain the rounded branching outline and common root crown. No lush green foliage, fresh flowers or berry piles.
+The SAME mature blueberry bush AFTER ALL BERRIES HAVE BEEN HARVESTED, with exposed fine woody stems and sparse curled rust-brown leaves. Retain the rounded branching outline and common root crown. ZERO berries remain, including tiny dried or shrivelled berries and berry clusters. No lush green foliage, fresh flowers or fallen berries.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1433,7 +1435,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE compact orchard durian tree with a straight sturdy brown trunk, tiered spreading branches and elongated pointed green leaves with muted warm-gold undersides. Preserve a clearly visible lower trunk and two strong lateral branches. Flowers and heavy fruits attach to substantial branches, not fragile leaf tips.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature durian tree with trunk and strong lateral branches preserved, sparse drooping ochre-brown elongated leaves and one small shrivelled dark spiky fruit still attached. No healthy green crown, fresh flowers, ripe-fruit pile or broken branches.
+The SAME mature durian tree AFTER ALL FRUIT HAS BEEN HARVESTED, with trunk and strong lateral branches preserved and sparse drooping ochre-brown elongated leaves. ZERO durians remain, including small, dried or shrivelled spiky fruit. No healthy green crown, fresh flowers, fallen fruit or broken branches.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
@@ -1497,7 +1499,7 @@ Follow category P; no other lifecycle stages in this image.
 SPECIES IDENTITY: ONE compact orchard orange tree with a short brown branching trunk, a dense rounded crown and small oval dark-green leaves. Preserve the same slightly right-leaning trunk and low fork throughout mature stages. Fruit is round orange citrus attached individually to woody twigs.
 
 REQUESTED IMAGE: WITHERED STAGE ONLY.
-The SAME mature orange tree with the low fork visible, sparse curled ochre-brown leaves and two dark shrivelled citrus fruits still attached. Preserve mature trunk size and broad crown scaffold. No lush green foliage, fresh flowers or ripe oranges on the ground.
+The SAME mature orange tree AFTER ALL FRUIT HAS BEEN HARVESTED, with the low fork visible and sparse curled ochre-brown leaves. Preserve mature trunk size and broad crown scaffold. ZERO citrus fruits remain, including dried, rotten or shrivelled oranges. No lush green foliage, fresh flowers or fallen oranges.
 
 One isolated plant. Keep the shared root anchor and canvas scale.
 Follow category P; no other lifecycle stages in this image.
