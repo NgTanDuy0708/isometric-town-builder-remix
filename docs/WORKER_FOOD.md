@@ -1,4 +1,6 @@
-# Lương thực công nhân
+# Lương thực công nhân và lính
+
+Lính đã dùng chung state khẩu phần với công nhân. Mỗi lính được cấp suất dân, chưa xin nghỉ cũng cần 1 khẩu phần/120 giây chạy game, kể cả huấn luyện và dưỡng thương. Thiếu ăn giảm nhịp đánh và tiến độ huấn luyện còn 50%; di chuyển và hồi máu ngoài trận giữ nguyên. Không có một lần trừ thức ăn riêng ở hệ thống quân đội. Tổng nhu cầu công nhân + lính và loại thức ăn được phép dùng hiện trong bảng công nhân và bảng phòng thủ.
 
 Mở **Quản lý công nhân → Lương thực công nhân**. HUD dân số cho biết khẩu phần có thể dùng, nhu cầu/phút hoặc cảnh báo thiếu ăn.
 
@@ -19,7 +21,7 @@ Khi đến bữa và hết phần đã chuẩn bị, hệ thống lấy đúng 1
 
 - Mỗi công nhân trong suất dân, chưa xin nghỉ: 1 khẩu phần/120 giây game chạy, tương đương 0,5 khẩu phần/phút. Bốn người dùng 2 khẩu phần/phút. Giá trị này là mức cân bằng thử nghiệm.
 - Nhu cầu tính chung theo thời gian và số người hiện tại. Thuê thêm, giảm dân hoặc cho nghỉ thay đổi tốc độ tích lũy ngay; không đặt lại tiến độ để né bữa. Công nhân chờ tài nguyên/đường đi/kho vẫn cần ăn.
-- Người xin nghỉ và người tạm ngừng vì thiếu suất dân không tiêu thụ. Hiện tại nông dân và dân rảnh không tiêu thụ; quân đội sẽ bổ sung sau.
+- Người xin nghỉ và người tạm ngừng vì thiếu suất dân không tiêu thụ. Hiện tại nông dân và dân rảnh không tiêu thụ. Save nhập bị dư việc: ưu tiên nông dân rồi công nhân, số suất còn lại mới dành cho lính; lính vượt số đó tạm dừng, không bị xóa.
 - Khi đến bữa mà không đủ phần ăn, tốc độ đốn/đào còn 50% (6 giây công việc thành 12 giây). Không mất dân, không mất hàng, không giảm tốc độ đi lại/giao hàng/về xưởng.
 - Thu hoạch lúa/ngô hoặc nhận bánh mì, bật loại đó nếu đang tắt: bữa được trả và công nhân phục hồi ở nhịp chạy kế tiếp. Lúa và ngô dùng trực tiếp nên không bắt buộc có lò bánh để thoát thiếu ăn.
 - Bữa thiếu dừng ở 1 khẩu phần chung đang chờ; không tích nợ nhiều giờ khiến người chơi không thể phục hồi. Khi đã có thức ăn, trả bữa đó rồi tiếp tục tính thời gian bình thường.

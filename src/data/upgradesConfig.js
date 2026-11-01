@@ -5,6 +5,15 @@ import { isHousingTile } from './housingConfig.js';
 export const MAX_BUILDING_LEVEL = 3;
 
 export const UPGRADES_CONFIG = {
+  b69_forester_lodge:{maxLevel:3,
+    2:{costGold:220,costResources:{plank:4,buildingStone:3},durationSec:60,desc:'Mở chỗ làm việc thứ 3 cho kiểm lâm.'},
+    3:{costGold:440,costResources:{ancientWood:4,buildingStone:6,ironTools:2},durationSec:90,desc:'Mở chỗ làm việc thứ 4 cho kiểm lâm.'}},
+  b68_mage_academy:{maxLevel:3,
+    2:{costGold:240,costResources:{plank:4,buildingStone:4,fabric:2},durationSec:75,desc:'Mở rộng học viện từ 2 lên 4 chỗ pháp sư.'},
+    3:{costGold:480,costResources:{plank:8,buildingStone:8,fabric:4,ironTools:2},durationSec:100,desc:'Mở rộng học viện từ 4 lên 6 chỗ pháp sư.'}},
+  b67_guard_barracks:{maxLevel:3,
+    2:{costGold:180,costResources:{plank:3,buildingStone:3,ironTools:2},durationSec:60,desc:'Mở rộng trại từ 2 lên 4 chỗ huấn luyện/đồn trú.'},
+    3:{costGold:360,costResources:{plank:6,buildingStone:6,ironTools:4},durationSec:90,desc:'Mở rộng trại từ 4 lên 6 chỗ huấn luyện/đồn trú.'}},
   b66_iron_mine: { maxLevel:3,
     2:{costGold:160,costResources:{plank:2,buildingStone:2,ironTools:1},durationSec:90,desc:'Gia cố hầm mỏ, mở chỗ làm việc thứ 3.'},
     3:{costGold:320,costResources:{plank:4,buildingStone:4,ironTools:2},durationSec:150,desc:'Mở rộng hầm mỏ, mở chỗ làm việc thứ 4.'} },

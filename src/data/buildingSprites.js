@@ -7,8 +7,13 @@ import { isLivestockTile } from './livestockConfig.js';
 import { LIVESTOCK_WORLD_WIDTH } from './livestockFootprint.js';
 import { IRON_MINE_LEVEL_SPRITES, IRON_MINE_GEOMETRY } from './ironMineArtData.js';
 import { STONE_DEPOSIT_GEOMETRY } from './stoneDepositArtData.js';
+import {COMBAT_BUILDING_LEVELS,COMBAT_BUILDING_GEOMETRY} from './combatArt.js';
+import {VILLAGE_GATE_ID,VILLAGE_GATE_URI,VILLAGE_GATE_GEOMETRY} from './villageGate.js';
 // Level-specific building art. Each family shares a canvas and ground anchor.
 export const BUILDING_LEVEL_SPRITES = {
+  b69_forester_lodge: EXPANSION_BUILDING_LEVELS.b11_carpenter_sawmill,
+  [VILLAGE_GATE_ID]: {1:VILLAGE_GATE_URI},
+  ...COMBAT_BUILDING_LEVELS,
   b66_iron_mine: IRON_MINE_LEVEL_SPRITES,
   b65_stone_quarry: {
     1: '/assets/buildings/stone_quarry_lv1.png',
@@ -90,6 +95,9 @@ export function getBuildingSpriteUri(tileId, level = 1) {
 // Original generated PNGs are kept byte-for-byte. Scale only at draw time;
 // source-space foot anchors preserve placement without shrinking the asset.
 export const BUILDING_SOURCE_GEOMETRY = {
+  b69_forester_lodge: EXPANSION_BUILDING_GEOMETRY.b11_carpenter_sawmill,
+  [VILLAGE_GATE_ID]: VILLAGE_GATE_GEOMETRY,
+  ...COMBAT_BUILDING_GEOMETRY,
   n02_stone_deposit: STONE_DEPOSIT_GEOMETRY,
   ...IRON_MINE_GEOMETRY,
   b65_stone_quarry: {
@@ -165,7 +173,7 @@ export function getBuildingRenderAdjustment(tileId, level = 1, tuning = undefine
   }
   if (tileId === 'b60_combined_warehouse') return getWarehouseRenderAdjustment(source, tuning ?? readWarehouseTuning());
   const scale = isLivestockTile(tileId) ? source.worldWidth / source.visibleWidth
-    : source.worldWidth / source.visibleWidth * (tileId === 'b14_town_hall' ? 1 : WORLD_OBJECT_SCALE);
+    : source.worldWidth / source.visibleWidth * (['b14_town_hall',VILLAGE_GATE_ID].includes(tileId) ? 1 : WORLD_OBJECT_SCALE);
   const adjustment = {
     dx: (source.worldAnchorX ?? 64) - source.anchorX * scale,
     dy: (source.worldAnchorY ?? 128) - source.anchorY * scale,

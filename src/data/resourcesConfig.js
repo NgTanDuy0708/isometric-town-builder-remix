@@ -16,6 +16,7 @@ export const SILO_RESOURCE_IDS = [
 
 // Danh mục sản phẩm chăn nuôi & thành phẩm nhà máy chứa trong Kho Barn
 export const BARN_RESOURCE_IDS = [
+  'ancientWood',
   "egg", "milk", "meat", "roastPork", "wool", "bread", "butter", "fabric", "ironTools", "wine", "wood", "stone", "ironOre", "plank", "buildingStone", "ironIngot"
 ];
 
@@ -46,6 +47,7 @@ export function getWarehouseUsed(resources) {
 }
 
 export const RESOURCES_CONFIG = {
+  ancientWood:{id:'ancientWood',name:'Gỗ cổ thụ',category:'material',icon:'🌳',sellPrice:20,maxCapacity:RESOURCE_MAX_CAPACITY,unitName:'khúc',desc:'Trạm kiểm lâm thu hoạch tại Rừng Cổ Thụ. Dùng làm nhiệm vụ và chế tác kỷ vật.'},
   ironOre: { id:'ironOre', name:'Quặng sắt', category:'material', icon:'⛏️', sellPrice:6, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'cục', desc:'Công nhân Mỏ sắt mang về; luyện tại Lò rèn để lấy thỏi sắt.' },
   plank: { id:'plank', name:'Ván gỗ', category:'material', icon:'🪵', sellPrice:10, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'tấm', desc:'Chế biến 2 gỗ nguyên liệu tại Xưởng mộc.' },
   buildingStone: { id:'buildingStone', name:'Đá xây dựng', category:'material', icon:'🧱', sellPrice:12, maxCapacity:RESOURCE_MAX_CAPACITY, unitName:'khối', desc:'Gia công 2 đá nguyên liệu tại Xưởng khai thác đá.' },

@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { compareWorldDepth, isFlatGroundTile } from '../src/engine/renderOrder.js';
 import { createCanvasRenderer } from '../src/engine/canvasRenderer.js';
+import {COMBAT_SHEETS,COMBAT_BUILDING_ART} from '../src/data/combatArtData.js';
 import { ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W } from '../src/engine/isoMath.js';
 import { getBuildingSpriteUri, getBuildingRenderAdjustment, BUILDING_SOURCE_GEOMETRY } from '../src/data/buildingSprites.js';
 import { AESTHETIC_TILE_URIS } from '../src/data/aestheticTileIcons.js';
@@ -29,6 +30,12 @@ import { getLivestockCells, getLivestockOutline, reserveLivestockCells, LIVESTOC
 import {RUNTIME_ART} from '../src/data/runtimeArtData.js';
 import {IRON_MINE_ART} from '../src/data/ironMineArtData.js';
 import {STONE_DEPOSIT_ART} from '../src/data/stoneDepositArtData.js';
+import {applyVillageGateLayout,VILLAGE_GATE_ID,VILLAGE_GATE_URI,getVillageGateOutline} from '../src/data/villageGate.js';
+import {RAID_SHEETS} from '../src/data/raidArtData.js';
+import {CHARACTER_SHEETS} from '../src/data/characterSheetsData.js';
+import {createForestRegion} from '../src/data/worldConfig.js';
+import {CONSTRUCTION_ART,getConstructionRenderAdjustment} from '../src/data/constructionArt.js';
+import {TILES_DATA} from '../src/data/tilesData.js';
 
 // Digests were captured from the original PNGs after byte-for-byte comparison.
 // The original source archive is local-only; CI needs only the public assets.
@@ -117,6 +124,137 @@ function cellFromHouse(event) {
   const difference = (event.x - rect.dx - ORIGIN_X) / HALF_W;
   return [Math.round((sum-difference)/2), Math.round((sum+difference)/2)];
 }
+
+test('every building under construction uses the same opaque scaffold instead of its faded finished art',()=>{
+  const ids=TILES_DATA.filter(tile=>tile.category==='building').map(tile=>tile.id);
+  const pending=Object.fromEntries(ids.map((id,index)=>{
+    const row=8+Math.floor(index/8)*3,col=8+(index%8)*2;
+    return [`${row}_${col}`,{row,col,targetTileId:id,startTime:Date.now()-1000,durationMs:60000}];
+  }));
+  const events=renderScene({traceAssets:true,setup({ctx}){ctx.getConstructions=()=>pending;}});
+  const sites=events.filter(e=>e.src===CONSTRUCTION_ART.uri);
+  assert.equal(sites.length,ids.length);assert.ok(sites.every(e=>e.alpha===1));
+  const completedUris=new Set(ids.map(id=>getBuildingSpriteUri(id)).filter(Boolean));
+  assert.ok(!events.some(e=>completedUris.has(e.src)),'Finished building art stays hidden while constructing');
+});
+
+test('scaffolds share world depth with buildings, keep progress UI above, and disappear on completion',()=>{
+  const pending={'20_20':{row:20,col:20,targetTileId:'b03_blacksmith_forge',startTime:Date.now()-2000,durationMs:60000}};
+  const events=renderScene({traceAssets:true,traceText:true,setup({grid,ctx}){
+    grid[19][20]='b01_cottage_red';grid[21][20]='b01_cottage_red';ctx.getConstructions=()=>pending;
+  }});
+  const site=events.findIndex(e=>e.src===CONSTRUCTION_ART.uri),houses=events.map((e,i)=>e.kind==='house'?i:-1).filter(i=>i>=0);
+  assert.ok(houses[0]<site&&site<houses[1]);
+  assert.ok(events.findIndex(e=>e.kind==='text'&&e.text==='🏗️')>houses[1]);
+  const completed=renderScene({traceAssets:true,setup({grid}){grid[20][20]='b03_blacksmith_forge';}});
+  assert.ok(!completed.some(e=>e.src===CONSTRUCTION_ART.uri));
+  assert.ok(completed.some(e=>e.src===getBuildingSpriteUri('b03_blacksmith_forge')));
+});
+
+test('warehouse and both pen orientations draw one uniformly scaled construction site at the ground contact',()=>{
+  for(const[id,flipped]of [['b60_combined_warehouse',false],['b22_cow_pasture',false],['b22_cow_pasture',true]]){
+    const events=renderScene({traceAssets:true,setup({ctx}){
+      ctx.getConstructions=()=>({'20_20':{row:20,col:20,targetTileId:id,flipped,startTime:Date.now()-1000,durationMs:60000}});
+    }});
+    const sites=events.filter(e=>e.src===CONSTRUCTION_ART.uri);assert.equal(sites.length,1);
+    const rect=getConstructionRenderAdjustment(id,flipped);
+    assert.deepEqual(sites[0].args,[ORIGIN_X+rect.dx,ORIGIN_Y+40*32+rect.dy,rect.dw,rect.dh]);
+    assert.equal(sites[0].alpha,1);
+  }
+});
+
+test('authored gates, ports, ships and outside props use native world depth and hide overwritten generated scenery',()=>{
+  const scene={'35_15':{tileId:'scene:gate',flipped:false,level:1},'9_4':{tileId:'scene:pier',flipped:false,level:1},'10_3':{tileId:'scene:ship',flipped:true,level:1},'34_14':null};
+  const events=renderScene({traceAssets:true,setup({ctx}){ctx.getMapScenery=()=>scene;ctx.getCustomMapLayout=()=>true;}});
+  for(const uri of ['/assets/buildings/village_gate_v2.png','/assets/aistudio/cang_67fa4e39.png','/assets/aistudio/TauHoangGia_v1_a5f7fe14.png'])assert.ok(events.some(e=>e.src===uri),uri);
+});
+
+test('the real forest renderer draws new workshops, ancient trees, wingbeat and troll poses without mutation',()=>{
+  const enemies=[Object.freeze({kind:'dragon',flying:true,r:19,c:20,hp:100,maxHp:200,facing:'SE',flightPhase:.2,path:[],fireFor:.2,fireAim:{r:20,c:21}}),
+    Object.freeze({kind:'troll',r:20,c:20,hp:70,maxHp:80,facing:'SW',walkPhase:1,path:[{}]})];
+  const job=Object.freeze({tileId:'b69_forester_lodge',r:18,c:14,facing:'NE',walkPhase:1,path:[{}],phase:'delivery',load:2});
+  const events=renderScene({traceAssets:true,traceFills:true,setup({grid,ctx}){
+    const forest=createForestRegion();grid.splice(0,32,...forest.grid);grid[16][12]='b69_forester_lodge';
+    ctx.getDefenseState=()=>({phase:'battle',villageHp:100,towers:{},soldiers:[],enemies});
+    ctx.getExtractionState=()=>({jobs:[job],nodes:{}});
+  }});
+  for(const uri of [RAID_SHEETS.dragon.uri,RAID_SHEETS.troll.uri,getBuildingSpriteUri('b69_forester_lodge'),CHARACTER_SHEETS.villager.farmer_old.uri]) {
+    assert.ok(events.some(e=>e.src===uri),uri);
+  }
+  assert.ok(events.some(e=>e.kind==='fill'&&e.color==='#f97316'),'Dragon has a visible fire projectile');
+  assert.ok(!events.some(e=>e.src===getBuildingSpriteUri('b14_town_hall')),'Loading a forest must not create a town hall');
+  assert.ok(events.filter(e=>[RAID_SHEETS.dragon.uri,RAID_SHEETS.troll.uri].includes(e.src)).every(e=>e.args.length===8));
+  for(const[r,c]of [[12,14],[12,16],[13,14],[13,16]]){
+    const rect={dx:12.8,dy:25.6};
+    const x=ORIGIN_X+(c-r)*64+rect.dx,y=ORIGIN_Y+(r+c)*32+rect.dy;
+    assert.ok(events.some(e=>e.src==='/assets/decorations/forest_3.png'&&Math.abs(e.args[0]-x)<1e-6&&Math.abs(e.args[1]-y)<1e-6),'Ancient grove is visible even inside the old town-hall coordinates');
+  }
+});
+
+test('real renderer draws one village gate above its road and behind objects outside the entrance',()=>{
+  const events=renderScene({traceAssets:true,tracePaths:true,setup({grid,ctx}){
+    applyVillageGateLayout(grid);grid[30][15]='b01_cottage_red';grid[31][17]='b01_cottage_red';
+    ctx.getHoverCell=()=>({row:31,col:15});
+  }});
+  const gates=events.filter(e=>e.src===VILLAGE_GATE_URI);assert.equal(gates.length,1);
+  const gateIndex=events.indexOf(gates[0]),houses=events.map((e,i)=>e.kind==='house'?i:-1).filter(i=>i>=0);
+  assert.ok(houses[0]<gateIndex&&gateIndex<houses[1]);
+  const rect=getBuildingRenderAdjustment(VILLAGE_GATE_ID);
+  assert.deepEqual(gates[0].args,[ORIGIN_X+(14-31)*64+rect.dx,ORIGIN_Y+(31+14)*32+rect.dy,rect.dw,rect.dh]);
+  const [x,y,w,h]=gates[0].args;
+  assert.ok(Math.abs(x+790*w/1536-(ORIGIN_X+(15-31)*64+64))<1e-8,'Opening sits on road centre X');
+  assert.ok(Math.abs(y+800*h/1024-(ORIGIN_Y+(31+15)*32+96))<1e-8,'Opening sits on road centre Y');
+  assert.ok(events.some(e=>e.kind==='outline'&&JSON.stringify(e.points)===JSON.stringify(getVillageGateOutline(ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W))));
+});
+
+test('actual map renderer draws the goblin image between world objects and shows the warning entry marker',()=>{
+  const events=renderScene({traceAssets:true,traceText:true,setup({grid,ctx}){
+    grid[19][20]='b01_cottage_red';grid[21][20]='b01_cottage_red';
+    ctx.getDefenseState=()=>({phase:'warning',remaining:12,villageHp:100,towers:{},
+      raid:{spawn:{r:18,c:20}},enemies:[{r:20,c:20,hp:30,maxHp:30,path:[]}]});
+  }});
+  const goblin=events.findIndex(event=>event.src===COMBAT_SHEETS.goblin.uri);
+  const houses=events.map((event,index)=>event.kind==='house'?index:-1).filter(index=>index>=0);
+  assert.ok(goblin>=0,'The real map renderer paints the asset, not only a standalone render helper');
+  assert.ok(houses[0]<goblin&&goblin<houses[1],'Goblin uses the same depth order as the buildings');
+  const draw=events[goblin];assert.equal(draw.args.length,8);assert.ok(draw.args[2]<COMBAT_SHEETS.goblin.width/4);
+  assert.equal(draw.alpha,1);
+  assert.ok(events.some(event=>event.text==='GOBLIN TỚI SAU 12s'));
+});
+
+test('real map draws barracks at their measured ground point and soldiers between rear and front buildings',()=>{
+  const events=renderScene({traceAssets:true,setup({grid,ctx}){
+    grid[19][20]='b01_cottage_red';grid[21][20]='b01_cottage_red';grid[20][22]='b67_guard_barracks';
+    ctx.getDefenseState=()=>({phase:'idle',villageHp:100,towers:{},enemies:[],soldiers:[{r:20,c:20,hp:60,path:[],trainLeft:0}]});
+  }});
+  const soldier=events.findIndex(event=>event.src===COMBAT_SHEETS.guard.uri);
+  const houses=events.map((event,index)=>event.kind==='house'?index:-1).filter(index=>index>=0);
+  assert.ok(houses[0]<soldier&&soldier<houses[1]);assert.equal(events[soldier].args.length,8);
+  assert.ok(events.some(event=>event.src===COMBAT_BUILDING_ART.barracks_lv1.uri));
+  for(const level of [1,2,3]){
+    const rect=getBuildingRenderAdjustment('b67_guard_barracks',level);
+    const geometry=COMBAT_BUILDING_ART[`barracks_lv${level}`].geometry;
+    assert.ok(Math.abs(rect.dx+geometry.anchorX*rect.dw/geometry.width-64)<1e-6);
+    assert.ok(Math.abs(rect.dy+geometry.anchorY*rect.dh/geometry.height-128)<1e-6);
+  }
+});
+
+test('the real renderer draws mage and academy artwork, a full mage health bar and its area spell',()=>{
+  const events=renderScene({traceAssets:true,tracePaths:true,traceFills:true,setup({grid,ctx}){
+    grid[20][22]='b68_mage_academy';
+    ctx.getDefenseState=()=>({phase:'battle',villageHp:100,towers:{},enemies:[],soldiers:[
+      {unitType:'mage',r:20,c:20,hp:40,path:[],trainLeft:0,spellFlash:.2,aim:{r:22,c:20}}]});
+  }});
+  assert.ok(events.some(event=>event.src===COMBAT_SHEETS.mage.uri&&event.alpha===1));
+  assert.ok(events.some(event=>event.src===COMBAT_BUILDING_ART.academy_lv1.uri));
+  assert.ok(events.some(event=>event.kind==='fill'&&event.color==='#a78bfa44'));
+  for(const level of [1,2,3]){
+    const rect=getBuildingRenderAdjustment('b68_mage_academy',level);
+    const geometry=COMBAT_BUILDING_ART[`academy_lv${level}`].geometry;
+    assert.ok(Math.abs(rect.dx+geometry.anchorX*rect.dw/geometry.width-64)<1e-6);
+    assert.ok(Math.abs(rect.dy+geometry.anchorY*rect.dh/geometry.height-128)<1e-6);
+  }
+});
 
 test('expansion building levels and props use the same measured rectangle in the map and preview', () => {
   for (const [id, levels] of Object.entries(EXPANSION_BUILDING_LEVELS)) for (const level of [1,2,3]) {

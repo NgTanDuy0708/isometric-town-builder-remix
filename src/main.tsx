@@ -5,7 +5,10 @@ import App from './App';
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  if (window.location.pathname.replace(/\/$/, '') === '/delivery-preview') {
+  if (window.location.pathname.replace(/\/$/, '') === '/combat-preview') {
+    const CombatPreview = lazy(() => import('./CombatPreview'));
+    root.render(<Suspense fallback={<div>Đang mở trận kiểm tra hình ảnh…</div>}><CombatPreview /></Suspense>);
+  } else if (window.location.pathname.replace(/\/$/, '') === '/delivery-preview') {
     const DeliveryPreview = lazy(() => import('./DeliveryPreview'));
     root.render(<Suspense fallback={<div>Đang mở hoạt ảnh giao hàng…</div>}><DeliveryPreview /></Suspense>);
   } else if (window.location.pathname.replace(/\/$/, '') === '/warehouse-editor') {

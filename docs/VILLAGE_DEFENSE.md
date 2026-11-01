@@ -1,12 +1,14 @@
 # Phòng thủ làng — bản đầu
 
+Cập nhật 31/10: đã thêm quái rừng, rồng bay/phun lửa, diễn tập theo loại và phòng thủ hai vùng. Xem [quy tắc và cấp mở mới](WORLD_AND_PREMIUM.md#quái-cấp-cao). Phần mô tả dưới đây ghi vòng goblin gốc.
+
 ## Bắt đầu
 
 1. Đạt cấp người chơi 6. Tháp canh đã mở trong Cửa hàng → Sản xuất từ cấp 4, có thể xây trước.
 2. Hoàn tất ít nhất một Tháp canh. Chừa đường hoặc đất trống từ rìa vùng đất đã mở đến tháp và Tòa thị chính.
 3. Bấm **Phòng thủ làng** ở HUD dân số hoặc bấm trực tiếp tháp. Chọn **Bắt đầu diễn tập goblin**.
-4. Sau 15 giây cảnh báo, ba goblin xuất hiện lần lượt ở rìa đất đã mở. Tháp tự bắn địch trong tầm.
-5. Thắng thì mở bảng để nhận 80 vàng + 30 XP và bấm **Tiếp tục**. Thưởng chỉ nhận một lần. Thua/rút lui có thể sửa và diễn tập lại; khi đã thắng không diễn tập lại để kiếm thưởng.
+4. Bắt đầu diễn tập tự đóng bảng và đưa camera tới lối vào cùng tháp gần nhất. Ô lối vào có viền đỏ và đếm ngược; sau 15 giây, ba goblin xuất hiện lần lượt. Tháp tự bắn địch trong tầm. Có thể bấm **Xem trận trên bản đồ** trên HUD hoặc trong bảng phòng thủ để quay lại xem trận.
+5. Thắng thì mở bảng để nhận 80 vàng + 30 XP và bấm **Tiếp tục**. Thưởng chỉ nhận một lần. Thua/rút lui có thể sửa và diễn tập lại. Sau chiến thắng đầu, nút **Diễn tập lại · không thưởng** cho xem lại giao tranh; không tạo thêm thưởng hoặc thay đổi số đợt thật.
 
 ## Các đợt ngẫu nhiên
 
@@ -46,4 +48,4 @@ State `defense` được ghi cùng snapshot vàng, vật phẩm và bản đồ 
 
 Chỉ tính các nhịp game đang chạy, mỗi nhịp giới hạn 0,25 giây. Đóng game hoặc quay lại sau khoảng nghỉ không truy thu nhiều trận. Save cũ thiếu trường này bắt đầu với phòng thủ chưa bật; reset xóa cùng tiến trình game.
 
-Goblin hiện dùng SVG tạm; tháp dùng bộ ảnh có sẵn. Lính, trại huấn luyện, pháp sư và rồng chưa thuộc bản này.
+Goblin, vệ binh và pháp sư dùng PNG động bốn hướng; trại/học viện có ba ảnh cấp riêng. Tháp có tên bay, pháp sư có hiệu ứng tím. Đã thêm rồng và quái rừng với atlas riêng; chọn loại đợt trong **Xem mô phỏng trận và toàn bộ động tác**. [Bộ ảnh quân đội](generated-assets/combat-v1/README.md), [bộ ảnh rồng/quái rừng](generated-assets/raids-v2/README.md).

@@ -4,6 +4,8 @@ import './styles.css';
 import './productionPanel.css';
 import './extraction.css';
 import './defense.css';
+import './adventure.css';
+import './tutorial.css';
 import { FENCE_ITEMS } from './data/fenceConfig.js';
 
 const STUDIO_MARKUP = `
@@ -18,6 +20,7 @@ const STUDIO_MARKUP = `
 
   <!-- Top-Left Floating HUD Bar: Level & Active Town Event & Season Pill -->
   <aside class="top-left-hud-bar" id="top-left-hud-bar" aria-label="Cấp độ và sự kiện vương quốc">
+    <div class="region-controls"><button type="button" id="btn-world-map">🗺️ Vùng đất</button><button type="button" id="btn-premium-shop">💎 Cửa hàng</button><span id="builder-region-status">Làng Hoàng Gia</span></div>
     <!-- Level & XP Widget -->
     <div class="hud-card hud-level-card" id="hud-level-card" title="Cấp độ người chơi & Tiến độ kinh nghiệm">
       <div class="hud-level-row">
@@ -106,10 +109,13 @@ const STUDIO_MARKUP = `
         <span class="hud-stat-num" id="builder-stat-farmers">0</span>
       </div>
       <div class="hud-stat-line"><span class="hud-stat-icon">⛏️</span><span class="hud-stat-name">Công nhân:</span><span class="hud-stat-num" id="builder-stat-workers">0</span></div>
+      <div class="hud-stat-line"><span class="hud-stat-icon">⚔️</span><span class="hud-stat-name">Lính:</span><span class="hud-stat-num" id="builder-stat-soldiers">0</span></div>
       <div id="builder-stat-worker-food" style="font-size:11px;padding-top:4px;" role="status">🍞 Chưa có công nhân</div>
+      <button type="button" id="hud-quick-storage-btn" class="hud-quick-storage-btn">📦 Kho tổng hợp</button>
       <button type="button" id="btn-open-extraction" class="hud-quick-storage-btn" title="Thuê hoặc cho công nhân khai thác nghỉ">⛏️ Quản lý công nhân</button>
       <button type="button" id="btn-open-defense" class="hud-quick-storage-btn">🛡️ Phòng thủ làng</button>
       <div id="builder-defense-status">🛡️ Diễn tập phòng thủ · cấp 6</div>
+      <button type="button" id="btn-watch-defense" class="hud-quick-storage-btn" hidden>👺 Xem trận trên bản đồ</button>
       <div id="builder-stat-worker-shortage" hidden style="color:#b45309;font-size:11px;padding-top:4px;"> </div>
     </div>
 
@@ -406,6 +412,10 @@ const STUDIO_MARKUP = `
             <button type="button" class="settings-util-btn" id="btn-replay-tutorial" title="Mở lại hướng dẫn từng bước của Cụ Trưởng Làng">
               <span class="util-icon">🧙‍♂️</span>
               <span>Xem Hướng Dẫn</span>
+            </button>
+            <button type="button" class="settings-util-btn" id="btn-replay-level-tutorial" title="Xem lại món và tính năng vừa mở ở cấp hiện tại">
+              <span class="util-icon">👆</span>
+              <span>Hướng dẫn cấp hiện tại</span>
             </button>
             <button type="button" class="settings-util-btn" id="btn-trigger-event-fair" title="Kích hoạt sự kiện Hội Chợ Làng (+50% giá bán Chợ 🪙)">
               <span class="util-icon">🎪</span>

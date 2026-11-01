@@ -1,8 +1,14 @@
 // Tile catalog metadata - Cleaned: only items with real images
 import { FENCE_TILES } from "./fenceConfig.js";
+import {PREMIUM_TILES} from './premiumConfig.js';
 import { EXPANSION_TILES, EXPANSION_VARIANT_TILES } from "./expansionCatalog.js";
 
 export const TILES_DATA = [
+  ...PREMIUM_TILES,
+  {id:'b69_forester_lodge',label:'Trạm kiểm lâm',category:'building',shopCategory:'production',doc:'Thuê công nhân khai thác gỗ cổ thụ riêng tại Rừng Cổ Thụ.'},
+  {id:'n04_ancient_grove',label:'Cây cổ thụ',category:'decoration',shopCategory:'hidden',doc:'Nguồn gỗ cổ thụ tại vùng rừng; khai thác bằng Trạm kiểm lâm.'},
+  {id:'b68_mage_academy',label:'Học viện pháp sư',category:'building',shopCategory:'production',doc:'Huấn luyện pháp sư tầm xa, phép gây sát thương quanh mục tiêu. Mỗi người giữ 1 dân và dùng lương thực chung. Mở cấp 8, học viện cấp 1 có 2 chỗ.'},
+  {id:'b67_guard_barracks',label:'Trại huấn luyện vệ binh',category:'building',shopCategory:'production',doc:'Huấn luyện lính cận chiến bằng dân rảnh, vàng và dụng cụ sắt. Lính tự chặn goblin, dùng chung lương thực với công nhân. Cấp 1 có 2 chỗ.'},
   { id:'b66_iron_mine', label:'Mỏ sắt', category:'building', shopCategory:'production', doc:'Thuê dân rảnh khai thác quặng sắt về Kho Tổng Hợp; dùng Lò rèn để luyện thỏi và chế tác dụng cụ.' },
   { id:'n03_iron_deposit', label:'Mạch quặng sắt tự nhiên', category:'decoration', doc:'Điểm quặng cho công nhân Mỏ sắt; hồi phục sau khi cạn.' },
   { id:'b65_stone_quarry', label:'Xưởng khai thác đá', category:'building', shopCategory:'production', doc:'Thuê dân rảnh khai thác đá rồi mang về Kho Tổng Hợp. Ban đầu có 2 chỗ làm việc.' },

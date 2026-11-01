@@ -1,6 +1,7 @@
 import { getTerrainSprite, getBaseTerrainTile } from '../data/terrainConfig.js';
 import { isProtectedTile } from '../data/starterMap.js';
 import { isHarborCell } from '../data/harborLayout.js';
+import { VILLAGE_GATE_ID,VILLAGE_GATE_PART } from '../data/villageGate.js';
 
 export function isPlacementProtected(tileId, row, col, currentId) {
   if (isHarborCell(row,col)) return true;
@@ -18,6 +19,7 @@ export function getClearedSurface(tileId, row, col, terrainMap) {
 }
 
 export function canPlaceOnSurface(tileId, currentId) {
+  if ([VILLAGE_GATE_ID,VILLAGE_GATE_PART].includes(tileId)) return false;
   const terrain = getTerrainSprite(currentId);
   const isLand = ['d12_meadow_wildflowers', 'g01_grass_flat', 's13_sand_ground'].includes(currentId);
   const isSea = !!terrain && terrain.color === '#3f74bc';

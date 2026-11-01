@@ -338,6 +338,8 @@ export class KingdomWondersManager {
   }
 
   startRelocatingWonder(wonderId) {
+    const fixed=this.wonderSites[wonderId];
+    if(fixed&&isProtectedTile(fixed.row,fixed.col,'')){this.ctx.showToast?.('Kỳ quan mặc định của map không thể di chuyển.','info');return false;}
     if (!this.isWonderPlaced(wonderId)) return;
     this.movingWonderId = wonderId;
     this.purchasingWonder = false;
@@ -467,7 +469,7 @@ export class KingdomWondersManager {
       }
     }
     try {
-      const raw = localStorage.getItem("town_builder_kingdom_wonders");
+      const raw = savedState == null ? localStorage.getItem("town_builder_kingdom_wonders") : null;
       if (raw) {
         const localW = JSON.parse(raw);
         if (localW && typeof localW === "object") {
@@ -498,7 +500,7 @@ export class KingdomWondersManager {
       for (const key of keys) applySite(key, savedSites[key]);
     }
     try {
-      const rawSites = localStorage.getItem("town_builder_kingdom_wonder_sites");
+      const rawSites = savedSites == null ? localStorage.getItem("town_builder_kingdom_wonder_sites") : null;
       if (rawSites) {
         const parsed = JSON.parse(rawSites);
         if (parsed && typeof parsed === "object") {

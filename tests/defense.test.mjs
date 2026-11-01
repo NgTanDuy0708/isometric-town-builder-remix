@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import {createDefenseManager} from '../src/engine/defenseManager.js';
 import {createDefensePanel,getDefenseStatus} from '../src/engine/defensePanel.js';
 import {drawGoblin,drawDefenseOverlay} from '../src/engine/defenseRenderer.js';
+import {getDefenseCameraView} from '../src/engine/defenseCamera.js';
+import {ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W} from '../src/engine/isoMath.js';
 import {getDefaultSaveState,saveGameSave,loadGameSave} from '../src/engine/storage.js';
 
 function scene(){
@@ -48,7 +50,10 @@ test('training completes warning, actual goblin movement, tower combat and a sin
   assert.equal(s.manager.claimReward().ok,false);assert.equal(s.gold(),580);assert.ok(s.rewards[0].claimed);
   s.manager.init(structuredClone(state));assert.equal(s.manager.claimReward().ok,false);
   assert.equal(s.manager.acknowledge().ok,true);assert.equal(s.manager.getState().phase,'idle');
-  assert.equal(s.manager.startTraining().ok,false);s.tick(1000);assert.equal(s.manager.getState().phase,'idle');
+  s.tick(1000);assert.equal(s.manager.getState().phase,'idle');
+  assert.equal(s.manager.startTraining().ok,true);s.tick(90);
+  assert.equal(s.manager.getState().result.practice,true);assert.equal(s.manager.claimReward().ok,false);
+  assert.equal(s.gold(),580);assert.equal(s.manager.acknowledge().ok,true);
 });
 
 test('random raids give preparation, preserve a paused timer and cannot be cancelled by toggling during warning',()=>{
@@ -144,10 +149,38 @@ test('goblin rendering uses fractional depth and every combat overlay preserves 
     const s=scene(),state=s.battle();state.enemies=[{r:12.4,c:16.2,hp:15,maxHp:30,path:[{}]}];
     state.towers['16_16'].hp=50;state.towers['16_16'].flash=.1;state.towers['16_16'].aim={r:12.4,c:16.2};
     drawGoblin(canvas,state.enemies[0],1);drawDefenseOverlay(canvas,state,s.grid);
-    assert.equal(depth,0);assert.equal(draws.length,1);assert.match(draws[0].uri,/combat\/goblin.svg/);
+    assert.equal(depth,0);assert.equal(draws.length,1);assert.match(draws[0].uri,/combat\/v1\/goblin\.png/);
     const source=fs.readFileSync(new URL('../src/engine/canvasRenderer.js',import.meta.url),'utf8');
     assert.match(source,/queueWorld\(enemy\.r,enemy\.c,/);
   }finally{globalThis.Image=previous;}
+});
+
+test('tower arrow moves toward its target with a short shaft instead of a full-distance beam',()=>{
+  const frames=[];
+  for(const flash of [.17,.04]) {
+    const lines=[];let start;
+    const canvas=new Proxy({}, {get(_target,k){
+      if(k==='moveTo')return(x,y)=>{start=[x,y];};
+      if(k==='lineTo')return(x,y)=>{lines.push([start,[x,y]]);};
+      return()=>{};
+    },set(){return true;}});
+    const s=scene(),state=s.battle();state.phase='idle';state.enemies=[];
+    state.towers['16_16'].flash=flash;state.towers['16_16'].aim={r:12,c:16};
+    drawDefenseOverlay(canvas,state,s.grid);
+    assert.ok(lines.length>=1);
+    for(const [a,b] of lines)assert.ok(Math.hypot(b[0]-a[0],b[1]-a[1])<17,'No long beam');
+    frames.push(lines[0][1]);
+  }
+  assert.ok(Math.hypot(frames[1][0]-frames[0][0],frames[1][1]-frames[0][1])>100,'Projectile travels between frames');
+});
+
+test('the killing arrow clears at battle end and leftover effects also expire outside battle',()=>{
+  const s=scene(),state=s.battle();state.raid.total=state.raid.spawned=1;
+  state.enemies=[{id:1,r:15,c:16,hp:1,maxHp:30,path:[],target:null,retry:0,attack:0}];
+  s.tick(.1);assert.equal(state.phase,'result');
+  assert.equal(state.towers['16_16'].flash,0);assert.equal(state.towers['16_16'].aim,null);
+  state.towers['16_16'].flash=.18;state.towers['16_16'].aim={r:15,c:16};
+  s.tick(.3);assert.equal(state.towers['16_16'].flash,0);assert.equal(state.towers['16_16'].aim,null);
 });
 
 test('the defense panel routes training, reward, continuation and opt-in through the real manager',()=>{
@@ -165,18 +198,43 @@ test('the defense panel routes training, reward, continuation and opt-in through
   const previousDoc=globalThis.document,previousWindow=globalThis.window,body=new Element('body'),hud=new Element('div');
   globalThis.document={body,createElement:tag=>new Element(tag),getElementById:id=>id==='builder-defense-status'?hud:null};
   globalThis.window={addEventListener(){}};
-  const s=scene(),panel=createDefensePanel({manager:s.manager,showToast(){},openUpgradeModal(){}});
+  const views=[];
+  const s=scene(),panel=createDefensePanel({manager:s.manager,getCurrentGrid:()=>s.grid,showToast(){},openUpgradeModal(){},viewBattle:summary=>views.push(summary.raid.spawn)});
   const button=text=>body.all().find(node=>node.tag==='button'&&node.textContent===text);
   try{
     s.setLevel(5);panel.open();assert.equal(button('Bắt đầu diễn tập goblin').disabled,true);
     s.setLevel(6);panel.render();button('Bắt đầu diễn tập goblin').listeners.click();
+    assert.equal(body.children[0].hidden,true,'Starting training removes the modal covering the battlefield');
+    assert.deepEqual(views[0],s.manager.getState().raid.spawn);
     assert.equal(s.manager.getState().phase,'warning');assert.match(hud.textContent,/Goblin tới sau/);
-    s.tick(90);panel.render();assert.equal(s.manager.getState().result.outcome,'victory');
+    panel.open();button('Xem trận trên bản đồ').listeners.click();assert.equal(body.children[0].hidden,true);
+    assert.equal(views.length,2);
+    s.tick(90);panel.open();assert.equal(s.manager.getState().result.outcome,'victory');
     button('Nhận 80 vàng + 30 XP').listeners.click();assert.equal(s.gold(),580);
     assert.equal(button('Đã nhận thưởng').disabled,true);button('Tiếp tục').listeners.click();
     assert.equal(s.manager.getState().phase,'idle');button('Bật tấn công ngẫu nhiên').listeners.click();
     assert.equal(s.manager.getState().enabled,true);assert.match(hud.textContent,/Đợt tới sau/);
     button('Dừng các đợt kế tiếp').listeners.click();assert.equal(s.manager.getState().enabled,false);
     assert.match(getDefenseStatus(s.manager.summary()),/đang tắt/);
+    s.grid[20][20]='b01_cottage_red';s.grid[20][21]='b67_guard_barracks';s.resources.ironTools=1;panel.render();
+    button('Huấn luyện 1 lính · 50 vàng + 1 dụng cụ sắt').listeners.click();
+    assert.equal(s.manager.getState().soldiers.length,1);assert.equal(s.resources.ironTools,0);assert.equal(s.gold(),530);
+    s.grid[20][22]='b68_mage_academy';s.resources.ironTools=1;s.resources.fabric=2;panel.render();
+    assert.equal(button('Huấn luyện pháp sư · 80 vàng + 1 dụng cụ sắt + 2 vải').disabled,true);
+    s.setLevel(8);panel.render();button('Huấn luyện pháp sư · 80 vàng + 1 dụng cụ sắt + 2 vải').listeners.click();
+    assert.equal(s.manager.getState().soldiers[1].unitType,'mage');assert.equal(s.resources.fabric,0);assert.equal(s.gold(),450);
   }finally{panel.destroy();globalThis.document=previousDoc;globalThis.window=previousWindow;}
+});
+
+test('battle camera contains the entry, nearest tower and live goblins at desktop and phone sizes',()=>{
+  const summary={raid:{spawn:{r:8,c:16}},enemies:[{r:10,c:16,hp:30}],towerList:[{r:16,c:16,hp:100}]};
+  for(const viewport of [{width:1280,height:720},{width:390,height:844}]){
+    const view=getDefenseCameraView(summary,viewport);
+    for(const point of [summary.raid.spawn,summary.enemies[0],summary.towerList[0]]){
+      const x=(ORIGIN_X+(point.c-point.r)*HALF_W+64)*view.zoom+view.x;
+      const y=(ORIGIN_Y+(point.r+point.c)*QUARTER_W+96)*view.zoom+view.y;
+      assert.ok(x>0&&x<viewport.width);assert.ok(y>60&&y<viewport.height-30);
+    }
+  }
+  assert.equal(getDefenseCameraView({raid:null},{width:1280,height:720}),null);
 });

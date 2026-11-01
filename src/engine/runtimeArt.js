@@ -28,6 +28,7 @@ export function drawRuntimeActor(ctx,kind,id,x,y,{height,width,flipped=false,onL
 }
 
 export function drawResourceIcon(ctx,id,x,y,size=20,onLoad) {
+  if(id==='ancientWood')id='wood';
   const asset=RUNTIME_ART.icon[id],image=getRuntimeArtImage('icon',id,onLoad);
   if(!asset||!image?.complete||!image.naturalWidth)return false;
   const [left,top,right,bottom]=asset.bounds,scale=size/Math.max(right-left,bottom-top);

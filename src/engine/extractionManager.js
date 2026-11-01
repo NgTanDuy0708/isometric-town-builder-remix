@@ -5,6 +5,7 @@ import { getWarehouseUsed, RESOURCE_MAX_CAPACITY } from '../data/resourcesConfig
 import { findPathAStar } from './pathfinding.js';
 import { WORKER_FOODS } from '../data/workerFoodConfig.js';
 import { createWorkerFoodState, getWorkerFoodSummary, updateWorkerFood } from './workerFood.js';
+import {characterDirection} from './characterAnimation.js';
 
 export const WORKER_STATUS = {
   idle: 'Chờ phân công chuyến', outbound: 'Đang tới điểm khai thác', working: 'Đang khai thác',
@@ -74,7 +75,7 @@ export function createExtractionManager(ctx) {
       const c = Math.min(grid()[0].length-1,Math.max(0,finite(raw.c,raw.homeCol)));
       state.jobs.push({ id:state.nextId++, homeRow:raw.homeRow,homeCol:raw.homeCol,tileId:raw.tileId,
         r:Math.round(r),c:Math.round(c),load,retiring:!!raw.retiring,phase:load?'delivery':'home',
-        status:load?'delivery':'home',path:[],work:0,nodeKey:null });
+        status:load?'delivery':'home',path:[],work:0,nodeKey:null,facing:raw.facing||'SE',walkPhase:Math.max(0,finite(raw.walkPhase))%4 });
     }
     ensureNodes();
     syncNodes(); checkpoint=0; retry=0;
@@ -96,12 +97,15 @@ export function createExtractionManager(ctx) {
       return added;
   }
   function getState() { return state; }
-  function labor() { return getWorkforce(grid(),constructions(),ctx.getTileMap?.() || {},ctx.getBuildingLevels?.() || {},state); }
+  function labor() { return getWorkforce(grid(),constructions(),ctx.getTileMap?.() || {},ctx.getBuildingLevels?.() || {},state,ctx.getDefenseState?.(),ctx.getOtherLabor?.()); }
   function foodWorkerCount(workforce=labor()) {
     return state.jobs.filter(job=>SHOPS[job.tileId]&&grid()[job.homeRow]?.[job.homeCol]===job.tileId)
       .slice(0,Math.max(0,workforce.total-workforce.farmers)).filter(job=>!job.retiring).length;
   }
-  function foodSummary() { return getWorkerFoodSummary(state.food,ctx.getResources(),foodWorkerCount()); }
+  function foodSummary() {
+    const workers=foodWorkerCount(),soldiers=ctx.getSoldierFoodCount?.()||0;
+    return {...getWorkerFoodSummary(state.food,ctx.getResources(),workers+soldiers),extractionWorkers:workers,soldiers};
+  }
   function setFoodEnabled(id,enabled) {
     if(!WORKER_FOODS.some(food=>food.id===id)||typeof enabled!=='boolean')return false;
     const chosen=new Set(state.food.enabledFoods);
@@ -160,8 +164,9 @@ export function createExtractionManager(ctx) {
     }
     const workforce=labor();let allowedWorkers=Math.max(0,workforce.total-workforce.farmers);
     const foodWorkers=foodWorkerCount(workforce);
-    changed=updateWorkerFood(state.food,ctx.getResources(),foodWorkers,dt)||changed;
-    const workSpeed=getWorkerFoodSummary(state.food,ctx.getResources(),foodWorkers).workSpeed;
+    const diners=foodWorkers+(ctx.getSoldierFoodCount?.()||0);
+    changed=updateWorkerFood(state.food,ctx.getResources(),diners,dt)||changed;
+    const workSpeed=getWorkerFoodSummary(state.food,ctx.getResources(),diners).workSpeed;
     for(const job of [...state.jobs]) {
       if(!SHOPS[job.tileId] || grid()[job.homeRow]?.[job.homeCol]!==job.tileId)continue;
       const canWork=allowedWorkers-->0;
@@ -172,6 +177,7 @@ export function createExtractionManager(ctx) {
         const enteringHome=job.phase==='home'&&next.r===job.homeRow&&next.c===job.homeCol;
         if(!enteringHome&&!walkable(next.r,next.c)){job.r=Math.round(job.r);job.c=Math.round(job.c);job.path=[];job.phase=job.load?'delivery':job.retiring?'home':'idle';job.status='no_path';continue;}
         const dr=next.r-job.r,dc=next.c-job.c,dist=Math.hypot(dr,dc),step=dt*1.3;
+        job.facing=characterDirection(dr,dc,job.facing||'SE');job.walkPhase=((job.walkPhase||0)+Math.min(dist,step)*4)%4;
         if(dist<=step){job.r=next.r;job.c=next.c;job.path.shift();}
         else{job.r+=dr/dist*step;job.c+=dc/dist*step;}
         continue;
@@ -198,7 +204,7 @@ export function createExtractionManager(ctx) {
         else if(canRetry)dispatch(job);
       } else if(job.phase==='idle'&&canRetry)dispatch(job);
     }
-    if(changed||(state.jobs.length && checkpoint>=10)){checkpoint=0;ctx.onChanged?.();}
+    if(changed||((state.jobs.length||diners) && checkpoint>=10)){checkpoint=0;ctx.onChanged?.();}
   }
   return {init,getState,hire,dismiss,update,busyMessage,labor,foodSummary,setFoodEnabled};
 }

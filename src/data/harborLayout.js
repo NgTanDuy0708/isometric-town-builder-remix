@@ -1,8 +1,8 @@
 // Shared logical cells and source-space contact points; artwork stays intact.
-export const SHIP_DOCK_ROW = 14;
-export const SHIP_DOCK_COL = 4;
-export const SHIP_WATER_ROW = 15;
-export const SHIP_WATER_COL = 3;
+export let SHIP_DOCK_ROW = 14;
+export let SHIP_DOCK_COL = 4;
+export let SHIP_WATER_ROW = 15;
+export let SHIP_WATER_COL = 3;
 
 // Both long sprites occupy 1 row × 2 columns, along their hull/platform axis.
 // The named cell is the front/end cell, not the centre of a one-cell sprite.
@@ -10,6 +10,13 @@ export const HARBOR_FOOTPRINTS = {
   dock: { row:SHIP_DOCK_ROW, col:SHIP_DOCK_COL-1, rows:1, cols:2 },
   ship: { row:SHIP_WATER_ROW, col:SHIP_WATER_COL-1, rows:1, cols:2 }
 };
+export function setHarborSites(scenery={},custom=false){
+  const find=id=>Object.entries(scenery).find(([,item])=>item?.tileId===id)?.[0]?.split('_').map(Number);
+  [SHIP_DOCK_ROW,SHIP_DOCK_COL]=custom?(find('scene:pier')||[-100,-100]):[14,4];
+  [SHIP_WATER_ROW,SHIP_WATER_COL]=custom?(find('scene:ship')||[-100,-100]):[15,3];
+  Object.assign(HARBOR_FOOTPRINTS.dock,{row:SHIP_DOCK_ROW,col:SHIP_DOCK_COL-1});
+  Object.assign(HARBOR_FOOTPRINTS.ship,{row:SHIP_WATER_ROW,col:SHIP_WATER_COL-1});
+}
 
 export function getHarborFootprint(row, col) {
   return Object.entries(HARBOR_FOOTPRINTS).find(([,f]) =>

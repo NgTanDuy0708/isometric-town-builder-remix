@@ -1,6 +1,6 @@
 # Roadmap phát triển gameplay
 
-Ngày lập: 30/10/2026. Trạng thái: đã triển khai chặng 1, khai thác gỗ/đá/quặng của chặng 2, chuỗi chế biến và lương thực công nhân của chặng 3; chặng 4 đã có tháp tự bắn và các đợt goblin. Lính/pháp sư, rồng và chặng 5–6 vẫn là kế hoạch tiếp theo.
+Ngày lập: 30/10/2026. Cập nhật 31/10/2026: bản đầu đã triển khai đủ 6 chặng, gồm quái rừng/rồng có sprite động, Rừng Cổ Thụ lưu riêng và chạy khi xem vùng khác, cửa hàng kim cương + túi sưu tầm + đổi vàng. Chi tiết sử dụng và điều kiện mở: [Vùng đất và cửa hàng](WORLD_AND_PREMIUM.md). Cân bằng cần tiếp tục chơi thử; map núi/đảo và gói nội dung sau nằm ngoài phạm vi bản đầu.
 
 Chặng 1 dùng nhà ở đã hoàn tất để tính dân; mỗi luống giữ 1 suất. Có giới hạn ở cả mua từng luống và kéo đặt liên tục, HUD dân rảnh/làm nông, chặn gỡ nhà gây thiếu dân và bảo toàn save cũ dư luống. Phân công được tính từ nhà/luống đã lưu, không tạo bộ đếm độc lập có thể bị lệch qua save/load. Công nhân đã được bổ sung ở chặng 2; binh lính thuộc chặng sau.
 
@@ -106,7 +106,13 @@ Không gắn lịch cố định trước khi chốt phạm vi từng chặng. H
 
 ## Chặng 4 — Phòng thủ làng và các đợt tấn công
 
+Hoàn thiện hình ảnh 31/10/2026: đã thay toàn bộ SVG tạm của goblin, vệ binh, pháp sư, trại và học viện bằng 9 PNG tạo với built-in image_gen. Ba sheet nhân vật có 4 hướng × 8 tư thế; mỗi công trình có 3 ảnh cấp riêng. Động tác nối trực tiếp với đi/đánh/bị thương, có đo điểm chân và móng. `/combat-preview` dùng renderer và battle manager thật trong scene không lưu game; có nút mở ngay trong bảng phòng thủ. [Bộ ảnh và prompt](generated-assets/combat-v1/README.md).
+
 ### Đã triển khai: tháp canh và goblin
+
+Pháp sư đã bổ sung trong Học viện pháp sư (cấp người chơi 8, xây 300 vàng/60 giây). Mỗi người giữ 1 dân, trả 80 vàng + 1 dụng cụ sắt + 2 vải, huấn luyện 30 giây online. Có 40 máu, tầm 3 ô; phép gây 14 sát thương cho địch trong bán kính 1 ô quanh mục tiêu, nhịp 2 giây, không đánh quân mình. Tự tìm vị trí bắn, về học viện hồi máu và dùng cùng cơ chế khẩu phần/cho nghỉ với vệ binh. Học viện cấp 1/2/3 có 2/4/6 chỗ. Save quân cũ thiếu loại vẫn được nhận là vệ binh. Chi tiết: [Pháp sư](MAGES.md).
+
+Trại huấn luyện vệ binh đã bổ sung ở cấp người chơi 6: xây 220 vàng/45 giây; cấp 1/2/3 có 2/4/6 chỗ. Mỗi lính giữ ngay 1 dân rảnh, trả 50 vàng + 1 dụng cụ sắt, huấn luyện online 20 giây. Lính tự tới chặn goblin, gây 12 sát thương/giây ở cận chiến, có 60 máu; địch ưu tiên đánh lính đứng sát trước khi đánh tháp/làng. Lính bị hạ về trại và hồi 2 máu/giây ngoài trận, không mất dân vĩnh viễn. Cho nghỉ ngoài cảnh báo/trận và chờ về trại mới trả suất dân; có lính thì không di chuyển/gỡ trại được. Tất cả phân công, tiến độ và máu trong save. Lính dùng chung khẩu phần hiện có với công nhân (1/120 giây), kể cả huấn luyện/dưỡng thương; thiếu ăn làm huấn luyện và nhịp đánh còn 50% tốc độ. Chi tiết: [Trại và lính](SOLDIERS.md).
 
 - Phòng thủ mở cấp 6 với nhiệm vụ diễn tập trong bảng **Phòng thủ làng**. Cần Tòa thị chính và ít nhất 1 Tháp canh đã hoàn tất, có đường từ rìa đất đã mở. Diễn tập có cảnh báo 15 giây và 3 goblin.
 - Sau chiến thắng diễn tập, người chơi tự bật đợt ngẫu nhiên. Có 5 phút chuẩn bị lần đầu, các lần sau cách 8–12 phút chơi, kèm cảnh báo 60 giây. Tắt lịch không hủy cảnh báo/trận đã bắt đầu; save cũ và reset mặc định chưa bật.
@@ -135,6 +141,8 @@ Không gắn lịch cố định trước khi chốt phạm vi từng chặng. H
 
 ## Chặng 5 — Mở map mới
 
+Đã triển khai: Rừng Cổ Thụ mở cấp 10 sau diễn tập và 8 khu đất trả phí. Hai vùng có snapshot riêng, dùng chung kho/dân và chạy bằng cùng manager khi xem vùng còn lại. Có Trạm kiểm lâm, gỗ cổ thụ, nhiệm vụ ba bước và phòng thủ riêng. Không yêu cầu mua hết 64 khu đất.
+
 ### Phạm vi
 
 - Mở bằng nhiệm vụ, cấp độ, mức khai phá lãnh thổ và công trình kết nối như cầu/cổng. Không bắt buộc mua hết mọi ô đất.
@@ -152,6 +160,8 @@ Không gắn lịch cố định trước khi chốt phạm vi từng chặng. H
 - Có chuỗi mục tiêu mới để người chơi tiếp tục phát triển sau map đầu.
 
 ## Chặng 6 — Cửa hàng kim cương và đổi vàng
+
+Đã triển khai: hai gói kim cương → vàng, hai món trang trí mua vào túi và một kỷ vật chế tác bằng gỗ cổ thụ. Đặt thành công mới trừ túi; gỡ trả về túi. Receipt chống lặp, lưu lỗi hoàn giao dịch. Không có gói trả tiền thật hay sức mạnh bắt buộc mua.
 
 ### Phạm vi đề xuất
 
@@ -178,4 +188,4 @@ Không gắn lịch cố định trước khi chốt phạm vi từng chặng. H
 
 ## Mốc bắt đầu
 
-Chặng 1, khai thác gỗ/đá/quặng, chế biến, lương thực công nhân và vòng phòng thủ bằng tháp/goblin đã hoạt động. Tiếp theo là cân bằng giao tranh, bổ sung quân đội dùng suất dân/lương thực và mở rộng nội dung chặng 4 trước khi chuyển sang nhiều map.
+Sáu chặng đã có vòng chơi và kết nối save. Bước tiếp theo là chơi thử dài để cân bằng kinh tế/phòng thủ, rồi mở rộng thêm vùng và nội dung theo dữ liệu chơi thử.

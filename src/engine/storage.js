@@ -1,3 +1,4 @@
+import {createTutorialState} from './tutorialProgress.js';
 // Storage service for game persistence and JSON export/import (Save v3)
 import { INITIAL_GOLD, INITIAL_GEMS } from "../data/gameEconomy.js";
 import { INITIAL_UNLOCKED_CHUNKS } from "../data/landConfig.js";
@@ -5,6 +6,12 @@ import { expandGrid16to32 } from "./isoMath.js";
 import { createStarterTownMap32, getStarterFarmlandState } from "../data/starterMap.js";
 import { isValidTerrainMap } from './terrainEditing.js';
 import { migrateLivestockFootprints } from './livestockFootprint.js';
+import { normalizeVillageSave } from './villageLayoutMigration.js';
+import {createWorldState} from './worldManager.js';
+import {createPremiumState} from '../data/premiumConfig.js';
+import {normalizeMapLocks} from '../data/mapLocks.js';
+
+const migrateSaveLayout = state => normalizeVillageSave(migrateLivestockFootprints(state));
 
 export const SAVE_VERSION = 3;
 export const STORAGE_KEY_V3 = 'isometric_town_builder_save_v3';
@@ -100,17 +107,22 @@ export function getDefaultSaveState(defaultGrid) {
   const normGrid = (defaultGrid && defaultGrid.length === 16) 
     ? expandGrid16to32(defaultGrid) 
     : (defaultGrid || createStarterTownMap32());
-  return migrateLivestockFootprints({
+  return migrateSaveLayout({
     version: SAVE_VERSION,
     savedAt: Date.now(),
     presetName: 'custom',
     grid: normGrid,
     fences: [],
+    mapLocks: {},
+    mapScenery: {},customMapLayout:false,
     flippedGrid: {},
     constructions: {},
     productionState: {},
     extraction: null,
     defense: null,
+    world: createWorldState(),
+    premium: createPremiumState(),
+    tutorial: createTutorialState(),
     economy: {
       gameMode: 'game',
       playerGold: INITIAL_GOLD,
@@ -277,7 +289,7 @@ export function migrateLegacyStorage(fallbackGrid) {
     // Save to v2 (do not remove legacy keys yet for safety)
     localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(migratedState));
     console.info('[Storage] Migrated legacy multi-key saves to Save v2 successfully.');
-    return migratedState;
+    return migrateSaveLayout(migratedState);
   } catch (err) {
     console.warn('[Storage] Migration failed:', err);
     return null;
@@ -307,23 +319,28 @@ export function loadGameSave(fallbackGrid) {
             delete farmland[k];
           }
         }
-        if (!hasTownHall(grid)) {
+        if (!hasTownHall(grid)&&createWorldState(parsed.world).active!=='forest') {
           grid = createStarterTownMap32();
           farmland = getStarterFarmlandState();
         }
 
-        return migrateLivestockFootprints({
+        return migrateSaveLayout({
           version: SAVE_VERSION,
           savedAt: parsed.savedAt || Date.now(),
           presetName: parsed.presetName || 'custom',
           grid,
           fences: Array.isArray(parsed.fences) ? parsed.fences : [],
+          mapLocks: normalizeMapLocks(parsed.mapLocks),
+          mapScenery:parsed.mapScenery||{},customMapLayout:parsed.customMapLayout===true,
           terrainMap: isValidTerrainMap(parsed.terrainMap) ? parsed.terrainMap : null,
           flippedGrid: (parsed.flippedGrid && typeof parsed.flippedGrid === 'object') ? parsed.flippedGrid : {},
           constructions: (parsed.constructions && typeof parsed.constructions === 'object') ? parsed.constructions : {},
           productionState: (parsed.productionState && typeof parsed.productionState === 'object') ? parsed.productionState : {},
           extraction: (parsed.extraction && typeof parsed.extraction === 'object') ? parsed.extraction : null,
           defense: (parsed.defense && typeof parsed.defense === 'object') ? parsed.defense : null,
+          world:createWorldState(parsed.world),
+          premium:createPremiumState(parsed.premium),
+          tutorial:parsed.tutorial?createTutorialState(parsed.tutorial):null,
           economy: {
             gameMode: parsed.economy?.gameMode || 'game',
             playerGold: typeof parsed.economy?.playerGold === 'number' ? parsed.economy.playerGold : INITIAL_GOLD,
@@ -412,11 +429,16 @@ export function saveGameSave(state) {
       grid: state.grid,
       terrainMap: isValidTerrainMap(state.terrainMap) ? state.terrainMap : null,
       fences: Array.isArray(state.fences) ? state.fences : [],
+      mapLocks: normalizeMapLocks(state.mapLocks),
+      mapScenery:state.mapScenery||{},customMapLayout:state.customMapLayout===true,
       flippedGrid: state.flippedGrid || {},
       constructions: state.constructions || {},
       productionState: state.productionState || {},
       extraction: state.extraction || null,
       defense: state.defense || null,
+      world:createWorldState(state.world),
+      premium:createPremiumState(state.premium),
+    tutorial:state.tutorial?createTutorialState(state.tutorial):null,
       economy: {
         gameMode: state.economy?.gameMode || 'game',
         playerGold: typeof state.economy?.playerGold === 'number' ? state.economy.playerGold : INITIAL_GOLD,
@@ -502,11 +524,16 @@ export function exportGameToJSON(state, filename = 'isometric-town-progress.json
     grid: state.grid,
     terrainMap: isValidTerrainMap(state.terrainMap) ? state.terrainMap : null,
     fences: Array.isArray(state.fences) ? state.fences : [],
+    mapLocks: normalizeMapLocks(state.mapLocks),
+    mapScenery:state.mapScenery||{},customMapLayout:state.customMapLayout===true,
     flippedGrid: state.flippedGrid || {},
     constructions: state.constructions || {},
     productionState: state.productionState || {},
     extraction: state.extraction || null,
     defense: state.defense || null,
+    world:createWorldState(state.world),
+    premium:createPremiumState(state.premium),
+    tutorial:state.tutorial?createTutorialState(state.tutorial):null,
     economy: {
       gameMode: state.economy?.gameMode || 'game',
       playerGold: typeof state.economy?.playerGold === 'number' ? state.economy.playerGold : INITIAL_GOLD,
@@ -608,11 +635,16 @@ export function importGameFromJSON(file, currentFallbackGrid) {
             grid: ensureGrid32(data.grid),
             terrainMap: isValidTerrainMap(data.terrainMap) ? data.terrainMap : null,
             fences: Array.isArray(data.fences) ? data.fences : [],
+            mapLocks: normalizeMapLocks(data.mapLocks),
+            mapScenery:data.mapScenery||{},customMapLayout:data.customMapLayout===true,
             flippedGrid: (data.flippedGrid && typeof data.flippedGrid === 'object') ? data.flippedGrid : {},
             constructions: (data.constructions && typeof data.constructions === 'object') ? data.constructions : {},
             productionState: (data.productionState && typeof data.productionState === 'object') ? data.productionState : {},
             extraction: (data.extraction && typeof data.extraction === 'object') ? data.extraction : null,
             defense: (data.defense && typeof data.defense === 'object') ? data.defense : null,
+            world:createWorldState(data.world),
+            premium:createPremiumState(data.premium),
+            tutorial:data.tutorial?createTutorialState(data.tutorial):null,
             economy: {
               gameMode: data.economy?.gameMode === 'game' ? 'game' : 'sandbox',
               playerGold: typeof data.economy?.playerGold === 'number' ? data.economy.playerGold : INITIAL_GOLD,
@@ -653,7 +685,7 @@ export function importGameFromJSON(file, currentFallbackGrid) {
               ? { ...data.resources }
               : { wheat: 0, bread: 0, ironTools: 0 }
           };
-          resolve(migrateLivestockFootprints(normalized));
+          resolve(migrateSaveLayout(normalized));
           return;
         }
 

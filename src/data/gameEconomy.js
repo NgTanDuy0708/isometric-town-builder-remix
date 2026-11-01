@@ -2,6 +2,7 @@ import {FRUIT_TREES_CONFIG} from "./fruitTreeConfig.js";
 import { isHousingTile } from './housingConfig.js';
 import { isLivestockTile } from "./livestockConfig.js";
 import { isLivestockPart } from './livestockFootprint.js';
+import { VILLAGE_GATE_PART } from './villageGate.js';
 // Game economy configuration: gold prices, build durations, and production yields
 import { UPGRADES_CONFIG } from "./upgradesConfig.js";
 import { FENCE_PRICE_OVERRIDES, FENCE_DURATIONS } from "./fenceConfig.js";
@@ -22,6 +23,9 @@ export function getGemSpeedupCost(secondsRemaining) {
 
 // Specific price overrides for distinctive buildings and landmarks
 export const TILE_PRICE_OVERRIDES = {
+  p01_royal_lion:0,p02_royal_banner:0,p03_ancient_tree:0,b69_forester_lodge:200,
+  b68_mage_academy:300,
+  b67_guard_barracks:220,
   b65_stone_quarry: 140,
   b66_iron_mine: 180,
   b64_bbq_restaurant: 300,
@@ -80,6 +84,9 @@ export const TILE_PRICE_OVERRIDES = {
 
 // Tile unlock requirement by player level
 export const TILE_REQUIRED_LEVELS = {
+  b69_forester_lodge:10,
+  b68_mage_academy:8,
+  b67_guard_barracks:6,
   b65_stone_quarry: 4,
   b66_iron_mine: 4,
   b64_bbq_restaurant: 5,
@@ -394,6 +401,8 @@ export const TILE_BUILD_DURATIONS = {
 
 // Specific build duration overrides (in seconds)
 export const DURATION_OVERRIDES = {
+  b68_mage_academy:60,
+  b67_guard_barracks:45,
   b65_stone_quarry: 30,
   b66_iron_mine: 45,
   b64_bbq_restaurant: 90,
@@ -687,7 +696,7 @@ export function calculateVillageStats(grid, constructions = {}, tileMap = {}, bu
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const tileId = grid[r][c];
-      if(isLivestockPart(tileId))continue;
+      if(isLivestockPart(tileId)||tileId===VILLAGE_GATE_PART)continue;
       const key = `${r}_${c}`;
       if (countedFootprints.has(key)) continue;
       let footprintLevel = buildingLevels[key] || 1;

@@ -1,12 +1,13 @@
-const images = {};
+import {drawAnimatedCharacter} from './characterAnimation.js';
 export function drawExtractionWorker(c2d, job, config, ox, oy, halfW, quarterW, animTime) {
   const x=ox+(job.c-job.r)*halfW+64,y=oy+(job.r+job.c)*quarterW+96;
-  const sprite=config.resource==='wood'?'farmer_old':'blacksmith';
-  if(!images[sprite]){const im=new Image();im.src=`/assets/villagers/${sprite}.png`;images[sprite]=im;}
-  const img=images[sprite], bob=job.path.length?Math.sin(animTime*12)*1.4:0;
+  const lumber=['wood','ancientWood'].includes(config.resource),sprite=lumber?'farmer_old':'blacksmith';
   c2d.save();
-  if(img.complete&&img.naturalWidth>0){const h=32,w=h*img.naturalWidth/img.naturalHeight;c2d.drawImage(img,x-w/2,y-h+bob,w,h);}
-  else{c2d.fillStyle=config.resource==='wood'?'#a16207':'#475569';c2d.fillRect(x-4,y-17+bob,8,17);c2d.fillStyle='#f6d1a5';c2d.fillRect(x-3,y-23+bob,6,6);}
-  c2d.font='12px sans-serif';c2d.textAlign='center';c2d.fillText(job.load?config.icon:job.phase==='working'?'⛏️':'',x+9,y-17+bob);
+  if(!drawAnimatedCharacter(c2d,'villager',sprite,x,y,{height:36,facing:job.facing||'SE',walking:job.path.length>0,phase:job.walkPhase||0})){
+    c2d.font='25px sans-serif';c2d.textAlign='center';c2d.fillText('👷',x,y);
+  }
+  const working=job.phase==='working',swing=working?Math.sin(animTime*7)*.6:0;
+  c2d.translate(x+12,y-20);if(working)c2d.rotate(swing);
+  c2d.font='12px sans-serif';c2d.textAlign='center';c2d.fillText(job.load?config.icon:working?lumber?'🪓':'⛏️':'',0,0);
   c2d.restore();
 }

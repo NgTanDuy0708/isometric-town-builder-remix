@@ -587,7 +587,12 @@ export class HarborShipManager {
    * Kiểm tra click trúng Bến Tàu / Thuyền Buồm trên bản đồ thế giới
    */
   checkWorldClick(worldX, worldY, cell, originX, originY, halfW, quarterW) {
-    if (!cell) return false;
+    // Editor-authored harbour sites may lie beyond the playable 32x32 grid.
+    if (!cell) {
+      const dx=worldX-(originX+halfW),dy=worldY-(originY+3*quarterW);
+      cell={row:Math.round(dy/(2*quarterW)-dx/(2*halfW)),col:Math.round(dy/(2*quarterW)+dx/(2*halfW))};
+      if(!isHarborCell(cell.row,cell.col))return false;
+    }
     // Cả hai ô dọc thân tàu đều mở cùng bảng giao thương.
     if (this.ship && this.ship.status === "docked") {
       if (isShipCell(cell.row,cell.col)) {

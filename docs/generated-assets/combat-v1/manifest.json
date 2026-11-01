@@ -1,0 +1,1268 @@
+[
+  {
+    "id": "guard",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-139d2361-427f-4f3a-8723-d9000e95b76c.png",
+    "runtime": "public/assets/combat/v1/guard.png",
+    "uri": "/assets/combat/v1/guard.png?v=1b4ba21f7111",
+    "sha256": "1b4ba21f7111d533b674c5dd0168fc2e57597a53b0f0197396f05c56d20eab5b",
+    "width": 1774,
+    "height": 887,
+    "bounds": [
+      43,
+      8,
+      1749,
+      879
+    ],
+    "referenceHeight": 210.5,
+    "directions": {
+      "SE": [
+        {
+          "x": 46,
+          "y": 8,
+          "w": 135,
+          "h": 213,
+          "anchorX": 71.0,
+          "anchorY": 211
+        },
+        {
+          "x": 268,
+          "y": 6,
+          "w": 140,
+          "h": 215,
+          "anchorX": 75.0,
+          "anchorY": 213
+        },
+        {
+          "x": 493,
+          "y": 6,
+          "w": 128,
+          "h": 215,
+          "anchorX": 71.0,
+          "anchorY": 213
+        },
+        {
+          "x": 708,
+          "y": 7,
+          "w": 136,
+          "h": 213,
+          "anchorX": 74.0,
+          "anchorY": 211
+        },
+        {
+          "x": 930,
+          "y": 6,
+          "w": 133,
+          "h": 214,
+          "anchorX": 72.0,
+          "anchorY": 212
+        },
+        {
+          "x": 1144,
+          "y": 6,
+          "w": 147,
+          "h": 215,
+          "anchorX": 73.0,
+          "anchorY": 213
+        },
+        {
+          "x": 1346,
+          "y": 28,
+          "w": 247,
+          "h": 193,
+          "anchorX": 121.0,
+          "anchorY": 191
+        },
+        {
+          "x": 1618,
+          "y": 26,
+          "w": 129,
+          "h": 195,
+          "anchorX": 61.0,
+          "anchorY": 193
+        }
+      ],
+      "SW": [
+        {
+          "x": 41,
+          "y": 226,
+          "w": 142,
+          "h": 216,
+          "anchorX": 68.0,
+          "anchorY": 214
+        },
+        {
+          "x": 264,
+          "y": 224,
+          "w": 141,
+          "h": 217,
+          "anchorX": 65.0,
+          "anchorY": 215
+        },
+        {
+          "x": 491,
+          "y": 224,
+          "w": 134,
+          "h": 218,
+          "anchorX": 60.0,
+          "anchorY": 216
+        },
+        {
+          "x": 708,
+          "y": 224,
+          "w": 137,
+          "h": 217,
+          "anchorX": 63.0,
+          "anchorY": 215
+        },
+        {
+          "x": 933,
+          "y": 225,
+          "w": 133,
+          "h": 216,
+          "anchorX": 62.0,
+          "anchorY": 214
+        },
+        {
+          "x": 1139,
+          "y": 225,
+          "w": 152,
+          "h": 217,
+          "anchorX": 72.0,
+          "anchorY": 215
+        },
+        {
+          "x": 1326,
+          "y": 243,
+          "w": 229,
+          "h": 201,
+          "anchorX": 123.0,
+          "anchorY": 200
+        },
+        {
+          "x": 1594,
+          "y": 242,
+          "w": 133,
+          "h": 198,
+          "anchorX": 69.0,
+          "anchorY": 196
+        }
+      ],
+      "NW": [
+        {
+          "x": 41,
+          "y": 449,
+          "w": 129,
+          "h": 207,
+          "anchorX": 65.0,
+          "anchorY": 205
+        },
+        {
+          "x": 259,
+          "y": 448,
+          "w": 144,
+          "h": 216,
+          "anchorX": 71.0,
+          "anchorY": 214
+        },
+        {
+          "x": 494,
+          "y": 449,
+          "w": 133,
+          "h": 214,
+          "anchorX": 66.0,
+          "anchorY": 212
+        },
+        {
+          "x": 711,
+          "y": 449,
+          "w": 136,
+          "h": 215,
+          "anchorX": 64.0,
+          "anchorY": 213
+        },
+        {
+          "x": 929,
+          "y": 449,
+          "w": 139,
+          "h": 215,
+          "anchorX": 67.0,
+          "anchorY": 213
+        },
+        {
+          "x": 1154,
+          "y": 444,
+          "w": 140,
+          "h": 215,
+          "anchorX": 70.0,
+          "anchorY": 213
+        },
+        {
+          "x": 1344,
+          "y": 461,
+          "w": 219,
+          "h": 201,
+          "anchorX": 81.0,
+          "anchorY": 199
+        },
+        {
+          "x": 1587,
+          "y": 470,
+          "w": 133,
+          "h": 190,
+          "anchorX": 73.0,
+          "anchorY": 188
+        }
+      ],
+      "NE": [
+        {
+          "x": 47,
+          "y": 666,
+          "w": 126,
+          "h": 213,
+          "anchorX": 64.0,
+          "anchorY": 211
+        },
+        {
+          "x": 258,
+          "y": 667,
+          "w": 137,
+          "h": 212,
+          "anchorX": 69.0,
+          "anchorY": 210
+        },
+        {
+          "x": 482,
+          "y": 667,
+          "w": 133,
+          "h": 212,
+          "anchorX": 68.0,
+          "anchorY": 210
+        },
+        {
+          "x": 703,
+          "y": 667,
+          "w": 135,
+          "h": 214,
+          "anchorX": 68.0,
+          "anchorY": 212
+        },
+        {
+          "x": 925,
+          "y": 667,
+          "w": 134,
+          "h": 213,
+          "anchorX": 68.0,
+          "anchorY": 211
+        },
+        {
+          "x": 1142,
+          "y": 665,
+          "w": 150,
+          "h": 211,
+          "anchorX": 76.0,
+          "anchorY": 209
+        },
+        {
+          "x": 1351,
+          "y": 674,
+          "w": 224,
+          "h": 202,
+          "anchorX": 96.0,
+          "anchorY": 200
+        },
+        {
+          "x": 1616,
+          "y": 687,
+          "w": 135,
+          "h": 192,
+          "anchorX": 61.0,
+          "anchorY": 190
+        }
+      ]
+    },
+    "rows": [
+      0,
+      222,
+      444,
+      664,
+      887
+    ],
+    "columnsPerRow": [
+      [
+        0,
+        221,
+        445,
+        665,
+        886,
+        1106,
+        1318,
+        1593,
+        1774
+      ],
+      [
+        0,
+        222,
+        444,
+        665,
+        886,
+        1103,
+        1308,
+        1573,
+        1774
+      ],
+      [
+        0,
+        220,
+        443,
+        666,
+        887,
+        1108,
+        1319,
+        1575,
+        1774
+      ],
+      [
+        0,
+        219,
+        442,
+        664,
+        885,
+        1105,
+        1321,
+        1583,
+        1774
+      ]
+    ],
+    "walkFrames": {
+      "SE": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "SW": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "NW": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "NE": [
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  },
+  {
+    "id": "goblin",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-0666ab36-cce1-42d8-9e7c-0a20b6858fc7.png",
+    "runtime": "public/assets/combat/v1/goblin.png",
+    "uri": "/assets/combat/v1/goblin.png?v=5c80b4d07fab",
+    "sha256": "5c80b4d07fab3decd4740fd87970f09c8a4255fd57cef6f592e92da5f9a0c2b4",
+    "width": 1774,
+    "height": 887,
+    "bounds": [
+      23,
+      13,
+      1759,
+      867
+    ],
+    "referenceHeight": 185.0,
+    "directions": {
+      "SE": [
+        {
+          "x": 21,
+          "y": 31,
+          "w": 170,
+          "h": 189,
+          "anchorX": 100.0,
+          "anchorY": 187
+        },
+        {
+          "x": 242,
+          "y": 32,
+          "w": 180,
+          "h": 188,
+          "anchorX": 109.0,
+          "anchorY": 186
+        },
+        {
+          "x": 466,
+          "y": 32,
+          "w": 180,
+          "h": 186,
+          "anchorX": 113.0,
+          "anchorY": 184
+        },
+        {
+          "x": 689,
+          "y": 33,
+          "w": 172,
+          "h": 186,
+          "anchorX": 104.0,
+          "anchorY": 184
+        },
+        {
+          "x": 935,
+          "y": 33,
+          "w": 142,
+          "h": 185,
+          "anchorX": 72.0,
+          "anchorY": 183
+        },
+        {
+          "x": 1140,
+          "y": 11,
+          "w": 155,
+          "h": 209,
+          "anchorX": 86.0,
+          "anchorY": 207
+        },
+        {
+          "x": 1351,
+          "y": 53,
+          "w": 222,
+          "h": 163,
+          "anchorX": 106.0,
+          "anchorY": 161
+        },
+        {
+          "x": 1595,
+          "y": 30,
+          "w": 158,
+          "h": 190,
+          "anchorX": 75.0,
+          "anchorY": 188
+        }
+      ],
+      "SW": [
+        {
+          "x": 56,
+          "y": 248,
+          "w": 169,
+          "h": 190,
+          "anchorX": 68.0,
+          "anchorY": 188
+        },
+        {
+          "x": 276,
+          "y": 248,
+          "w": 179,
+          "h": 190,
+          "anchorX": 71.0,
+          "anchorY": 188
+        },
+        {
+          "x": 497,
+          "y": 247,
+          "w": 165,
+          "h": 191,
+          "anchorX": 69.0,
+          "anchorY": 189
+        },
+        {
+          "x": 713,
+          "y": 249,
+          "w": 175,
+          "h": 190,
+          "anchorX": 72.0,
+          "anchorY": 188
+        },
+        {
+          "x": 930,
+          "y": 249,
+          "w": 159,
+          "h": 186,
+          "anchorX": 67.0,
+          "anchorY": 184
+        },
+        {
+          "x": 1145,
+          "y": 231,
+          "w": 167,
+          "h": 206,
+          "anchorX": 79.0,
+          "anchorY": 204
+        },
+        {
+          "x": 1342,
+          "y": 274,
+          "w": 203,
+          "h": 162,
+          "anchorX": 95.0,
+          "anchorY": 160
+        },
+        {
+          "x": 1595,
+          "y": 249,
+          "w": 162,
+          "h": 188,
+          "anchorX": 86.0,
+          "anchorY": 186
+        }
+      ],
+      "NW": [
+        {
+          "x": 56,
+          "y": 463,
+          "w": 161,
+          "h": 189,
+          "anchorX": 62.0,
+          "anchorY": 187
+        },
+        {
+          "x": 274,
+          "y": 463,
+          "w": 155,
+          "h": 186,
+          "anchorX": 75.0,
+          "anchorY": 184
+        },
+        {
+          "x": 494,
+          "y": 463,
+          "w": 146,
+          "h": 189,
+          "anchorX": 69.0,
+          "anchorY": 187
+        },
+        {
+          "x": 713,
+          "y": 463,
+          "w": 163,
+          "h": 189,
+          "anchorX": 65.0,
+          "anchorY": 187
+        },
+        {
+          "x": 936,
+          "y": 462,
+          "w": 153,
+          "h": 184,
+          "anchorX": 71.0,
+          "anchorY": 182
+        },
+        {
+          "x": 1144,
+          "y": 449,
+          "w": 167,
+          "h": 202,
+          "anchorX": 86.0,
+          "anchorY": 200
+        },
+        {
+          "x": 1348,
+          "y": 493,
+          "w": 219,
+          "h": 158,
+          "anchorX": 104.0,
+          "anchorY": 156
+        },
+        {
+          "x": 1596,
+          "y": 464,
+          "w": 158,
+          "h": 186,
+          "anchorX": 82.0,
+          "anchorY": 184
+        }
+      ],
+      "NE": [
+        {
+          "x": 58,
+          "y": 678,
+          "w": 172,
+          "h": 191,
+          "anchorX": 69.0,
+          "anchorY": 189
+        },
+        {
+          "x": 281,
+          "y": 679,
+          "w": 150,
+          "h": 189,
+          "anchorX": 73.0,
+          "anchorY": 187
+        },
+        {
+          "x": 477,
+          "y": 675,
+          "w": 170,
+          "h": 194,
+          "anchorX": 95.0,
+          "anchorY": 192
+        },
+        {
+          "x": 722,
+          "y": 678,
+          "w": 167,
+          "h": 191,
+          "anchorX": 70.0,
+          "anchorY": 189
+        },
+        {
+          "x": 920,
+          "y": 679,
+          "w": 167,
+          "h": 190,
+          "anchorX": 92.0,
+          "anchorY": 188
+        },
+        {
+          "x": 1145,
+          "y": 664,
+          "w": 167,
+          "h": 203,
+          "anchorX": 82.0,
+          "anchorY": 201
+        },
+        {
+          "x": 1355,
+          "y": 701,
+          "w": 212,
+          "h": 166,
+          "anchorX": 110.0,
+          "anchorY": 164
+        },
+        {
+          "x": 1595,
+          "y": 679,
+          "w": 166,
+          "h": 186,
+          "anchorX": 79.0,
+          "anchorY": 184
+        }
+      ]
+    },
+    "columns": [
+      0,
+      236,
+      460,
+      675,
+      904,
+      1114,
+      1327,
+      1582,
+      1774
+    ],
+    "rowsPerColumn": [
+      [
+        0,
+        234,
+        450,
+        665,
+        887
+      ],
+      [
+        0,
+        234,
+        450,
+        664,
+        887
+      ],
+      [
+        0,
+        232,
+        450,
+        663,
+        887
+      ],
+      [
+        0,
+        234,
+        451,
+        665,
+        887
+      ],
+      [
+        0,
+        233,
+        448,
+        662,
+        887
+      ],
+      [
+        0,
+        225,
+        443,
+        657,
+        887
+      ],
+      [
+        0,
+        238,
+        459,
+        676,
+        887
+      ],
+      [
+        0,
+        234,
+        450,
+        664,
+        887
+      ]
+    ],
+    "walkFrames": {
+      "SE": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "SW": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "NW": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "NE": [
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  },
+  {
+    "id": "mage",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-c76ed770-38b7-4ef7-92e4-1121aec03337.png",
+    "runtime": "public/assets/combat/v1/mage.png",
+    "uri": "/assets/combat/v1/mage.png?v=a6e745fa61b0",
+    "sha256": "a6e745fa61b09bcbca62c7586db9938a6638a55166e2831644f9ba3be524a526",
+    "width": 1774,
+    "height": 887,
+    "bounds": [
+      41,
+      17,
+      1756,
+      866
+    ],
+    "referenceHeight": 197.0,
+    "directions": {
+      "SE": [
+        {
+          "x": 47,
+          "y": 15,
+          "w": 136,
+          "h": 208,
+          "anchorX": 70.0,
+          "anchorY": 206
+        },
+        {
+          "x": 272,
+          "y": 19,
+          "w": 145,
+          "h": 208,
+          "anchorX": 69.0,
+          "anchorY": 206
+        },
+        {
+          "x": 485,
+          "y": 19,
+          "w": 146,
+          "h": 208,
+          "anchorX": 73.0,
+          "anchorY": 206
+        },
+        {
+          "x": 705,
+          "y": 18,
+          "w": 135,
+          "h": 206,
+          "anchorX": 66.0,
+          "anchorY": 204
+        },
+        {
+          "x": 930,
+          "y": 18,
+          "w": 136,
+          "h": 208,
+          "anchorX": 68.0,
+          "anchorY": 206
+        },
+        {
+          "x": 1126,
+          "y": 15,
+          "w": 171,
+          "h": 206,
+          "anchorX": 84.0,
+          "anchorY": 204
+        },
+        {
+          "x": 1340,
+          "y": 37,
+          "w": 215,
+          "h": 185,
+          "anchorX": 93.0,
+          "anchorY": 183
+        },
+        {
+          "x": 1576,
+          "y": 38,
+          "w": 165,
+          "h": 185,
+          "anchorX": 84.0,
+          "anchorY": 183
+        }
+      ],
+      "SW": [
+        {
+          "x": 58,
+          "y": 236,
+          "w": 138,
+          "h": 205,
+          "anchorX": 70.0,
+          "anchorY": 203
+        },
+        {
+          "x": 260,
+          "y": 235,
+          "w": 146,
+          "h": 204,
+          "anchorX": 75.0,
+          "anchorY": 202
+        },
+        {
+          "x": 478,
+          "y": 239,
+          "w": 153,
+          "h": 204,
+          "anchorX": 76.0,
+          "anchorY": 202
+        },
+        {
+          "x": 711,
+          "y": 237,
+          "w": 140,
+          "h": 206,
+          "anchorX": 71.0,
+          "anchorY": 204
+        },
+        {
+          "x": 921,
+          "y": 238,
+          "w": 157,
+          "h": 205,
+          "anchorX": 79.0,
+          "anchorY": 203
+        },
+        {
+          "x": 1136,
+          "y": 237,
+          "w": 174,
+          "h": 204,
+          "anchorX": 86.0,
+          "anchorY": 202
+        },
+        {
+          "x": 1330,
+          "y": 257,
+          "w": 209,
+          "h": 181,
+          "anchorX": 122.0,
+          "anchorY": 179
+        },
+        {
+          "x": 1577,
+          "y": 270,
+          "w": 171,
+          "h": 171,
+          "anchorX": 89.0,
+          "anchorY": 169
+        }
+      ],
+      "NW": [
+        {
+          "x": 56,
+          "y": 456,
+          "w": 148,
+          "h": 194,
+          "anchorX": 71.0,
+          "anchorY": 192
+        },
+        {
+          "x": 260,
+          "y": 456,
+          "w": 154,
+          "h": 196,
+          "anchorX": 75.0,
+          "anchorY": 194
+        },
+        {
+          "x": 482,
+          "y": 456,
+          "w": 147,
+          "h": 198,
+          "anchorX": 72.0,
+          "anchorY": 196
+        },
+        {
+          "x": 693,
+          "y": 456,
+          "w": 153,
+          "h": 195,
+          "anchorX": 74.0,
+          "anchorY": 193
+        },
+        {
+          "x": 920,
+          "y": 456,
+          "w": 146,
+          "h": 198,
+          "anchorX": 73.0,
+          "anchorY": 196
+        },
+        {
+          "x": 1133,
+          "y": 449,
+          "w": 177,
+          "h": 204,
+          "anchorX": 91.0,
+          "anchorY": 202
+        },
+        {
+          "x": 1339,
+          "y": 467,
+          "w": 207,
+          "h": 186,
+          "anchorX": 112.0,
+          "anchorY": 184
+        },
+        {
+          "x": 1579,
+          "y": 465,
+          "w": 179,
+          "h": 187,
+          "anchorX": 90.0,
+          "anchorY": 185
+        }
+      ],
+      "NE": [
+        {
+          "x": 39,
+          "y": 667,
+          "w": 146,
+          "h": 197,
+          "anchorX": 75.0,
+          "anchorY": 195
+        },
+        {
+          "x": 251,
+          "y": 669,
+          "w": 151,
+          "h": 198,
+          "anchorX": 77.0,
+          "anchorY": 196
+        },
+        {
+          "x": 469,
+          "y": 669,
+          "w": 154,
+          "h": 195,
+          "anchorX": 78.0,
+          "anchorY": 193
+        },
+        {
+          "x": 689,
+          "y": 669,
+          "w": 148,
+          "h": 195,
+          "anchorX": 74.0,
+          "anchorY": 193
+        },
+        {
+          "x": 911,
+          "y": 669,
+          "w": 152,
+          "h": 198,
+          "anchorX": 76.0,
+          "anchorY": 196
+        },
+        {
+          "x": 1131,
+          "y": 665,
+          "w": 166,
+          "h": 203,
+          "anchorX": 81.0,
+          "anchorY": 201
+        },
+        {
+          "x": 1352,
+          "y": 684,
+          "w": 204,
+          "h": 184,
+          "anchorX": 87.0,
+          "anchorY": 182
+        },
+        {
+          "x": 1579,
+          "y": 679,
+          "w": 165,
+          "h": 189,
+          "anchorX": 87.0,
+          "anchorY": 187
+        }
+      ]
+    },
+    "columns": [
+      0,
+      227,
+      443,
+      660,
+      881,
+      1102,
+      1320,
+      1566,
+      1774
+    ],
+    "rowsPerColumn": [
+      [
+        0,
+        229,
+        448,
+        658,
+        887
+      ],
+      [
+        0,
+        231,
+        447,
+        660,
+        887
+      ],
+      [
+        0,
+        233,
+        449,
+        661,
+        887
+      ],
+      [
+        0,
+        230,
+        449,
+        660,
+        887
+      ],
+      [
+        0,
+        232,
+        449,
+        661,
+        887
+      ],
+      [
+        0,
+        229,
+        445,
+        659,
+        887
+      ],
+      [
+        0,
+        239,
+        452,
+        668,
+        887
+      ],
+      [
+        0,
+        242,
+        453,
+        665,
+        887
+      ]
+    ],
+    "walkFrames": {
+      "SE": [
+        1,
+        2,
+        3,
+        2
+      ],
+      "SW": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "NW": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "NE": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "curation": "SE walk uses 1,2,3,2 to avoid native pose 4 facing SW."
+  },
+  {
+    "id": "barracks_lv1",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-467f3618-43d8-4277-8476-e6b0d3e5d7f0.png",
+    "runtime": "public/assets/combat/v1/barracks_lv1.png",
+    "uri": "/assets/combat/v1/barracks_lv1.png?v=fd3aacdd675e",
+    "sha256": "fd3aacdd675edb9fabf06eb23e2f240d4604c4047b17f3fee0955447c66bdca1",
+    "width": 1254,
+    "height": 1254,
+    "bounds": [
+      240,
+      30,
+      1018,
+      1189
+    ],
+    "geometry": {
+      "width": 1254,
+      "height": 1254,
+      "visibleWidth": 778,
+      "anchorX": 655.0,
+      "anchorY": 1189,
+      "worldWidth": 128,
+      "worldAnchorX": 64,
+      "worldAnchorY": 128
+    }
+  },
+  {
+    "id": "academy_lv1",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-4e31dbb2-c50d-4d7b-9466-231cb13cc544.png",
+    "runtime": "public/assets/combat/v1/academy_lv1.png",
+    "uri": "/assets/combat/v1/academy_lv1.png?v=546cd7f9895d",
+    "sha256": "546cd7f9895d900b457388cbf5de3df0a00349ffbe765a0f91a1730c99655d07",
+    "width": 1214,
+    "height": 1295,
+    "bounds": [
+      194,
+      20,
+      1105,
+      1227
+    ],
+    "geometry": {
+      "width": 1214,
+      "height": 1295,
+      "visibleWidth": 911,
+      "anchorX": 651.0,
+      "anchorY": 1227,
+      "worldWidth": 128,
+      "worldAnchorX": 64,
+      "worldAnchorY": 128
+    }
+  },
+  {
+    "id": "barracks_lv2",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-c8fb8319-447e-43f6-a84b-f765ec96254b.png",
+    "runtime": "public/assets/combat/v1/barracks_lv2.png",
+    "uri": "/assets/combat/v1/barracks_lv2.png?v=9450f9717ac3",
+    "sha256": "9450f9717ac310d40b9ccdf0c04016e568d32eaf617236cd57a7a4a24fb53db9",
+    "width": 1254,
+    "height": 1254,
+    "bounds": [
+      289,
+      18,
+      1111,
+      1216
+    ],
+    "geometry": {
+      "width": 1254,
+      "height": 1254,
+      "visibleWidth": 822,
+      "anchorX": 680.0,
+      "anchorY": 1216,
+      "worldWidth": 128,
+      "worldAnchorX": 64,
+      "worldAnchorY": 128
+    }
+  },
+  {
+    "id": "academy_lv2",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-6658e6e1-54ee-4047-a226-8369c1229296.png",
+    "runtime": "public/assets/combat/v1/academy_lv2.png",
+    "uri": "/assets/combat/v1/academy_lv2.png?v=6ad9b07348c3",
+    "sha256": "6ad9b07348c354a3ae8404d89df9c04cc1bf33c701378d5af340ec472147a8ac",
+    "width": 1254,
+    "height": 1254,
+    "bounds": [
+      299,
+      12,
+      1027,
+      1196
+    ],
+    "geometry": {
+      "width": 1254,
+      "height": 1254,
+      "visibleWidth": 728,
+      "anchorX": 582.0,
+      "anchorY": 1196,
+      "worldWidth": 128,
+      "worldAnchorX": 64,
+      "worldAnchorY": 128
+    }
+  },
+  {
+    "id": "barracks_lv3",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-611a385c-2dd8-4527-a53b-99cdeedd50f1.png",
+    "runtime": "public/assets/combat/v1/barracks_lv3.png",
+    "uri": "/assets/combat/v1/barracks_lv3.png?v=4efed98812b0",
+    "sha256": "4efed98812b081b44c00b2d8638d7c249b87f4d615f08f28844e56d6e4317b03",
+    "width": 1254,
+    "height": 1254,
+    "bounds": [
+      209,
+      5,
+      1128,
+      1222
+    ],
+    "geometry": {
+      "width": 1254,
+      "height": 1254,
+      "visibleWidth": 919,
+      "anchorX": 682.0,
+      "anchorY": 1222,
+      "worldWidth": 128,
+      "worldAnchorX": 64,
+      "worldAnchorY": 128
+    }
+  },
+  {
+    "id": "academy_lv3",
+    "generated": "C:\\Users\\ntduy\\.codex\\generated_images\\01a17baa-0a4e-7470-8df2-a436b2f8749f\\exec-5ccbbd21-4830-4d5b-ad54-c1fd9c86fd0e.png",
+    "runtime": "public/assets/combat/v1/academy_lv3.png",
+    "uri": "/assets/combat/v1/academy_lv3.png?v=dd3d23e5af09",
+    "sha256": "dd3d23e5af09017fc023ee811cbeed988022e564fb9cd1192589c356015eba9d",
+    "width": 1254,
+    "height": 1254,
+    "bounds": [
+      272,
+      17,
+      987,
+      1227
+    ],
+    "geometry": {
+      "width": 1254,
+      "height": 1254,
+      "visibleWidth": 715,
+      "anchorX": 636.0,
+      "anchorY": 1227,
+      "worldWidth": 128,
+      "worldAnchorX": 64,
+      "worldAnchorY": 128
+    }
+  }
+]

@@ -11,6 +11,8 @@
 
 import { applyCoastTerrainLayout, getTerrainSprite } from './terrainConfig.js';
 import { isHarborCell } from './harborLayout.js';
+import { applyVillageGateLayout, isVillageGateCell } from './villageGate.js';
+import {isMapLockedCell,isMapRemovableCell,isCustomMapLayout} from './mapLocks.js';
 
 export function createStarterTownMap32() {
   const ROWS = 32;
@@ -65,6 +67,7 @@ export function applyTownCenterLayout(grid) {
     if (grid[r]?.[15] !== undefined) grid[r][15] = "r03_royal_marble_pavement";
   }
 
+  applyVillageGateLayout(grid);
   return grid;
 }
 /**
@@ -73,12 +76,17 @@ export function applyTownCenterLayout(grid) {
  * - Trục đường đá cẩm thạch hoàng gia ra khỏi thị trấn (Col 15, Row từ 18 đến 31)
  */
 export function isProtectedTile(row, col, tid) {
+  if (isMapLockedCell(row,col)) return true;
+  if (!isCustomMapLayout()&&isVillageGateCell(row,col)) return true;
   // Footprint tòa thị chính; khuôn viên cũ đã trả lại cho người chơi.
   if (row >= 12 && row <= 13 && col >= 14 && col <= 16) return true;
-  if (tid === "b14_town_hall" || tid === "d01_plaza_fountain") return true;
+  if (tid === "b14_town_hall") return true;
+  if (isHarborCell(row,col)) return true;
+  if (isMapRemovableCell(row,col)) return false;
+  if (tid === "d01_plaza_fountain") return true;
 
   // Trục đường đá cẩm thạch lớn của xe tải giao hàng (Row 18..31, Col 15)
-  if (col === 15 && row >= 18 && row <= 31) return true;
+  if (!isCustomMapLayout()&&col === 15 && row >= 18 && row <= 31) return true;
 
   // Chỉ giữ vị trí cảng thật và mặt biển; không khóa đồ người chơi theo cả dải bờ.
   if (isHarborCell(row,col)) return true;

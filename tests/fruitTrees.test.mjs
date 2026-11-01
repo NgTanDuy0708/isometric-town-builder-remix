@@ -19,6 +19,7 @@ import {isLivestockTile} from '../src/data/livestockConfig.js';
 import {getTerrainSprite} from '../src/data/terrainConfig.js';
 import {isCellUnlocked} from '../src/data/landConfig.js';
 import {isProtectedTile,isIndestructibleTile} from '../src/data/starterMap.js';
+import {isMapLockedCell,isMapRemovableCell} from '../src/data/mapLocks.js';
 import {getClearedSurface} from '../src/engine/placementSurface.js';
 import {calculateDemolishRefund} from '../src/engine/upgradeManager.js';
 
@@ -206,7 +207,7 @@ test('digging a spent tree clears its lifetime state and releases the tile for a
   for(const id of Object.keys(FRUIT_TREES_CONFIG)){
     const grid=Array.from({length:32},()=>Array(32).fill('d12_meadow_wildflowers'));grid[20][20]=id;
     const key='20_20',dead={lastHarvest:1,harvestCount:3,exhausted:true,ready:false},fruit={[key]:{...dead}},prod={[key]:{...dead}};
-    const ctx={checkHousingRemoval,ROWS:32,COLS:32,currentGrid:grid,constructions:{},fences:[],fruitTreesState:fruit,
+    const ctx={isMapLockedCell,isMapRemovableCell,mapScenery:{},checkHousingRemoval,ROWS:32,COLS:32,currentGrid:grid,constructions:{},fences:[],fruitTreesState:fruit,
       productionManager:{getState:()=>prod,clearCell:key=>{delete prod[key]}},tileMap:Object.fromEntries(TILES_DATA.map(t=>[t.id,t])),
       gameMode:'game',landUnlockedChunks:Array.from({length:64},(_,i)=>i),terrainMap:null,flippedGrid:{},farmlandState:{},
       buildingLevels:{},upgradesInProgress:{},livestockState:{},playerGold:100,playerResources:{},RESOURCE_MAX_CAPACITY,

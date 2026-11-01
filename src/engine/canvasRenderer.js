@@ -40,7 +40,7 @@ import { CROP_PIXEL_SPRITES } from "../data/cropSprites.js";
 import { checkFarmWorkforce } from './workforce.js';
 import { EXTRACTION_WORKSHOPS, EXTRACTION_NODES } from '../data/extractionConfig.js';
 import { drawExtractionWorker } from './extractionRenderer.js';
-import { drawGoblin,drawDefenseOverlay } from './defenseRenderer.js';
+import { drawGoblin,drawSoldier,drawDefenseOverlay,prepareDefenseSprites } from './defenseRenderer.js';
 import { CROP_GROWTH_SPRITES, getCropGrowthRenderAdjustment } from "../data/cropGrowthSprites.js";
 import { SOWN_CROP_SPRITES, getSownCropRenderAdjustment, getSownCropSpriteId, isCropJustSown } from "../data/cropVisuals.js";
 import { FRUIT_TREES_CONFIG, RESOURCES_CONFIG } from "../data/resourcesConfig.js";
@@ -60,6 +60,9 @@ import { drawTerrainTile } from "./terrainRenderer.js";
 import { drawTownHallSprite } from "./townHallTuning.js";
 import { drawWarehouseSprite } from "./warehouseTuning.js";
 import { getHarborDepth, getHarborFootprint, getHarborOutline } from '../data/harborLayout.js';
+import {VILLAGE_GATE_ID,isVillageGateCell,getVillageGateOutline} from '../data/villageGate.js';
+import {CONSTRUCTION_ART,getConstructionRenderAdjustment} from '../data/constructionArt.js';
+import {MAP_SCENE_ITEMS,getMapSceneRect} from '../data/mapSceneCatalog.js';
 import { playCoinFlyHitSound } from "./audioEngine.js";
 
 /**
@@ -268,7 +271,7 @@ export function renderSurroundingTile(c2d, row, col, ox, oy, imageCache, dayNigh
   }
 
   // C. Ô RỪNG ĐẠI NGÀN & ĐẤT LIỀN
-  const forestTile = getSurroundingForestTile(row, col);
+  const forestTile = opts.suppressDecor?{tid:'d12_meadow_wildflowers',flipped:false}:getSurroundingForestTile(row, col);
   const fTid = forestTile.tid;
   const fFlipped = forestTile.flipped;
 
@@ -311,11 +314,18 @@ export const renderSurroundingForestTile = renderSurroundingTile;
  * @returns {Object} Renderer interface
  */
 export function createCanvasRenderer(ctx) {
+  prepareDefenseSprites(()=>ctx.onRequestRender?.());
   // 1. Khởi tạo Image Cache cho Tiles
   const imageCache = {};
+  for(const item of MAP_SCENE_ITEMS){
+    const image=new Image();image.onload=()=>ctx.onRequestRender?.();image.src=item.uri;imageCache[item.id]=image;
+  }
 
   // Công trình đổi hình theo cấp, dùng chung cho bản đồ và preview.
   const buildingLevelImages = {};
+  const constructionImage=new Image();
+  constructionImage.onload=()=>ctx.onRequestRender?.();
+  constructionImage.src=CONSTRUCTION_ART.uri;
   for (const [tileId, levels] of Object.entries(BUILDING_LEVEL_SPRITES)) {
     buildingLevelImages[tileId] = {};
     for (const [level, uri] of Object.entries(levels)) {
@@ -1116,6 +1126,8 @@ export function createCanvasRenderer(ctx) {
   };
 
   function getTileRenderAdjustment(tileId, level = 1, stage = "fruiting") {
+    const sharedArt={p01_royal_lion:'d26_marble_lion_statue',p02_royal_banner:'d27_royal_banner_flag',p03_ancient_tree:'d30_forest_oak_thicket',n04_ancient_grove:'n01_logging_grove'};
+    if(sharedArt[tileId])return getTileRenderAdjustment(sharedArt[tileId],level,stage);
     const tree=getFruitTreeRenderAdjustment(tileId,stage);if(tree)return tree;
     const measured = getBuildingRenderAdjustment(tileId, level) || getExpansionRenderAdjustment(tileId, level);
     if (measured) return measured;
@@ -1523,6 +1535,22 @@ export function createCanvasRenderer(ctx) {
     const dayNightWeather = ctx.getDayNightWeather();
     const currentGrid = ctx.getCurrentGrid();
     const terrainMap = ctx.getTerrainMap?.();
+    const mapScenery=ctx.getMapScenery?.()||{};
+    const customScenery=Object.entries(mapScenery).filter(([,item])=>item).map(([key,item])=>{
+      const [row,col]=key.split('_').map(Number);return {...item,row,col};
+    });
+    const drawScenery=item=>{
+      const {row,col,tileId,level=1,flipped=false}=item;
+      const image=getTileImage(tileId,level)||imageCache[tileId];if(!isImageReady(image))return;
+      const ox=ORIGIN_X+(col-row)*HALF_W,oy=ORIGIN_Y+(row+col)*QUARTER_W;
+      const rect=getMapSceneRect(tileId)||getTileRenderAdjustment(tileId,level);
+      c2d.save();setSpriteSampling(c2d,rect);
+      if(isExpansionGround(tileId))drawExpansionGround(c2d,image,tileId,ox,oy,flipped);
+      else if(getTerrainSprite(tileId))drawTerrainTile(c2d,image,tileId,ox,oy,flipped);
+      else if(flipped){c2d.translate(ox+128-rect.dx,oy+rect.dy);c2d.scale(-1,1);c2d.drawImage(image,0,0,rect.dw,rect.dh);}
+      else c2d.drawImage(image,ox+rect.dx,oy+rect.dy,rect.dw,rect.dh);
+      c2d.restore();
+    };
     const constructions = ctx.getConstructions();
     const farmlandState = ctx.getFarmlandState();
     const productionState = ctx.getProductionState();
@@ -1606,7 +1634,7 @@ export function createCanvasRenderer(ctx) {
             ? isUnlocked && canAddFence(ctx.getFences?.() || [], activeBrush, hoverCell.row, hoverCell.col, brushFlipped)
             : isUnlocked && !hasConstruction && isEmptyGrass;
           if (activeBrush === 'd13_farmland_plot') {
-            isValidPlacement = isValidPlacement && checkFarmWorkforce(currentGrid, constructions, {}, buildingLevels, ctx.getExtractionState?.()).allowed;
+            isValidPlacement = isValidPlacement && checkFarmWorkforce(currentGrid, constructions, {}, buildingLevels, ctx.getExtractionState?.(),ctx.getDefenseState?.(),ctx.getOtherLabor?.()).allowed;
           }
 
           const brushImg = EXPANSION_PLANTS[activeBrush]?getTreeImage(activeBrush,"seed"):getTileImage(activeBrush);
@@ -1905,7 +1933,7 @@ export function createCanvasRenderer(ctx) {
             if (i>=0 && i<ROWS && j>=0 && j<COLS) continue;
             const bx=ORIGIN_X+(j-i)*HALF_W, by=ORIGIN_Y+(i+j)*QUARTER_W;
             if (!isTileInViewport(bx,by,camera,viewW,viewH,320)) continue;
-            renderSurroundingTile(c2d,i,j,bx,by,imageCache,dayNightWeather,{only:'ground'});
+            renderSurroundingTile(c2d,i,j,bx,by,imageCache,dayNightWeather,{only:'ground',suppressDecor:Object.hasOwn(mapScenery,`${i}_${j}`)});
           }
         }
         for (let i = 0; i < ROWS; i++) {
@@ -2004,6 +2032,9 @@ export function createCanvasRenderer(ctx) {
             movingBuilding?{row:movingBuilding.fromRow,col:movingBuilding.fromCol}:null);
           getLivestockOutline(penAnchor.row,penAnchor.col,penFlip,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W)
             .forEach(([x,y],index)=>{if(index===0)c2d.moveTo(x,y);else c2d.lineTo(x,y);});
+        } else if (isVillageGateCell(hoverCell.row,hoverCell.col) && !placing) {
+          getVillageGateOutline(ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W)
+            .forEach(([x,y],index)=>{if(index===0)c2d.moveTo(x,y);else c2d.lineTo(x,y);});
         } else if (harborFootprint) {
           if (placing) valid=false;
           getHarborOutline(harborFootprint,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W).forEach(([x,y],index)=> {
@@ -2075,10 +2106,11 @@ export function createCanvasRenderer(ctx) {
           getLivestockOutline(row,col,flip,ORIGIN_X,ORIGIN_Y,HALF_W,QUARTER_W)
             .forEach(([x,y],index)=>{if(index===0)c2d.moveTo(x,y);else c2d.lineTo(x,y);});
         } else {
-        c2d.moveTo(ux + 64, uy + 64);
-        c2d.lineTo(ux + 128, uy + 96);
+        const footprint=penId==='b60_combined_warehouse'?2:1;
+        c2d.moveTo(ux + 64, uy + 128-64*footprint);
+        c2d.lineTo(ux + 64+64*footprint, uy + 128-32*footprint);
         c2d.lineTo(ux + 64, uy + 128);
-        c2d.lineTo(ux, uy + 96);
+        c2d.lineTo(ux + 64-64*footprint, uy + 128-32*footprint);
         }
         c2d.closePath();
         c2d.stroke();
@@ -2088,6 +2120,7 @@ export function createCanvasRenderer(ctx) {
       const ghostTileId = movingBuilding?.tileId || activeBrush;
       const groundGhost = hoverCell && !kingdomWondersManager?.movingWonderId && isFlatGroundTile(ghostTileId);
       if (groundGhost) drawGhostPreview();
+      for(const item of customScenery)if(isFlatGroundTile(item.tileId))drawScenery(item);
 
       for (let depth = minDepth; depth <= maxDepth; depth++) {
         const startI = Math.max(minI, depth - maxJ);
@@ -2104,9 +2137,11 @@ export function createCanvasRenderer(ctx) {
           // The hall is drawn from [13,15], but its entrance contacts [15,15].
           // Sort at that contact so objects behind the steps cannot cover them.
           const isHallAnchor = i === 13 && j === 15 && currentGrid[i]?.[j] === 'b14_town_hall';
-          queueWorld(isHallAnchor ? 15 : i, isHallAnchor ? 15 : j, () => {
+          const isGateAnchor = i === 31 && j === 14 && currentGrid[i]?.[j] === VILLAGE_GATE_ID;
+          queueWorld(isHallAnchor ? 15 : i, isHallAnchor ? 15 : isGateAnchor ? 16 : j, () => {
             const isPlayable = (i >= 0 && i < ROWS && j >= 0 && j < COLS);
             if (!isPlayable) {
+              if(Object.hasOwn(mapScenery,`${i}_${j}`))return;
               renderSurroundingTile(c2d, i, j, ox, oy, imageCache, dayNightWeather, {only:'objects'});
               return;
             }
@@ -2122,33 +2157,13 @@ export function createCanvasRenderer(ctx) {
 
                 c2d.save();
 
-                const cImg = getTileImage(c.targetTileId);
-                if (isImageReady(cImg) && !isFlatGroundTile(c.targetTileId)) {
-                  const cAdj = getTileRenderAdjustment(c.targetTileId);
-                  const cDx = cAdj.dx || 0;
-                  const cDy = cAdj.dy || 0;
-                  const cDw = cAdj.dw || 128;
-                  const cDh = cAdj.dh || 128;
+                if (!isFlatGroundTile(c.targetTileId) && isImageReady(constructionImage)) {
+                  const site=getConstructionRenderAdjustment(c.targetTileId,!!c.flipped);
                   c2d.save();
-                  setSpriteSampling(c2d, cAdj);
-                  c2d.globalAlpha = 0.35 + progress * 0.45;
-                  if(isLivestockTile(c.targetTileId))drawLivestockFence(c2d,fenceTexture,ox,oy,!!c.flipped,'back');
-                  if (c.targetTileId === 'b60_combined_warehouse') {
-                    drawWarehouseSprite(c2d, cImg, cAdj, ox, oy, c.flipped);
-                  } else if (getTerrainSprite(c.targetTileId)) {
-                    drawTerrainTile(c2d, cImg, c.targetTileId, ox, oy, c.flipped);
-                  } else if (c.flipped) {
-                    c2d.translate(ox + 128 - cDx, oy + cDy);
-                    c2d.scale(-1, 1);
-                    c2d.drawImage(cImg, 0, 0, cDw, cDh);
-                  } else {
-                    c2d.drawImage(cImg, ox + cDx, oy + cDy, cDw, cDh);
-                  }
+                  c2d.globalAlpha=1;
+                  c2d.imageSmoothingEnabled=true;c2d.imageSmoothingQuality='high';
+                  c2d.drawImage(constructionImage,ox+site.dx,oy+site.dy,site.dw,site.dh);
                   c2d.restore();
-                  if(isLivestockTile(c.targetTileId)) {
-                    c2d.save();c2d.globalAlpha=.35+progress*.45;
-                    drawLivestockFence(c2d,fenceTexture,ox,oy,!!c.flipped,'front');c2d.restore();
-                  }
                 }
 
                 deferOverlay(() => {
@@ -2336,7 +2351,7 @@ export function createCanvasRenderer(ctx) {
                 const treeVisual=getFruitTreeVisual(tid,treeState);
                 if(treeVisual)img=getTreeImage(tid,treeVisual.stage);
 
-                const isTownHallCell = (i >= 12 && i <= 13 && j >= 14 && j <= 16);
+                const isTownHallCell = currentGrid[13]?.[15]==='b14_town_hall' && (i >= 12 && i <= 13 && j >= 14 && j <= 16);
                 const isTownCenterCovered = isTownHallCell;
                 const isCombinedWarehouseCell = tid === "b60_combined_warehouse";
                 const isCombinedWarehouseAnchor = isCombinedWarehouseCell &&
@@ -2521,6 +2536,7 @@ export function createCanvasRenderer(ctx) {
       }
 
       // Assemble the entire fence network before queuing it: adjacent pieces
+      for(const item of customScenery)if(!isFlatGroundTile(item.tileId))queueWorld(item.row,item.col+(item.tileId==='scene:gate'?2:0),()=>drawScenery(item));
       // share their posts/rails, including the buy/move ghost at the target.
       const fenceCells = (ctx.getFences?.() || []).map(f => {
         const isMoving = movingBuilding && isFenceTile(movingBuilding.tileId) &&
@@ -2555,6 +2571,9 @@ export function createCanvasRenderer(ctx) {
       // All world bodies share the SAME anchor/depth comparator, including
       for(const enemy of ctx.getDefenseState?.()?.enemies || []){
         if(enemy.hp>0)queueWorld(enemy.r,enemy.c,()=>drawGoblin(c2d,enemy,animTime));
+      }
+      for(const soldier of ctx.getDefenseState?.()?.soldiers || []){
+        queueWorld(soldier.r,soldier.c,()=>drawSoldier(c2d,soldier,animTime));
       }
       if(ctx.getDefenseState?.())deferOverlay(()=>drawDefenseOverlay(c2d,ctx.getDefenseState(),currentGrid));
       for (const job of ctx.getExtractionState?.()?.jobs || []) {
@@ -2595,7 +2614,7 @@ export function createCanvasRenderer(ctx) {
         if (truck?.isVisible) queueWorld(truck.row, truck.col, () => orderBoardManager.renderWorldTruckAndBoard(
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "truck" }));
       }
-      if (harborShipManager?.renderWorldShipAndDock) {
+      if (harborShipManager?.renderWorldShipAndDock&&!ctx.getCustomMapLayout?.()) {
         const dockDepth=getHarborDepth('dock'),shipDepth=getHarborDepth('ship');
         queueWorld(dockDepth.row, dockDepth.col, () => harborShipManager.renderWorldShipAndDock(
           c2d, ORIGIN_X, ORIGIN_Y, HALF_W, QUARTER_W, animTime, { only: "dock", deferOverlay }));

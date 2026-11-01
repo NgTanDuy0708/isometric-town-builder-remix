@@ -7,6 +7,7 @@ import { canPlaceLivestock, migrateLivestockFootprints } from '../src/engine/liv
 import { LIVESTOCK_TILE_IDS, isLivestockTile } from '../src/data/livestockConfig.js';
 import { initInputHandler } from '../src/engine/inputHandler.js';
 import { createStarterTownMap32, isProtectedTile, isIndestructibleTile } from '../src/data/starterMap.js';
+import {isMapLockedCell,isMapRemovableCell} from '../src/data/mapLocks.js';
 import { getBaseTerrainTile, getTerrainSprite } from '../src/data/terrainConfig.js';
 import { getDefaultSaveState, saveGameSave, loadGameSave, importGameFromJSON } from '../src/engine/storage.js';
 import { createTerrainMap } from '../src/engine/terrainEditing.js';
@@ -137,7 +138,7 @@ import { checkHousingRemoval, getWorkforce, checkFarmWorkforce } from '../src/en
 function studioScene() {
   const source=fs.readFileSync(new URL('../src/studioEngine.js',import.meta.url),'utf8');
   const save=getDefaultSaveState(),cleared=[];
-  const context={currentGrid:save.grid,terrainMap:createTerrainMap(save.grid),constructions:save.constructions,
+  const context={isMapLockedCell,isMapRemovableCell,mapScenery:{},currentGrid:save.grid,terrainMap:createTerrainMap(save.grid),constructions:save.constructions,
     flippedGrid:save.flippedGrid,livestockState:save.livestockState,buildingLevels:save.buildingLevels,
     upgradesInProgress:save.upgradesInProgress,farmlandState:save.farmlandState,fruitTreesState:save.fruitTreesState,
     landUnlockedChunks:Array.from({length:64},(_,i)=>i),gameMode:'sandbox',tileMap:tiles,fences:[],ROWS:32,COLS:32,

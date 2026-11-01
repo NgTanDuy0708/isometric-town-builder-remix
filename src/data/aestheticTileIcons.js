@@ -8,8 +8,14 @@ import { FENCE_ITEMS } from "./fenceConfig.js";
 import { EXPANSION_TILE_URIS, EXPANSION_VARIANT_URIS } from "./expansionCatalog.js";
 import { IRON_MINE_ART } from './ironMineArtData.js';
 import { STONE_DEPOSIT_ART } from './stoneDepositArtData.js';
+import {PREMIUM_OFFERS} from './premiumConfig.js';
 
 export const AESTHETIC_TILE_URIS = {
+  ...Object.fromEntries(PREMIUM_OFFERS.filter(o=>o.tileId).map(o=>[o.tileId,o.image])),
+  b69_forester_lodge:getBuildingSpriteUri('b69_forester_lodge'),
+  n04_ancient_grove:'/assets/decorations/forest_3.png',
+  b68_mage_academy:getBuildingSpriteUri('b68_mage_academy'),
+  b67_guard_barracks:getBuildingSpriteUri('b67_guard_barracks'),
   b66_iron_mine: getBuildingSpriteUri('b66_iron_mine'),
   n03_iron_deposit: IRON_MINE_ART.iron_deposit.uri,
   b65_stone_quarry: getBuildingSpriteUri('b65_stone_quarry'),

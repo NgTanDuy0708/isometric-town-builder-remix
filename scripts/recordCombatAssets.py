@@ -1,0 +1,103 @@
+"""Record native generated combat PNGs and measure source frames without editing pixels."""
+from pathlib import Path
+import hashlib
+import json
+import shutil
+import statistics
+import numpy as np
+from PIL import Image
+from recordCharacterSheets import cuts
+
+ROOT = Path(__file__).resolve().parents[1]
+DOCS = ROOT / 'docs/generated-assets/combat-v1'
+PUBLIC = ROOT / 'public/assets/combat/v1'
+ARCHIVE = ROOT / 'assets-source/combat-v1'
+DIRECTIONS = ['SE', 'SW', 'NW', 'NE']
+
+
+def sheet_geometry(image):
+    mask = np.array(image)[:, :, 3] >= 32
+    try:
+        columns = cuts(mask, 8, 0)
+        rows = [cuts(mask[:, columns[col]:columns[col + 1]], 4, 1) for col in range(8)]
+        cells=[[(columns[col],rows[col][row],columns[col+1],rows[col][row+1]) for col in range(8)] for row in range(4)]
+        gutters={'columns':columns,'rowsPerColumn':rows}
+    except ValueError:
+        rows=cuts(mask,4,1)
+        columns=[cuts(mask[rows[row]:rows[row+1],:],8,0) for row in range(4)]
+        cells=[[(columns[row][col],rows[row],columns[row][col+1],rows[row+1]) for col in range(8)] for row in range(4)]
+        gutters={'rows':rows,'columnsPerRow':columns}
+    directions, heights = {}, []
+    for row, direction in enumerate(DIRECTIONS):
+        frames = []
+        for col in range(8):
+            x0,y0,x1,y1=cells[row][col]
+            yy, xx = np.where(mask[y0:y1, x0:x1])
+            if len(xx) < 400:
+                raise ValueError(f'Missing isolated pose {direction}/{col}')
+            left, right = int(xx.min()) + x0, int(xx.max()) + x0 + 1
+            top, bottom = int(yy.min()) + y0, int(yy.max()) + y0 + 1
+            body = mask[top + int((bottom-top)*.18):top + int((bottom-top)*.56), left:right]
+            anchor = left + float(np.median(np.where(body)[1]))
+            fx, fy = max(x0, left-2), max(y0, top-2)
+            frames.append({'x': fx, 'y': fy, 'w': min(x1,right+2)-fx, 'h': min(y1,bottom+2)-fy,
+                           'anchorX': anchor-fx, 'anchorY': bottom-fy})
+            if col < 5:
+                heights.append(bottom-top)
+        directions[direction] = frames
+    return {'referenceHeight':statistics.median(heights), 'directions':directions,**gutters}
+
+
+def main():
+    sources = json.loads((DOCS/'outputs.json').read_text(encoding='utf-8'))
+    PUBLIC.mkdir(parents=True,exist_ok=True)
+    ARCHIVE.mkdir(parents=True,exist_ok=True)
+    sheets, buildings, manifest = {}, {}, []
+    for name, source in sources.items():
+        path = Path(source)
+        image = Image.open(path)
+        if image.mode != 'RGBA':
+            raise ValueError(f'{name} needs genuine alpha: {image.mode}')
+        alpha = np.array(image)[:,:,3]
+        if alpha.min() != 0 or alpha.max() != 255:
+            raise ValueError(f'{name} alpha is not transparent')
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        for directory in [PUBLIC, ARCHIVE]:
+            target=directory/(name+'.png')
+            if target.exists() and target.read_bytes()!=path.read_bytes():
+                raise ValueError(f'Refusing to overwrite different asset {target}')
+            shutil.copyfile(path,target)
+        yy,xx = np.where(alpha>=32)
+        bounds=[int(xx.min()),int(yy.min()),int(xx.max())+1,int(yy.max())+1]
+        record={'uri':f'/assets/combat/v1/{name}.png?v={digest[:12]}','sha256':digest,
+                'width':image.width,'height':image.height,'bounds':bounds}
+        if name in ['guard','goblin','mage']:
+            record.update(sheet_geometry(image))
+            record['walkFrames']={direction:[1,2,3,4] for direction in DIRECTIONS}
+            if name=='mage':
+                # The native SE fourth walk pose turns its face; exclude it from
+                # playback while retaining the complete untouched generated sheet.
+                record['walkFrames']['SE']=[1,2,3,2]
+                record['curation']='SE walk uses 1,2,3,2 to avoid native pose 4 facing SW.'
+            sheets[name]=record
+        else:
+            # The frontmost foundation contact, not the image canvas centre.
+            bottom=bounds[3]
+            contact=np.where(alpha[max(0,bottom-10):bottom,:]>=128)[1]
+            record['geometry']={'width':image.width,'height':image.height,
+                'visibleWidth':bounds[2]-bounds[0], 'anchorX':float(np.median(contact)),
+                'anchorY':bottom,'worldWidth':128,'worldAnchorX':64,'worldAnchorY':128}
+            buildings[name]=record
+        manifest.append({'id':name,'generated':str(path),'runtime':f'public/assets/combat/v1/{name}.png',**record})
+        print(name, image.size, bounds)
+    payload={'sheets':sheets,'buildings':buildings}
+    (PUBLIC/'atlas.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (DOCS/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (ROOT/'src/data/combatArtData.js').write_text(
+        '// Native image_gen PNGs; generated by scripts/recordCombatAssets.py.\n'
+        'export const COMBAT_SHEETS = '+json.dumps(sheets,ensure_ascii=False,indent=2)+';\n'
+        'export const COMBAT_BUILDING_ART = '+json.dumps(buildings,ensure_ascii=False,indent=2)+';\n',encoding='utf-8')
+
+
+if __name__=='__main__':
+    main()

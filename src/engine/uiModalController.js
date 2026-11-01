@@ -632,6 +632,7 @@ export function createUIModalController(ctx) {
     btnSellAllCrops.addEventListener("click", () => {
       let totalGain = 0;
       let soldCount = 0;
+      const resourceIds = [];
       const playerResources = ctx.getPlayerResources();
       const goldMult = ctx.getMarketGoldMultiplier ? ctx.getMarketGoldMultiplier() : 1.0;
 
@@ -641,6 +642,7 @@ export function createUIModalController(ctx) {
         if (qty > 0 && cfg) {
           totalGain += Math.round(qty * cfg.sellPrice * goldMult);
           soldCount += qty;
+          resourceIds.push(resId);
         }
       });
 
@@ -672,7 +674,7 @@ export function createUIModalController(ctx) {
       ctx.updateResourcesUI();
       renderMarketModal();
       ctx.persistGameState();
-      if (ctx.onTutorialAction) ctx.onTutorialAction("market_sell");
+      if (ctx.onTutorialAction) ctx.onTutorialAction("market_sell", {resourceIds});
       showToast(`💰 Đã bán toàn bộ ${soldCount.toLocaleString()} nông sản từ kho Silo, thu về +${totalGain.toLocaleString()} 🪙 vàng!`, "success");
     }, { signal });
   }
@@ -701,7 +703,7 @@ export function createUIModalController(ctx) {
     ctx.updateResourcesUI();
     renderMarketModal();
     ctx.persistGameState();
-    if (ctx.onTutorialAction) ctx.onTutorialAction("market_sell");
+    if (ctx.onTutorialAction) ctx.onTutorialAction("market_sell", {resourceId:resId,quantity:qty});
 
     showToast(`💰 Đã bán ${qty} ${cfg.name}, thu về +${goldGain.toLocaleString()} 🪙!`, "success");
   }
@@ -741,6 +743,7 @@ export function createUIModalController(ctx) {
 
         const item = document.createElement("div");
         item.className = "market-item-card";
+        item.dataset.resourceId = resKey;
 
         const iconBadge = document.createElement("div");
         iconBadge.className = "market-icon-badge";
@@ -879,6 +882,7 @@ export function createUIModalController(ctx) {
 
       const card = document.createElement("div");
       card.className = "seed-card" + (isLocked ? " locked-seed" : "");
+      card.dataset.seedId = crop.id;
 
       const iconSrc = CROP_PIXEL_SPRITES['icon_' + crop.id];
       const iconEl = iconSrc
@@ -932,11 +936,11 @@ export function createUIModalController(ctx) {
               growDurationMs: crop.growTimeSec * 1000
             };
             ctx.persistGameState();
-            if (ctx.onTutorialAction) ctx.onTutorialAction("plant_seed", { seedId: crop.id });
           }
 
           ctx.activateBulkSeedBrush(crop);
           closeSeedModal();
+          if (cell && ctx.onTutorialAction) ctx.onTutorialAction("plant_seed", { seedId: crop.id });
           ctx.requestRender();
         });
       }
@@ -1085,6 +1089,10 @@ export function createUIModalController(ctx) {
       if (ctx.onReplayTutorial) ctx.onReplayTutorial();
     }, { signal });
   }
+
+  document.getElementById('btn-replay-level-tutorial')?.addEventListener('click',()=>{
+    closeSettingsModal();ctx.onReplayLevelTutorial?.();
+  },{signal});
 
   // Kích hoạt thủ công Sự kiện ngẫu nhiên trong Cài Đặt để kiểm thử
   const btnTriggerFair = document.getElementById("btn-trigger-event-fair");

@@ -21,15 +21,15 @@ export function createExtractionPanel(ctx) {
     const visible=selected?shops.filter(s=>s.r===selected.row&&s.c===selected.col):shops;
     body.replaceChildren();
     const summary=document.createElement('p');
-    summary.textContent=`Dân rảnh: ${labor.free} · Công nhân: ${labor.workers} · Gỗ: ${ctx.getResources().wood || 0} · Đá: ${ctx.getResources().stone || 0} · Quặng sắt: ${ctx.getResources().ironOre || 0}`;
+    summary.textContent=`Dân rảnh toàn vương quốc: ${labor.free} · Công nhân tại đây: ${labor.workers} · Gỗ: ${ctx.getResources().wood || 0} · Đá: ${ctx.getResources().stone || 0} · Quặng sắt: ${ctx.getResources().ironOre || 0} · Gỗ cổ thụ: ${ctx.getResources().ancientWood||0}`;
     body.append(summary);
     const food=manager.foodSummary();
     const foodSection=document.createElement('section');foodSection.className='extraction-food';
-    const foodTitle=document.createElement('h3');foodTitle.textContent='🍞 Lương thực công nhân';foodSection.append(foodTitle);
+    const foodTitle=document.createElement('h3');foodTitle.textContent='🍞 Lương thực công nhân và lính';foodSection.append(foodTitle);
     const foodStatus=document.createElement('p');foodStatus.className=food.hungry?'extraction-food-warning':'';
     foodStatus.setAttribute('role','status');
-    foodStatus.textContent=`${food.portions} khẩu phần có thể dùng · ${food.workers} công nhân cần ${food.portionsPerMinute.toLocaleString('vi-VN')} khẩu phần/phút · ${food.reserve} khẩu phần đã chuẩn bị.`;
-    if(food.hungry)foodStatus.textContent+=' Thiếu ăn: thời gian khai thác tăng gấp đôi. Thu hoạch lúa/ngô hoặc nhận bánh mì, rồi bật loại được dùng bên dưới để phục hồi.';
+    foodStatus.textContent=`${food.portions} khẩu phần có thể dùng · ${food.extractionWorkers} công nhân + ${food.soldiers} lính cần ${food.portionsPerMinute.toLocaleString('vi-VN')} khẩu phần/phút · ${food.reserve} khẩu phần đã chuẩn bị.`;
+    if(food.hungry)foodStatus.textContent+=' Thiếu ăn: khai thác, huấn luyện và nhịp đánh của lính còn 50% tốc độ. Thu hoạch lúa/ngô hoặc nhận bánh mì, rồi bật loại được dùng bên dưới để phục hồi.';
     else if(food.workers)foodStatus.textContent+=` Khẩu phần tiếp theo sau ${food.secondsUntilMeal}s.`;
     if(food.workers&&!food.hungry&&food.portions<1)foodStatus.textContent+=' Hết lương thực được phép dùng — hãy chuẩn bị cho bữa tiếp theo.';
     foodSection.append(foodStatus);
@@ -44,7 +44,7 @@ export function createExtractionPanel(ctx) {
       label.append(checkbox,text);foodSection.append(label);
     }
     const foodHelp=document.createElement('p');foodHelp.className='extraction-help';
-    foodHelp.textContent=`Tự dùng theo thứ tự trên, chỉ dùng loại đã bật. Mỗi công nhân cần 1 khẩu phần/${WORKER_MEAL_SECONDS}s chơi, kể cả lúc chờ tài nguyên/kho. Người đang xin nghỉ hoặc thiếu suất dân không tiêu thụ. Phần ăn đã chuẩn bị được giữ lại khi đổi lựa chọn. Chỉ giảm tốc độ đốn/đào khi thiếu ăn; vận chuyển vẫn bình thường. Nông dân và dân rảnh chưa tiêu thụ lương thực.`;
+    foodHelp.textContent=`Tự dùng theo thứ tự trên, chỉ dùng loại đã bật. Mỗi công nhân/lính cần 1 khẩu phần/${WORKER_MEAL_SECONDS}s chơi, kể cả lúc chờ, huấn luyện hoặc dưỡng thương. Người đang xin nghỉ hoặc thiếu suất dân không tiêu thụ. Phần ăn đã chuẩn bị được giữ lại khi đổi lựa chọn. Đi lại, giao hàng và về trại vẫn bình thường. Nông dân và dân rảnh chưa tiêu thụ lương thực.`;
     foodSection.append(foodHelp);body.append(foodSection);
     const help=document.createElement('p');help.className='extraction-help';
     help.textContent=`Mỗi công nhân cần 1 dân rảnh và ${WORKER_HIRE_GOLD} vàng thuê một lần. Chừa lối đất trống/đường từ xưởng tới điểm tài nguyên và Kho Tổng Hợp. Chọn Chế biến để làm ván/đá xây dựng; quặng luyện tại Lò rèn. Khai thác chạy khi game đang mở.`;

@@ -15,14 +15,15 @@ import { getRotatedTileIdAndFlip } from '../src/engine/upgradeManager.js';
 import { initInputHandler } from '../src/engine/inputHandler.js';
 import { getExpansionRoadConnections, isExpansionGround } from '../src/engine/expansionRenderer.js';
 
-test('all expansion subjects have exactly one purchasable item in the intended shop tab', () => {
+test('expansion subjects have one shop item, except the fixed village gate', () => {
   assert.equal(EXPANSION_TILES.length, 41);
   assert.equal(Object.keys(EXPANSION_TILE_URIS).length, 44);
   assert.equal(new Set(TILES_DATA.map(t=>t.id)).size, TILES_DATA.length);
   for (const [id, uri] of Object.entries(EXPANSION_TILE_URIS)) {
     const t = TILES_DATA.find(t=>t.id===id);
     assert.ok(t, id);
-    assert.ok(['residential','production','farming','roads','decor','wonders'].includes(getShopCategory(t)), id);
+    if(id==='b17_twin_gatehouse')assert.equal(getShopCategory(t),'hidden');
+    else assert.ok(['residential','production','farming','roads','decor','wonders'].includes(getShopCategory(t)), id);
     assert.ok(getTileCost(id,t.category)>0, id);
     assert.equal(readFileSync(new URL('../public'+uri,import.meta.url)).toString('ascii',1,4), 'PNG');
   }

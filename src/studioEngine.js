@@ -1,16 +1,22 @@
 import {resourceIconHtml} from './data/resourceIcons.js';
+import {normalizeVillageSave} from './engine/villageLayoutMigration.js';
+import {createWorldManager} from './engine/worldManager.js';
+import {createPremiumManager} from './engine/premiumManager.js';
+import {createAdventurePanel} from './engine/adventurePanel.js';
+import {isPremiumTile} from './data/premiumConfig.js';
 import {createFruitTreeState,getFruitTreeVisual,resolveFruitTreeState,harvestFruitTreeProduce,forceFruitTreeReady} from "./engine/fruitTreeLifecycle.js";
 import {paintFruitTreeThumbnail} from "./data/fruitTreeSprites.js";
 import { LIVESTOCK_RULES, isLivestockTile } from "./data/livestockConfig.js";
 import { getLivestockAnchor, reserveLivestockCells, clearLivestockParts } from './data/livestockFootprint.js';
 import { canPlaceLivestock } from './engine/livestockFootprint.js';
 import { TOWN_HALL_TUNING_KEY } from "./engine/townHallTuning.js";
-import { getShopCategory } from './data/shopCatalog.js';
+import { getShopCategory, EXCLUDED_SHOP_TILES } from './data/shopCatalog.js';
 import { getWorkforce, checkFarmWorkforce, checkHousingRemoval } from './engine/workforce.js';
 import { createExtractionManager } from './engine/extractionManager.js';
 import { createExtractionPanel } from './engine/extractionPanel.js';
 import { createDefenseManager } from './engine/defenseManager.js';
 import { createDefensePanel } from './engine/defensePanel.js';
+import { getDefenseCameraView } from './engine/defenseCamera.js';
 import { isExpansionGround, paintExpansionGroundThumbnail } from './engine/expansionRenderer.js';
 import { canPlaceOnSurface, getClearedSurface, isPlacementProtected } from './engine/placementSurface.js';
 import { placeFenceOnEdges } from "./engine/fencePlacement.js";
@@ -61,6 +67,8 @@ import { createUpgradeManager, calculateDemolishRefund, getRotatedTileIdAndFlip,
 import { createUIModalController, showToast } from "./engine/uiModalController.js";
 import { initInputHandler, findHitBubble } from "./engine/inputHandler.js";
 import { createCanvasRenderer, isImageReady } from "./engine/canvasRenderer.js";
+import {readTutorialUi} from "./engine/tutorialView.js";
+import {isHousingTile} from "./data/housingConfig.js";
 import { createTutorialManager } from "./engine/tutorialManager.js";
 import { createTownEventsManager } from "./engine/townEvents.js";
 import { createFarmToolsManager } from "./engine/farmTools.js";
@@ -81,6 +89,9 @@ import { AESTHETIC_TILE_URIS } from "./data/aestheticTileIcons.js";
 import { getBuildingSpriteUri } from "./data/buildingSprites.js";
 import { applyCoastTerrainLayout, getTerrainSprite } from "./data/terrainConfig.js";
 import { TERRAIN_MAP_KEY, readTerrainMap, syncTerrainToGrid, createTerrainMap, writeTerrainMap, isValidTerrainMap } from "./engine/terrainEditing.js";
+import {STARTER_MAP_KEY,MAP_APPLY_KEY,readMapDocument,applyMapDocumentToSave,restartMapGrowth} from './engine/mapEditing.js';
+import {setActiveMapLocks,isMapLockedCell,isMapRemovableCell,normalizeMapLocks,setCustomMapLayout} from './data/mapLocks.js';
+import {setHarborSites} from './data/harborLayout.js';
 import { WAREHOUSE_TUNING_KEY } from "./engine/warehouseTuning.js";
 import { isFenceTile, migrateGridFences, FENCE_ITEM_BY_ID } from "./data/fenceConfig.js";
 import { paintFenceThumbnail } from "./engine/fenceRenderer.js";
@@ -214,23 +225,34 @@ export function initIsometricStudio() {
     let extractionPanel = null;
     let defenseManager = null;
     let defensePanel = null;
+    let worldManager=null,premiumManager=null,adventurePanel=null,applyImportedState=null;
     const starterMapGrid = createStarterTownMap32();
     const loadedSave = loadGameSave(starterMapGrid);
-    const initialSave = loadedSave || getDefaultSaveState(starterMapGrid);
+    const starterDocument=readMapDocument(localStorage,STARTER_MAP_KEY);
+    const pendingMapDocument=readMapDocument(localStorage,MAP_APPLY_KEY);
+    const baseSave=loadedSave || getDefaultSaveState(starterMapGrid);
+    const initialSave = pendingMapDocument ? applyMapDocumentToSave(baseSave,restartMapGrowth(pendingMapDocument))
+      : !loadedSave&&starterDocument?applyMapDocumentToSave(baseSave,restartMapGrowth(starterDocument)):baseSave;
+    if(pendingMapDocument)localStorage.removeItem(MAP_APPLY_KEY);
+    let mapLocks=normalizeMapLocks(initialSave.mapLocks);
+    let mapScenery=initialSave.mapScenery||{},customMapLayout=initialSave.customMapLayout===true;
+    setCustomMapLayout(customMapLayout);
+    setHarborSites(mapScenery,customMapLayout);
+    setActiveMapLocks(mapLocks);
     let currentGrid = (initialSave.grid && initialSave.grid.length === 16) ? expandGrid16to32(initialSave.grid) : (initialSave.grid || starterMapGrid);
     
     // Di trú save cũ: Kho Barn (b12) & Kho Silo (b13) đã được gộp hẳn vào Kho Tổng Hợp 2×2 (b60).
     // Dùng chung hàm với luồng import JSON/dev map để mọi nguồn dữ liệu đều nhất quán.
-    migrateLegacyWarehouseLayout(currentGrid);
+    if(!initialSave.customMapLayout)migrateLegacyWarehouseLayout(currentGrid);
 
     // 2. Đặt lại khu trung tâm theo footprint tòa thị chính 2x3 và quảng trường 3x3.
-    applyTownCenterLayout(currentGrid);
+    if(initialSave.world?.active!=='forest'&&!initialSave.customMapLayout)applyTownCenterLayout(currentGrid);
 
     // Chỉ nút Chơi lại mới được xoá bản đồ; cờ giao diện không quyết định dữ liệu save.
 
     // Đồng bộ bờ col 4 và cát cols 5..6 cho save cũ, giữ công trình.
     applyCoastTerrainLayout(currentGrid);
-    let terrainMap = readTerrainMap(localStorage);
+    let terrainMap = isValidTerrainMap(initialSave.terrainMap)?initialSave.terrainMap:readTerrainMap(localStorage);
     if (!terrainMap) {
       terrainMap = isValidTerrainMap(initialSave.terrainMap) ? initialSave.terrainMap : createTerrainMap(currentGrid);
       writeTerrainMap(localStorage, terrainMap);
@@ -410,11 +432,16 @@ export function initIsometricStudio() {
         grid: currentGrid,
         terrainMap,
         fences,
+        mapLocks,
+        mapScenery,customMapLayout,
         flippedGrid,
         constructions,
         productionState: productionManager.getState(),
         extraction: extractionManager?.getState() || null,
         defense: defenseManager?.getState() || null,
+        world:worldManager?.getState()||initialSave.world,
+        premium:premiumManager?.getState()||initialSave.premium,
+        tutorial:tutorialManager?.getState()||initialSave.tutorial,
         farmlandState,
         fruitTreesState,
         playerLevel,
@@ -809,8 +836,10 @@ export function initIsometricStudio() {
     function resizeCanvas() {
       const { width: viewW, height: viewH } = getViewportSize();
       renderPixelRatio = computeRenderPixelRatio();
-      canvas.width = Math.round(viewW * renderPixelRatio);
-      canvas.height = Math.round(viewH * renderPixelRatio);
+      const pixelWidth=Math.round(viewW*renderPixelRatio),pixelHeight=Math.round(viewH*renderPixelRatio);
+      // A same-size ResizeObserver notification must not erase the last frame.
+      if(canvas.width!==pixelWidth)canvas.width=pixelWidth;
+      if(canvas.height!==pixelHeight)canvas.height=pixelHeight;
       canvas.style.width = viewW + 'px';
       canvas.style.height = viewH + 'px';
 
@@ -847,6 +876,7 @@ export function initIsometricStudio() {
     const goldBadge = document.getElementById('builder-gold-badge');
 
     function resetToInitialGameState() {
+      worldManager?.init(null);premiumManager?.init(null);adventurePanel?.close();
       cleanOldSavesForV3();
       gameMode = "game";
       playerGold = INITIAL_GOLD; // 500 gold
@@ -865,6 +895,9 @@ export function initIsometricStudio() {
       terrainMap = createTerrainMap(currentGrid);
       writeTerrainMap(localStorage, terrainMap);
       fences = [];
+      mapLocks={};setActiveMapLocks(mapLocks);
+      mapScenery={};customMapLayout=false;setCustomMapLayout(false);
+      setHarborSites();
       constructions = {};
       buildingLevels = {};
       upgradesInProgress = {};
@@ -921,7 +954,8 @@ export function initIsometricStudio() {
         localStorage.removeItem("town_builder_tutorial_step");
       } catch (e) {}
       if (tutorialManager) {
-        tutorialManager.start(true);
+        tutorialManager.resetForNewGame();
+        tutorialManager.start();
       }
 
       // Đóng tất cả các modal đang mở (bao gồm cả Cài Đặt) để đưa người chơi về màn hình chính
@@ -942,6 +976,8 @@ export function initIsometricStudio() {
         if (typeof uiModalController.renderQuestList === "function") uiModalController.renderQuestList();
       }
 
+      const customStarter=readMapDocument(localStorage,STARTER_MAP_KEY);
+      if(customStarter&&applyImportedState)applyImportedState(applyMapDocumentToSave(getFullSaveData(),restartMapGrowth(customStarter)));
       persistGameState();
       resizeCanvas();
       centerCamera();
@@ -1033,6 +1069,7 @@ export function initIsometricStudio() {
       }
 
       updateLevelUI();
+      if (leveledUp) tutorialManager?.checkAndTriggerLevelTutorial(playerLevel);
       persistGameState();
       checkQuestsProgress(true);
 
@@ -1275,9 +1312,9 @@ export function initIsometricStudio() {
       if (t) {
         if (titleEl) titleEl.textContent = t.label + (brushFlipped ? " (Đã xoay)" : "");
         const cost = getTileCost(t.id, t.category);
-        if (metaEl) metaEl.textContent = ((gameMode === "sandbox" || cost === 0) ? "Miễn phí" : `Chi phí: ${cost} 🪙`) + (isFenceTile(activeBrush) ? " • Đặt trên cạnh, không chiếm ô đất • R: Xoay" : "");
+        if (metaEl) metaEl.textContent = (isPremiumTile(activeBrush)?`Trong túi: ${premiumManager?.getState().inventory[activeBrush]||0}`:((gameMode === "sandbox" || cost === 0) ? "Miễn phí" : `Chi phí: ${cost} 🪙`)) + (isFenceTile(activeBrush) ? " • Đặt trên cạnh, không chiếm ô đất • R: Xoay" : "");
         if (metaEl && activeBrush === 'd13_farmland_plot') {
-          const labor = getWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState());
+          const labor = getWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState(),defenseManager?.getState(),worldManager?.otherLabor());
           metaEl.textContent += ` • 1 dân/luống • Dân rảnh: ${labor.free}`;
         }
         if (thumbEl) {
@@ -1475,8 +1512,8 @@ export function initIsometricStudio() {
       const element=document.getElementById('builder-stat-worker-food');
       if(!element)return;
       const food=extractionManager?.foodSummary();
-      element.textContent=!food?.workers ? '🍞 Chưa có công nhân cần ăn'
-        : food.hungry ? '⚠️ Thiếu ăn · khai thác 50% tốc độ'
+      element.textContent=!food?.workers ? '🍞 Chưa có công nhân hoặc lính cần ăn'
+        : food.hungry ? '⚠️ Thiếu ăn · khai thác/chiến đấu 50% tốc độ'
         : food.portions<1 ? '🍞 Hết lương thực · chuẩn bị bữa tiếp theo'
         : `🍞 ${food.portions} khẩu phần · dùng ${food.portionsPerMinute.toLocaleString('vi-VN')}/phút`;
       element.style.color=food?.workers&&food.portions<1?'#9a3412':'';
@@ -1486,7 +1523,8 @@ export function initIsometricStudio() {
     function updateVillageStatsUI() {
       updateWorkerFoodUI();
       const stats = calculateVillageStats(currentGrid, constructions, tileMap, buildingLevels);
-      const labor = getWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState());
+      const labor = getWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState(),defenseManager?.getState(),worldManager?.otherLabor());
+      const soldiersEl=document.getElementById('builder-stat-soldiers');if(soldiersEl)soldiersEl.textContent=labor.soldiers.toLocaleString();
       const workersEl = document.getElementById('builder-stat-workers');
       if (workersEl) workersEl.textContent = labor.workers.toLocaleString();
       const freeEl = document.getElementById('builder-stat-free-workers');
@@ -1499,7 +1537,7 @@ export function initIsometricStudio() {
         shortageEl.hidden = !labor.shortage;
       }
       if (activeBrush === 'd13_farmland_plot') updateFloatingBrushHUD();
-      if (statPopEl) statPopEl.textContent = stats.population.toLocaleString();
+      if (statPopEl) statPopEl.textContent = labor.worldTotal.toLocaleString();
       if (statVillagersEl) statVillagersEl.textContent = villagerManager.villagers.length.toString();
       if (statBldEl) statBldEl.textContent = stats.completedBuildings.toLocaleString();
       if (statIncEl) statIncEl.textContent = `+${stats.productionPerMin}`;
@@ -1605,6 +1643,72 @@ export function initIsometricStudio() {
       return { claimableCount, completedCount, stats };
     }
 
+    // Tutorial targets follow the same grid projection as map input, including zoom/pan.
+    let tutorialSuggestedCell = null;
+    function focusTutorialCell({row,col}) {
+      const rect=container.getBoundingClientRect();
+      camera.x=rect.width*.55-(ORIGIN_X+(col-row)*HALF_W+64)*camera.zoom;
+      camera.y=rect.height*.44-(ORIGIN_Y+(row+col)*QUARTER_W+96)*camera.zoom;
+      requestRender();
+    }
+    function getTutorialWorldTarget(kind) {
+      const cells=[];
+      for(let row=0;row<currentGrid.length;row++)for(let col=0;col<currentGrid[row].length;col++){
+        const key=`${row}_${col}`,id=currentGrid[row][col],farm=farmlandState[key];
+        if(kind==='empty'){
+          if(isCellUnlocked(row,col,landUnlockedChunks,gameMode)&&!constructions[key]&&canPlaceOnSurface(activeBrush||'b01_cottage_red',id)
+            &&!isPlacementProtected(activeBrush||'b01_cottage_red',row,col,id)&&!kingdomWondersManager?.getWonderAt(row,col)&&(!isLivestockTile(activeBrush)||canPlaceLivestock({
+              getCurrentGrid:()=>currentGrid,getConstructions:()=>constructions,getUpgradesInProgress:()=>upgradesInProgress,
+              getFences:()=>fences,getGameMode:()=>gameMode,getLandUnlockedChunks:()=>landUnlockedChunks,getKingdomWondersManager:()=>kingdomWondersManager
+            },activeBrush,row,col,brushFlipped)))cells.push({row,col});
+        }else if(kind==='hall'&&id==='b14_town_hall')cells.push({row,col});
+        else if(kind==='house'&&(isHousingTile(id)||isHousingTile(constructions[key]?.targetTileId)))cells.push({row,col});
+        else if(id==='d13_farmland_plot'&&!constructions[key]){
+          if(kind==='empty-farm'&&!farm?.seedId)cells.push({row,col});
+          if((kind==='wheat'||kind==='harvest')&&farm?.seedId==='wheat'){
+            const remaining=Math.max(0,farm.plantTime+getCropGrowDurationMs(farm)-Date.now());
+            if(kind!=='harvest'||remaining===0)cells.push({row,col,remaining});
+          }
+        }
+      }
+      if(!cells.length)return null;
+      let cell;
+      if(kind==='empty'){
+        const same=(a,b)=>a&&b&&a.row===b.row&&a.col===b.col;
+        cell=cells.find(c=>same(c,hoverCell))||cells.find(c=>same(c,tutorialSuggestedCell));
+        if(!cell){cells.sort((a,b)=>(Math.abs(a.row-17)+Math.abs(a.col-16))-(Math.abs(b.row-17)+Math.abs(b.col-16)));cell=cells[0];tutorialSuggestedCell=cell;}
+        const confirm=document.getElementById('floating-brush-confirm');
+        if(hoverCell&&same(cell,hoverCell)&&confirm&&confirm.getBoundingClientRect().width>0&&tutorialManager?.getControlMode()==='touch')return {element:confirm};
+      }else{cells.sort((a,b)=>kind==='hall'?(Math.abs(a.row-13)+Math.abs(a.col-15))-(Math.abs(b.row-13)+Math.abs(b.col-15)):(a.remaining||0)-(b.remaining||0));cell=cells[0];}
+      const rect=container.getBoundingClientRect(),zoom=camera.zoom;
+      const x=rect.left+camera.x+(ORIGIN_X+(cell.col-cell.row)*HALF_W+64)*zoom;
+      const bubble=kind==='harvest',y=rect.top+camera.y+(ORIGIN_Y+(cell.row+cell.col)*QUARTER_W+(bubble?30:96))*zoom;
+      return {x:x-(bubble?23:50)*zoom,y:y-(bubble?24:24)*zoom,width:(bubble?46:100)*zoom,height:48*zoom,cell};
+    }
+    function closeTutorialPanels(){
+      closeShopModal();uiModalController.closeMarketModal();uiModalController.closeSeedModal();uiModalController.closeQuestModal();
+      uiModalController.closeAchievementsModal();uiModalController.closeSettingsModal();closeStorageModal();
+      productionPanel.close();extractionPanel?.close();defensePanel?.close();adventurePanel?.close();
+      townCaretakerManager?.closeModal();harborShipManager?.closeModal();dailyWheelManager?.closeModal();
+    }
+    function openTutorialPanel(panel,category){
+      closeTutorialPanels();setActiveBrush(null);farmToolsManager?.deactivateFarmTool();
+      if(panel==='shop'){openShopModal();if(category)openShopCategory(category);}
+      else if(panel==='market')openMarketModal();
+      else if(panel==='seed'){const cell=getTutorialWorldTarget('empty-farm')?.cell;if(cell)openSeedModal(cell.row,cell.col);}
+      else if(panel==='quests')openQuestModal();
+      else if(panel==='warehouse')openStorageModal();
+      else if(panel==='production')productionPanel.open();
+      else if(panel==='workers')extractionPanel?.open();
+      else if(panel==='defense')defensePanel?.open();
+      else if(panel==='world'||panel==='premium')adventurePanel?.open(panel);
+      else if(panel==='achievements')uiModalController.openAchievementsModal();
+      else if(panel==='caretaker')townCaretakerManager?.openModal();
+      else if(panel==='shipping')harborShipManager?.openModal();
+      else if(panel==='wheel')dailyWheelManager?.openModal();
+      else if(panel==='event')document.getElementById('hud-town-event-card')?.click();
+    }
+
     // Tutorial Onboarding Manager (Step-by-step 5-minute guide & Level Feature Guides)
     tutorialManager = createTutorialManager({
       getPlayerLevel: () => playerLevel,
@@ -1624,24 +1728,18 @@ export function initIsometricStudio() {
       playQuestRewardSound,
       playVillagerSpeakSound,
       playUIClickSound,
-      openShopModal: () => {
-        const modal = document.getElementById("shop-modal");
-        if (modal) modal.classList.add("open");
-      },
-      openMarketModal: () => openMarketModal(),
-      openAchievementsModal: () => {
-        if (uiModalController) uiModalController.openAchievementsModal();
-      },
-      openCaretakerModal: () => {
-        if (townCaretakerManager) townCaretakerManager.openModal();
-      },
-      openHarborShipModal: () => {
-        if (harborShipManager) harborShipManager.openModal();
-      },
-      openLandExpansionModal: () => {
-        openLandExpansionModal(10);
-      }
+      finishTutorialPlacement: () => {setActiveBrush(null);farmToolsManager?.deactivateFarmTool();},
+      getActiveBrush: () => activeBrush,
+      getActiveSeedBrush: () => farmToolsManager?.getActiveSeedBrush(),
+      getTutorialUi: () => ({...readTutorialUi(), shopCategory:shopModal?.classList.contains('open') && shopItemsContainer?.style.display!=='none'?activeShopCategory:null}),
+      isTutorialBlocked: () => !document.getElementById('levelup-modal')?.classList.contains('hidden') || !document.getElementById('storage-full-modal')?.classList.contains('hidden'),
+      getTutorialWorldTarget,
+      focusTutorialCell,
+      openTutorialPanel,
+      closeTutorialPanels,
+      onChanged: () => persistGameState(),
     });
+    tutorialManager.init(initialSave.tutorial);
     window.tutorialManager = tutorialManager;
 
     // Town Random Events Manager (Hội Chợ, Thương Đoàn, Mùa Vàng)
@@ -1655,6 +1753,8 @@ export function initIsometricStudio() {
       spawnFlyingCoin,
       requestRender: () => requestRender(),
       onEventStateChanged: () => {
+        const event = townEventsManager?.getActiveEvent();
+        if(event) tutorialManager.onTownEvent(event.id);
         persistGameState();
       }
     });
@@ -1716,6 +1816,7 @@ export function initIsometricStudio() {
     uiModalController = createUIModalController({
       onTutorialAction: (type, payload) => tutorialManager.onAction(type, payload),
       onReplayTutorial: () => tutorialManager.start(true),
+      onReplayLevelTutorial: () => tutorialManager.replayLevelTutorial(),
       getMarketGoldMultiplier: () => {
         const evMult = townEventsManager ? townEventsManager.getMarketGoldMultiplier() : 1.0;
         const wonderMult = kingdomWondersManager ? kingdomWondersManager.getGoldBuffMultiplier() : 1.0;
@@ -1767,9 +1868,14 @@ export function initIsometricStudio() {
       activateBulkSeedBrush: (crop) => {
         if (farmToolsManager) farmToolsManager.activateBulkSeedBrush(crop);
       },
-      loadImportedState: (imported) => {
+      loadImportedState: applyImportedState = (imported,regionTravel=false) => {
+        imported = normalizeVillageSave(imported);
+        if(!regionTravel){worldManager?.init(imported.world);premiumManager?.init(imported.premium);}
         currentGrid = imported.grid;
-        migrateLegacyWarehouseLayout(currentGrid);
+        mapLocks=normalizeMapLocks(imported.mapLocks);setActiveMapLocks(mapLocks);
+        mapScenery=imported.mapScenery||{};customMapLayout=imported.customMapLayout===true;setCustomMapLayout(customMapLayout);
+        setHarborSites(mapScenery,customMapLayout);
+        if(!imported.customMapLayout)migrateLegacyWarehouseLayout(currentGrid);
         applyCoastTerrainLayout(currentGrid);
         terrainMap = isValidTerrainMap(imported.terrainMap) ? imported.terrainMap : createTerrainMap(currentGrid);
         writeTerrainMap(localStorage, terrainMap);
@@ -1840,7 +1946,7 @@ export function initIsometricStudio() {
           harborShipManager.init(imported.harborShip);
         }
         if (kingdomWondersManager && imported.kingdomWonders) {
-          kingdomWondersManager.init(imported.kingdomWonders);
+          kingdomWondersManager.init(imported.kingdomWonders,imported.wonderSites||{});
         }
         if (dailyWheelManager && imported.dailyWheel) {
           dailyWheelManager.init(imported.dailyWheel);
@@ -1856,6 +1962,10 @@ export function initIsometricStudio() {
         defenseManager?.init(imported.defense);
         defensePanel?.close();
         defensePanel?.render();
+        adventurePanel?.render();
+        movingBuilding=null;setActiveBrush(null);hoverCell=null;
+        if(villagerManager)villagerManager.villagers=[];
+        if(petManager)petManager.pets=[];
         undoStack = [];
         redoStack = [];
         updateUndoRedoButtons();
@@ -1864,7 +1974,7 @@ export function initIsometricStudio() {
         updateModeUI();
         updateVillageStatsUI();
         checkQuestsProgress();
-        persistGameState();
+        if(!regionTravel){tutorialManager.init(imported.tutorial);tutorialManager.start();persistGameState();}
       }
     });
 
@@ -1875,13 +1985,13 @@ export function initIsometricStudio() {
 
     // Global Dev testing shortcut for console or instant testing
     window.loadDevTestSave = () => {
-      if (uiModalController && uiModalController.loadImportedState) {
+      if (applyImportedState) {
         const devSave = {
           ...DEV_FULL_VILLAGE_SAVE,
           grid: DEV_FULL_VILLAGE_SAVE.grid.map(row => [...row])
         };
         applyTownCenterLayout(devSave.grid);
-        uiModalController.loadImportedState(devSave);
+        applyImportedState(devSave);
       }
       centerCamera();
       requestRender();
@@ -1940,19 +2050,6 @@ export function initIsometricStudio() {
     function openShopModal() {
       if (!shopModal) return;
       playModalOpenSound();
-
-      if (tutorialManager && tutorialManager.isActive()) {
-        const step = tutorialManager.getCurrentStep();
-        if (step === 1) {
-          openShopCategory('farming');
-          shopModal.classList.add("open");
-          return;
-        } else if (step === 5) {
-          openShopCategory('residential');
-          shopModal.classList.add("open");
-          return;
-        }
-      }
 
       showShopCategories();
       shopModal.classList.add("open");
@@ -2089,6 +2186,7 @@ export function initIsometricStudio() {
           const stage = kingdomWondersManager ? (kingdomWondersManager.wondersState[wonder.id] || 0) : 0;
           const cost = wonder.purchaseGold || 0;
           const card = document.createElement("div");
+          card.dataset.wonderId = wonder.id;
           card.className = "shop-item-card" + (placed ? " selected" : "");
           card.innerHTML = `
             <img class="shop-item-thumb" src="/assets/wonders/${wonder.id}.png" alt="${wonder.name}" onerror="this.onerror=null; this.src='tiles/d12_meadow_wildflowers_128.png';" />
@@ -2111,19 +2209,8 @@ export function initIsometricStudio() {
         });
       }
 
-      const EXCLUDED_SHOP_TILES = new Set([
-        'd12_meadow_wildflowers',
-        's13_sand_ground',
-        'm01_sandy_beach_s',
-        'm30_sea_var2_coral_reef',
-        'b51_waterworks_pump_house_sw',
-        'b52_waterworks_pump_house_se',
-        'm04_stone_harbor_pier',
-        'l06_savanna_acacia_waterhole',
-        'd24_rustic_wooden_fence'
-      ]);
-
       const filtered = TILES_DATA.filter(t => {
+        if(t.id==='b69_forester_lodge'&&worldManager?.getState().active!=='forest')return false;
         if (EXCLUDED_SHOP_TILES.has(t.id)) return false;
         const hasRealImage = !!getBuildingSpriteUri(t.id, 1) || !!AESTHETIC_TILE_URIS[t.id] || !!TILE_DATA_URIS[t.id] || isFenceTile(t.id);
         if (!hasRealImage) return false;
@@ -2139,9 +2226,10 @@ export function initIsometricStudio() {
         const builtPens = isPen ? countBuiltPens(tile.id) : 0;
         const isPenLimitReached = isPen && !isLocked && builtPens >= maxPens;
         const farmLabor = tile.id === 'd13_farmland_plot'
-          ? checkFarmWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState()) : null;
+          ? checkFarmWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState(),defenseManager?.getState(),worldManager?.otherLabor()) : null;
 
         const card = document.createElement("div");
+        card.dataset.tileId = tile.id;
         card.className = "shop-item-card" + (activeBrush === tile.id ? " selected" : "") + (isLocked || isPenLimitReached ? " locked-item" : "");
         const shopName=FRUIT_TREES_CONFIG[tile.id]?"Hạt giống "+tile.label:tile.label;
         card.title = FRUIT_TREES_CONFIG[tile.id]?"Gieo hạt → mầm → cây con → cây non → trổ hoa → chín. Thu hoạch 3 lần rồi héo.":tile.doc || tile.label;
@@ -2189,7 +2277,7 @@ export function initIsometricStudio() {
             return;
           }
           if (tile.id === 'd13_farmland_plot') {
-            const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState());
+            const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, buildingLevels, extractionManager?.getState(),defenseManager?.getState(),worldManager?.otherLabor());
             if (!labor.allowed) { showToast(labor.message, 'warning'); return; }
           }
           setActiveBrush(tile.id);
@@ -2322,6 +2410,7 @@ export function initIsometricStudio() {
       const index = fences.findIndex(f => f.row === row && f.col === col);
       if (index >= 0) {
         const removed = fences[index];
+        if(removed.locked){showToast('Vật phẩm mặc định của map không thể gỡ.','info');return false;}
         fences.splice(index, 1);
         const item = FENCE_ITEM_BY_ID[removed.tileId];
         const refund = item ? Math.floor(item.price * 0.5) : 15;
@@ -2348,6 +2437,7 @@ export function initIsometricStudio() {
         });
       }
       if (f) {
+        if(f.locked){showToast('Hàng rào mặc định của map không thể thay đổi.','info');return false;}
         const res = getRotatedTileIdAndFlip(f.tileId, !!f.flipped);
         f.tileId = res.nextId;
         f.flipped = res.nextFlip;
@@ -2361,12 +2451,24 @@ export function initIsometricStudio() {
       return false;
     }
 
+    function eraseMapScenery(row,col){
+      const key=`${row}_${col}`,item=mapScenery[key];if(!item)return false;
+      if(item.locked){showToast('Vật phẩm mặc định của map không thể gỡ.','info');return false;}
+      mapScenery[key]=null;setHarborSites(mapScenery,customMapLayout);
+      persistGameState();requestRender();return true;
+    }
+
     // Erase cell logic
     function eraseCell(row, col) {
+      if(mapScenery[`${row}_${col}`])return eraseMapScenery(row,col);
+      if(isMapLockedCell(row,col)){showToast('Vật phẩm mặc định của map không thể gỡ.','info');return false;}
       if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
       const penAnchor=getLivestockAnchor(currentGrid,row,col,constructions);
       if(penAnchor)({row,col}=penAnchor);
       const tid = constructions[`${row}_${col}`]?.targetTileId || currentGrid[row]?.[col];
+      if(typeof premiumManager!=='undefined'&&premiumManager&&isPremiumTile(tid)){
+        const result=premiumManager.reclaim(row,col);showToast(result.ok?'Đã cất vật phẩm về túi.':result.error,result.ok?'success':'warning');return result.ok;
+      }
       // Hàng rào là lớp riêng trên nền cố định; gỡ rào không làm thay đổi nền.
       if (getTerrainSprite(tid) && !constructions[`${row}_${col}`] &&
           fences.some(f => f.row === row && f.col === col)) {
@@ -2381,7 +2483,7 @@ export function initIsometricStudio() {
         }
         return false;
       }
-      if (isIndestructibleTile(tid)) {
+      if (isIndestructibleTile(tid)&&!isMapRemovableCell(row,col)) {
         showToast("🏛️ Nhà kho vương quốc là công trình thiết yếu, không thể gỡ bỏ!", "warning");
         return false;
       }
@@ -2394,7 +2496,7 @@ export function initIsometricStudio() {
       const defense = typeof defenseManager !== 'undefined' ? defenseManager : null;
       const busyMessage = extraction?.busyMessage(row,col)||defense?.busyMessage(row,col);
       if(busyMessage){showToast(busyMessage,'warning');return false;}
-      const removal = checkHousingRemoval(currentGrid, row, col, constructions, tileMap, buildingLevels, extraction?.getState());
+      const removal = checkHousingRemoval(currentGrid, row, col, constructions, tileMap, buildingLevels, extraction?.getState(),defense?.getState(),typeof worldManager!=='undefined'?worldManager?.otherLabor():undefined);
       if (!removal.allowed) { showToast(removal.message, 'warning'); return false; }
       defense?.removeTower(row,col);
       if(isLivestockTile(tid))clearLivestockParts(currentGrid,row,col,terrainMap);
@@ -3329,7 +3431,7 @@ export function initIsometricStudio() {
       if (!isEmptyGrass) return false;
 
       if (activeBrush === 'd13_farmland_plot') {
-        const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, buildingLevels, typeof extractionManager !== 'undefined' ? extractionManager?.getState() : undefined);
+        const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, buildingLevels, typeof extractionManager !== 'undefined' ? extractionManager?.getState() : undefined,typeof defenseManager !== 'undefined'?defenseManager?.getState():undefined,typeof worldManager!=='undefined'?worldManager?.otherLabor():undefined);
         if (!labor.allowed) { showToast(labor.message, 'warning'); return false; }
       }
 
@@ -3609,7 +3711,26 @@ export function initIsometricStudio() {
     });
     seasonalThemeManager.init();
 
+    worldManager=createWorldManager({getSave:getFullSaveData,getTileMap:()=>tileMap,getResources:()=>playerResources,getCapacity:()=>warehouseCapacity,
+      spendGold:n=>{playerGold-=n;},addGold:n=>{playerGold+=n;},addGems:n=>{playerGems+=n;},addXP:n=>addPlayerXP(n,'Vùng đất'),notify:showToast,
+      applySave:save=>{applyImportedState(save,true);centerCamera();renderCanvas();requestRender();},persist:()=>saveGameSave(getFullSaveData()),
+      isPlacing:()=>!!(activeBrush||movingBuilding||kingdomWondersManager?.movingWonderId),
+      onChanged:()=>{updateGoldDisplay();updateResourcesUI();updateVillageStatsUI();persistGameState();requestRender();}});
+    worldManager.init(initialSave.world);
+    premiumManager=createPremiumManager({getGems:()=>playerGems,setGems:n=>{playerGems=n;},getGold:()=>playerGold,setGold:n=>{playerGold=n;},
+      getResources:()=>playerResources,getGrid:()=>currentGrid,getConstructions:()=>constructions,getFlips:()=>flippedGrid,getTerrain:()=>terrainMap,
+      isUnlocked:(r,c)=>isCellUnlocked(r,c,landUnlockedChunks,gameMode),isObstacle:(r,c)=>!!kingdomWondersManager?.getWonderAt(r,c),
+      persist:()=>saveGameSave(getFullSaveData()),onChanged:()=>{updateGoldDisplay();updateResourcesUI();updateFloatingBrushHUD();
+        if(isPremiumTile(activeBrush)&&!premiumManager.getState().inventory[activeBrush])setActiveBrush(null);requestRender();}});
+    premiumManager.init(initialSave.premium);
+    adventurePanel=createAdventurePanel({world:worldManager,premium:premiumManager,signal,showToast,getGems:()=>playerGems,
+      getDefense:()=>defenseManager?.getState(),
+      selectTile:id=>{movingBuilding=null;setActiveBrush(id);},onOpen:()=>{extractionPanel?.close();defensePanel?.close();}});
+    adventurePanel.render();
+
     extractionManager = createExtractionManager({
+      getOtherLabor:()=>worldManager.otherLabor(),
+      getDefenseState:()=>defenseManager?.getState(),getSoldierFoodCount:()=>defenseManager?.soldierFoodCount()||0,
       getCurrentGrid: () => currentGrid, getConstructions: () => constructions,
       getBuildingLevels: () => buildingLevels, getTileMap: () => tileMap,
       getResources: () => playerResources, getWarehouseCapacity: () => warehouseCapacity,
@@ -3631,22 +3752,36 @@ export function initIsometricStudio() {
     });
 
     defenseManager=createDefenseManager({
+      getOtherLabor:()=>worldManager.otherLabor(),getRegionId:()=>worldManager.getState().active,
+      addGems:n=>{playerGems+=n;updateGoldDisplay();},onVictory:()=>{if(worldManager.getState().active==='forest')worldManager.recordVictory();},
+      getTileMap:()=>tileMap,getExtractionState:()=>extractionManager?.getState(),getFoodSpeed:()=>extractionManager?.foodSummary().workSpeed??1,
       getCurrentGrid:()=>currentGrid,getConstructions:()=>constructions,getBuildingLevels:()=>buildingLevels,
       getPlayerLevel:()=>playerLevel,getResources:()=>playerResources,getGold:()=>playerGold,
       spendGold:amount=>{playerGold-=amount;updateGoldDisplay();},
       addGold:amount=>{playerGold+=amount;updateGoldDisplay();},addXP:amount=>addPlayerXP(amount,'Phòng thủ làng'),
       isCellUnlocked:(r,c)=>isCellUnlocked(r,c,landUnlockedChunks,gameMode),
       isObstacleCell:(r,c)=>!!kingdomWondersManager?.getWonderAt(r,c),notify:showToast,
-      onChanged:()=>{updateResourcesUI();persistGameState();requestRender();}
+      onChanged:()=>{updateVillageStatsUI();updateResourcesUI();persistGameState();requestRender();}
     });
     defenseManager.init(initialSave.defense);
+    updateVillageStatsUI();
     defensePanel=createDefensePanel({manager:defenseManager,signal,showToast,
+      getCurrentGrid:()=>currentGrid,getBuildingLevels:()=>buildingLevels,getConstructions:()=>constructions,
+      getFoodSummary:()=>extractionManager.foodSummary(),openFood:()=>extractionPanel.open(),
       onOpen:()=>{movingBuilding=null;setActiveBrush(null);},
+      viewBattle:summary=>{
+        const view=getDefenseCameraView(summary,getViewportSize());if(!view)return;
+        Object.assign(camera,view);updateZoomReadout();requestRender();
+      },
       openUpgradeModal:(r,c)=>upgradeManager.openUpgradeModal(r,c)});
     defensePanel.render();
 
     // Input Handler Module (Mouse clicks, panning, zooming, continuous drag, hotkeys)
     const inputHandler = initInputHandler(container, {
+      getMapScenery:()=>mapScenery,eraseMapScenery,
+      getOtherLabor:()=>worldManager.otherLabor(),getRegionId:()=>worldManager.getState().active,
+      isPremiumTile,placePremium:(id,r,c,flipped)=>{const result=premiumManager.place(id,r,c,flipped);if(!result.ok)showToast(result.error,'warning');return result.ok;},
+      getDefenseState:()=>defenseManager?.getState(),
       openDefenseModal:(r,c)=>defensePanel?.open(r,c),
       getExtractionState: () => extractionManager?.getState(),
       openExtractionModal: (r,c) => extractionPanel?.open(r,c),
@@ -3674,6 +3809,9 @@ export function initIsometricStudio() {
       rotateActiveBrush,
       getMovingBuilding: () => movingBuilding,
       setMovingBuilding: (val) => {
+        if(val?.isFence&&fences.some(f=>f.row===val.fromRow&&f.col===val.fromCol&&f.locked)){
+          showToast('Hàng rào mặc định của map không thể di chuyển.','info');return false;
+        }
         const message = val && (extractionManager?.busyMessage(val.fromRow,val.fromCol)||defenseManager?.busyMessage(val.fromRow,val.fromCol));
         if(message){showToast(message,'warning');return false;}
         if (val && (getTerrainSprite(val.tileId) || isProtectedTile(val.fromRow, val.fromCol, val.tileId))) {
@@ -3764,6 +3902,8 @@ export function initIsometricStudio() {
 
     // Canvas 2D Isometric Graphics Renderer Module
     canvasRenderer = createCanvasRenderer({
+      getMapScenery:()=>mapScenery,getCustomMapLayout:()=>customMapLayout,
+      getOtherLabor:()=>worldManager.otherLabor(),
       getExtractionState: () => extractionManager?.getState(),
       getDefenseState: () => defenseManager?.getState(),
       getTerrainMap: () => terrainMap,
@@ -3787,10 +3927,10 @@ export function initIsometricStudio() {
       getPlayerResources: () => playerResources,
       getVillagerManager: () => villagerManager,
       getPetManager: () => petManager,
-      getOrderBoardManager: () => orderBoardManager,
-      getTownVisitorManager: () => townVisitorManager,
-      getHarborShipManager: () => harborShipManager,
-      getVehicleManager: () => vehicleManager,
+      getOrderBoardManager: () => worldManager?.getState().active==='forest'?null:orderBoardManager,
+      getTownVisitorManager: () => worldManager?.getState().active==='forest'?null:townVisitorManager,
+      getHarborShipManager: () => worldManager?.getState().active==='forest'?null:harborShipManager,
+      getVehicleManager: () => worldManager?.getState().active==='forest'?null:vehicleManager,
       getKingdomWondersManager: () => kingdomWondersManager,
       getSeasonalThemeManager: () => seasonalThemeManager,
       openFishingModal: () => {
@@ -3813,6 +3953,15 @@ export function initIsometricStudio() {
     });
 
     window.addEventListener('storage', (event) => {
+      if(event.key===MAP_APPLY_KEY){
+        const document=readMapDocument(localStorage,MAP_APPLY_KEY);
+        if(document&&applyImportedState){
+          applyImportedState(applyMapDocumentToSave(getFullSaveData(),restartMapGrowth(document)));
+          localStorage.removeItem(MAP_APPLY_KEY);centerCamera();requestRender();
+          showToast('Đã áp dụng map và quyền gỡ vật phẩm từ xưởng vẽ.','success');
+        }
+        return;
+      }
       if (event.key === WAREHOUSE_TUNING_KEY) { requestRender(); return; }
       if (event.key === TOWN_HALL_TUNING_KEY) { requestRender(); return; }
       if (event.key !== TERRAIN_MAP_KEY) return;
@@ -3903,6 +4052,7 @@ export function initIsometricStudio() {
         extractionPanel?.update(now);
         defenseManager?.update(dt);
         defensePanel?.update(now);
+        worldManager?.update(dt);
 
         // Mỗi giây quét lại các xưởng đang "thiếu nguyên liệu": nếu kho đã có sữa/lông/...
         // (ví dụ vừa vắt sữa, vừa nhận thưởng) thì cho xưởng chạy lại ngay.
@@ -4049,11 +4199,14 @@ export function initIsometricStudio() {
     if (isAnimated) startAnimationLoop();
 
     // Auto-start onboarding tutorial for new players (or resume if not completed)
-    setTimeout(() => {
+    const tutorialStartTimer=setTimeout(() => {
+      if(townEventsManager?.getActiveEvent())tutorialManager.onTownEvent(townEventsManager.getActiveEvent().id);
       tutorialManager.start();
     }, 700);
 
     return function cleanup() {
+      clearTimeout(tutorialStartTimer);
+      adventurePanel?.destroy();
       defensePanel?.destroy();
       productionPanel.destroy();
       upgradeManager.destroy();

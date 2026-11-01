@@ -1,0 +1,10 @@
+.combat-preview{height:100dvh;box-sizing:border-box;background:#f6f0e4;color:#392f25;padding:18px;font-family:system-ui,sans-serif;overflow:auto}
+.combat-preview header,.combat-preview nav,.combat-preview section{max-width:1400px;margin:0 auto 12px}
+.combat-preview h1{font-size:24px;margin:8px 0}.combat-preview p{margin:6px 0;line-height:1.5}
+.combat-preview a{color:#775023}.combat-preview nav{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.combat-preview button,.combat-preview select{background:#fff9ed;color:#433324;border:1px solid #a88a61;border-radius:7px;padding:8px 12px}
+.combat-preview label{display:inline-flex;align-items:center;gap:8px;margin-right:16px}
+.combat-preview-stage{height:640px;max-height:70vh;max-width:1400px;margin:auto;border:1px solid #aa986f;border-radius:12px;overflow:hidden;background:#446d35}
+.combat-preview-stage canvas{display:block;width:100%;height:100%}
+.combat-preview section{padding-top:18px}.combat-preview section canvas{display:block;max-width:100%;width:1000px;height:180px;margin-top:12px;border-radius:10px}
+@media(max-width:600px){.combat-preview{padding:10px}.combat-preview h1{font-size:20px}.combat-preview-stage{height:480px}.combat-preview nav strong{font-size:13px}}

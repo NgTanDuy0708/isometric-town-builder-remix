@@ -21,6 +21,7 @@ import { CROPS_CONFIG, getCropGrowDurationMs } from "../data/cropsConfig.js";
 import { FRUIT_TREES_CONFIG } from "../data/resourcesConfig.js";
 import { canPlaceOnSurface, getClearedSurface, isPlacementProtected } from './placementSurface.js';
 import { isProtectedTile, isIndestructibleTile } from "../data/starterMap.js";
+import {isMapRemovableCell} from '../data/mapLocks.js';
 import { getTerrainSprite } from '../data/terrainConfig.js';
 import {
   initAudio, getAudioState, startBGM, playVillagerSpeakSound,
@@ -261,7 +262,11 @@ export function initInputHandler(container, ctx) {
     refreshObjectActionTitle();
 
     // Kho Tổng Hợp 2×2: vẫn cho di chuyển nguyên khối, nhưng không cho phá dỡ.
-    if (isIndestructibleTile(tid)) {
+    const fixed=isFence?ctx.getFences?.()?.some(f=>f.row===row&&f.col===col&&f.locked):isProtectedTile(row,col,tid);
+    if(fixed){
+      if(objActionMoveBtn)objActionMoveBtn.style.display='none';
+      if(objActionDemolishBtn)objActionDemolishBtn.style.display='none';
+    } else if (isIndestructibleTile(tid)&&!isMapRemovableCell(row,col)) {
       if (objActionMoveBtn) objActionMoveBtn.style.display = "flex";
       if (objActionDemolishBtn) objActionDemolishBtn.style.display = "none";
     } else {
@@ -454,7 +459,7 @@ export function initInputHandler(container, ctx) {
     if (curCellTid === activeBrush) return false;
 
     if (activeBrush === 'd13_farmland_plot') {
-      const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, ctx.getBuildingLevels(), ctx.getExtractionState?.());
+      const labor = checkFarmWorkforce(currentGrid, constructions, tileMap, ctx.getBuildingLevels(), ctx.getExtractionState?.(),ctx.getDefenseState?.(),ctx.getOtherLabor?.());
       if (!labor.allowed) {
         playErrorSound();
         ctx.showToast(labor.message, 'warning');
@@ -462,6 +467,10 @@ export function initInputHandler(container, ctx) {
       }
     }
 
+    if(ctx.isPremiumTile?.(activeBrush))return ctx.placePremium(activeBrush,cell.row,cell.col,ctx.getBrushFlipped());
+    if(activeBrush==='b69_forester_lodge'&&ctx.getRegionId?.()!=='forest'){
+      ctx.showToast('Trạm kiểm lâm chỉ xây tại Rừng Cổ Thụ.','warning');return false;
+    }
     const t = tileMap[activeBrush];
     const cost = (gameMode === "game" && t) ? getTileCost(activeBrush, t.category) : 0;
     const durSec = (gameMode === "game" && t) ? getTileBuildDuration(activeBrush, t.category) : 0;
@@ -1001,6 +1010,10 @@ export function initInputHandler(container, ctx) {
     const buildingLevels = ctx.getBuildingLevels();
     const flippedGrid = ctx.getFlippedGrid();
 
+    if(e.button===0&&activeBrush==='erase'&&ctx.getMapScenery){
+      const dx=world.x-(ORIGIN_X+64),dy=world.y-(ORIGIN_Y+96),row=Math.round(dy/64-dx/128),col=Math.round(dy/64+dx/128);
+      if(ctx.getMapScenery()[`${row}_${col}`]){ctx.eraseMapScenery?.(row,col);return;}
+    }
     if (e.button === 0 && activeBrush === "erase" && ctx.getFences) {
       const fences = ctx.getFences();
       const point = v => ({ x: ORIGIN_X + (v.col - v.row) * HALF_W + 64,
@@ -1021,6 +1034,7 @@ export function initInputHandler(container, ctx) {
       });
       if (index >= 0) {
         const removed = fences[index];
+        if(removed.locked){ctx.showToast('Hàng rào mặc định của map không thể gỡ.','info');return;}
         fences.splice(index, 1);
         const item = FENCE_ITEM_BY_ID[removed.tileId];
         const refund = item ? Math.floor(item.price * 0.5) : 15;
@@ -1293,7 +1307,7 @@ export function initInputHandler(container, ctx) {
         longPressOrigin = { x: mouseX, y: mouseY, row: cell.row, col: cell.col };
         isLongPressPicked = false;
 
-        if (curTid==='b08_watchtower') {
+        if (curTid==='b08_watchtower'||curTid==='b67_guard_barracks'||curTid==='b68_mage_academy') {
           pendingSpecialClick={type:'defense',row:cell.row,col:cell.col};
         } else if (EXTRACTION_WORKSHOPS[curTid] || EXTRACTION_NODES[curTid]) {
           pendingSpecialClick = { type: 'extraction', row: cell.row, col: cell.col, node: !!EXTRACTION_NODES[curTid] };

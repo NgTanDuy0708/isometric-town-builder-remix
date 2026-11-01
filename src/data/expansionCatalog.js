@@ -3,9 +3,10 @@ export {EXPANSION_PLANTS};
 // Static catalog derived from assets-source/expansion/manifest.json (74 PNGs, 44 items).
 // No runtime prompt manifest or game-data imports: consumers may safely spread
 // these defaults first, then retain their historical overrides.
-// All assets keep a one-cell logical footprint; only draw rectangles are scaled.
+// Shop assets use one cell; the fixed village gate reserves its own 3x1 strip.
 
 import { WORLD_OBJECT_SCALE } from './renderScale.js';
+import {VILLAGE_GATE_URI,VILLAGE_GATE_GEOMETRY} from './villageGate.js';
 
 export const EXPANSION_TILES = [
   {"id":"b10_wizard_tower","label":"Tháp pháp sư cổ đại","category":"building","shopCategory":"wonders","doc":"Tháp đá cổ với mái xanh và điểm nhấn pha lê, có ba cấp nâng cấp."},
@@ -19,7 +20,7 @@ export const EXPANSION_TILES = [
   {"id":"b21_japanese_pagoda_sw","label":"Chùa gỗ","category":"building","shopCategory":"wonders","doc":"Chùa gỗ thanh tịnh với mái nhiều tầng; nâng cấp để tăng dân số."},
   {"id":"b16_alchemist_workshop","label":"Phòng thí nghiệm giả kim","category":"building","shopCategory":"production","doc":"Phòng thí nghiệm giả kim với dụng cụ và bình điều chế."},
   {"id":"b15_library_scholar","label":"Thư viện hoàng gia","category":"building","shopCategory":"wonders","doc":"Thư viện hoàng gia lưu giữ sách và tri thức của thị trấn."},
-  {"id":"b17_twin_gatehouse","label":"Cổng thành tháp đôi","category":"building","shopCategory":"wonders","doc":"Cổng thành đá với hai tháp canh và lối đi xuyên cổng."},
+  {"id":"b17_twin_gatehouse","label":"Cổng làng","category":"building","shopCategory":"hidden","doc":"Cổng làng cố định 3×1 ô, đặt tại hàng 31, cột 14–16. Ô giữa thông đường."},
   {"id":"b18_greenhouse_orangery","label":"Nhà kính hoàng gia","category":"building","shopCategory":"production","doc":"Nhà kính hoàng gia với khung kính và cây xanh bên trong."},
   {"id":"b19_lighthouse_dock","label":"Hải đăng cảng biển","category":"building","shopCategory":"wonders","doc":"Hải đăng cao bên cảng, điểm nhấn kiến trúc cho thị trấn."},
   {"id":"r01_road_straight_ns","label":"Đường đá — đoạn thẳng","category":"road","shopCategory":"roads","doc":"Đoạn đường đá thẳng để ghép mạng lưới đường làng."},
@@ -64,7 +65,7 @@ export const EXPANSION_TILE_URIS = {
   b21_japanese_pagoda_sw: "/assets/expansion/buildings/wooden_buddhist_temple_lv1.png",
   b16_alchemist_workshop: "/assets/expansion/props/alchemy_laboratory.png",
   b15_library_scholar: "/assets/expansion/props/royal_library.png",
-  b17_twin_gatehouse: "/assets/expansion/props/twin_tower_gate.png",
+  b17_twin_gatehouse: VILLAGE_GATE_URI,
   b18_greenhouse_orangery: "/assets/expansion/props/royal_greenhouse.png",
   b19_lighthouse_dock: "/assets/expansion/props/harbor_lighthouse.png",
   r01_road_straight_ns: "/assets/expansion/terrain/stone_road_straight.png",
@@ -129,7 +130,7 @@ export const EXPANSION_BUILDING_GEOMETRY = {
   b21_japanese_pagoda_sw: {"1":{"width":1254,"height":1254,"visibleWidth":1176,"anchorX":773.203,"anchorY":1168,"worldWidth":128,"worldAnchorX":64,"worldAnchorY":128},"2":{"width":1254,"height":1254,"visibleWidth":1211,"anchorX":762.295,"anchorY":1242,"worldWidth":144,"worldAnchorX":64,"worldAnchorY":128},"3":{"width":1254,"height":1254,"visibleWidth":1211,"anchorX":762.295,"anchorY":1242,"worldWidth":144,"worldAnchorX":64,"worldAnchorY":128}},
   b16_alchemist_workshop: {"1":{"width":1254,"height":1254,"visibleWidth":988,"anchorX":652.442,"anchorY":1202,"worldWidth":112,"worldAnchorX":64,"worldAnchorY":128}},
   b15_library_scholar: {"1":{"width":1254,"height":1254,"visibleWidth":1206,"anchorX":542.518,"anchorY":1178,"worldWidth":128,"worldAnchorX":64,"worldAnchorY":128}},
-  b17_twin_gatehouse: {"1":{"width":1254,"height":1254,"visibleWidth":1122,"anchorX":994.567,"anchorY":1212,"worldWidth":128,"worldAnchorX":64,"worldAnchorY":128}},
+  b17_twin_gatehouse: VILLAGE_GATE_GEOMETRY,
   b18_greenhouse_orangery: {"1":{"width":1254,"height":1254,"visibleWidth":1103,"anchorX":556.31,"anchorY":1176,"worldWidth":128,"worldAnchorX":64,"worldAnchorY":128}},
   b19_lighthouse_dock: {"1":{"width":1254,"height":1254,"visibleWidth":729,"anchorX":566.088,"anchorY":1208,"worldWidth":112,"worldAnchorX":64,"worldAnchorY":128}},
 };
@@ -398,7 +399,7 @@ export function getExpansionRenderAdjustment(id, level = 1) {
     ? (levels[Number.isInteger(level) && level >= 1 && level <= 3 ? level : 1] || levels[1])
     : (Object.hasOwn(EXPANSION_RENDER_GEOMETRY, id) ? EXPANSION_RENDER_GEOMETRY[id] : undefined);
   if (!source) return undefined;
-  const scale = source.worldWidth / source.visibleWidth * (id === 'r12_road_bridge_stone' ? 1 : WORLD_OBJECT_SCALE);
+  const scale = source.worldWidth / source.visibleWidth * (['r12_road_bridge_stone','b17_twin_gatehouse'].includes(id) ? 1 : WORLD_OBJECT_SCALE);
   return {
     dx: source.worldAnchorX - source.anchorX * scale,
     dy: source.worldAnchorY - source.anchorY * scale,

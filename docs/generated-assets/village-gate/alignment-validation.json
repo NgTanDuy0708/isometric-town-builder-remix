@@ -1,0 +1,11 @@
+{
+  "correction": "Anchor the centre passage to road cell [31,15] instead of the right tower toe.",
+  "nativePassagePoint": [790,800],
+  "worldPassagePointRelativeToAnchorCell": [128,128],
+  "nativeImagePreserved": true,
+  "uniformScalePreserved": true,
+  "review": "alignment-review.png: measured road and tile overlay before/after; corrected passage lies on road centre and both towers stand beside the roadway.",
+  "testsPassed": 48,
+  "lint": "passed",
+  "build": "passed"
+}

@@ -28,7 +28,7 @@ test('empty, growing and harvested plots keep their assignment; old excess plots
   const grid = emptyGrid(); grid[20][20] = 'b01_cottage_red';
   for (let c = 0; c < 5; c++) grid[22][c] = 'd13_farmland_plot';
   const labor = getWorkforce(grid, {}, catalog);
-  assert.deepEqual(labor, { total: 4, farmers: 5, workers: 0, soldiers: 0, free: 0, shortage: 1 });
+  assert.deepEqual(labor, { total: 4, worldTotal:4, farmers: 5, workers: 0, soldiers: 0, free: 0, shortage: 1 });
   assert.equal(checkFarmWorkforce(grid, {}, catalog).allowed, false);
   assert.equal(grid[22].filter(id => id === 'd13_farmland_plot').length, 5);
   grid[22][0] = grid[22][1] = 'd12_meadow_wildflowers';

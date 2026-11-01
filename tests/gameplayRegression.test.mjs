@@ -18,6 +18,9 @@ import { expandGrid16to32 } from '../src/engine/isoMath.js';
 import { createProductionPanel } from '../src/engine/productionPanel.js';
 import { drawWorkshopActivity, getWorkshopSmokePoints } from '../src/engine/workshopEffects.js';
 import { createOrderBoardManager } from '../src/engine/orderBoardManager.js';
+import {readMapDocument,STARTER_MAP_KEY,MAP_APPLY_KEY,applyMapDocumentToSave,restartMapGrowth} from '../src/engine/mapEditing.js';
+import {normalizeMapLocks,setActiveMapLocks,setCustomMapLayout} from '../src/data/mapLocks.js';
+import {setHarborSites} from '../src/data/harborLayout.js';
 
 const noop = () => {};
 const tiles = Object.fromEntries(TILES_DATA.map(t => [t.id, t]));
@@ -49,7 +52,7 @@ test('valid save loads without legacy blank-map flag and zero tools remain zero'
   const end = source.indexOf('    // Đồng bộ bờ', start);
   const resourceStart = source.indexOf('    let playerResources = initialSave.resources');
   const resourceEnd = source.indexOf('    // Building Levels State', resourceStart);
-  const context = { createStarterTownMap32, loadGameSave, getDefaultSaveState, expandGrid16to32, migrateLegacyWarehouseLayout, applyTownCenterLayout, localStorage };
+  const context = {readMapDocument,STARTER_MAP_KEY,MAP_APPLY_KEY,applyMapDocumentToSave,restartMapGrowth,normalizeMapLocks,setActiveMapLocks,setCustomMapLayout,setHarborSites, createStarterTownMap32, loadGameSave, getDefaultSaveState, expandGrid16to32, migrateLegacyWarehouseLayout, applyTownCenterLayout, localStorage };
   vm.createContext(context);
   vm.runInContext(source.slice(start, end) + source.slice(resourceStart, resourceEnd) + '\nresult={tile:currentGrid[20][20], tools:playerResources.ironTools};', context);
   assert.equal(context.result.tile, 'b01_cottage_red'); assert.equal(context.result.tools, 0);
@@ -95,7 +98,7 @@ test('moving rejects a construction and carries upgrade coordinates to the desti
 test('multi-cell hall and warehouse count once, with the level of their anchor', () => {
   const grid = createStarterTownMap32(); migrateLegacyWarehouseLayout(grid);
   const stats = calculateVillageStats(grid, {}, tiles, { '13_15':2 });
-  assert.equal(stats.completedBuildings, 2);
+  assert.equal(stats.completedBuildings, 3, 'Hall, warehouse and one fixed village gate');
   assert.equal(getBuildingLevelPopulation('b14_town_hall', 2, 16), 0);
   assert.equal(stats.population, 0, 'Hall and warehouse are counted as buildings, not homes');
 });

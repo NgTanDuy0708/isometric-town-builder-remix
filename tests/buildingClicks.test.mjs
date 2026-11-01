@@ -97,8 +97,8 @@ test('water and pier scenery still opens fishing, while waterworks remain select
 
 test('a mouse or touch click on a finished watchtower opens defense, while construction keeps its existing action',t=>{
   const scene=makeClickScene(t);
-  for(const pointerType of ['mouse','touch'])for(const level of [1,2,3])
-    assert.deepEqual(scene.click('b08_watchtower',level,pointerType),[['defense',20,20]]);
+  for(const pointerType of ['mouse','touch'])for(const level of [1,2,3])for(const tileId of ['b08_watchtower','b67_guard_barracks','b68_mage_academy'])
+    assert.deepEqual(scene.click(tileId,level,pointerType),[['defense',20,20]]);
   scene.constructions['20_20']={tileId:'b08_watchtower'};
   assert.deepEqual(scene.click('b08_watchtower'),[['construction',20,20]]);
 });

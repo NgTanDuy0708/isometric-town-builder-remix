@@ -10,3 +10,12 @@ const legacy = Object.fromEntries(Object.entries(legacyCategories).flatMap(([cat
 export function getShopCategory(tile) {
   return tile.shopCategory || legacy[tile.id] || (tile.category === 'road' ? 'roads' : null);
 }
+
+// Shared by the actual shop and unlock tutorials: never point at a removed item.
+export const EXCLUDED_SHOP_TILES = new Set([
+  'd12_meadow_wildflowers','s13_sand_ground','m01_sandy_beach_s','m30_sea_var2_coral_reef',
+  'b51_waterworks_pump_house_sw','b52_waterworks_pump_house_se','m04_stone_harbor_pier',
+  'l06_savanna_acacia_waterhole','d24_rustic_wooden_fence'
+]);
+export const SHOP_CATEGORY_LABELS = {residential:'Nhà',production:'Cửa hàng sản xuất',farming:'Nông trại',
+  fences:'Hàng rào',roads:'Đường & cầu',decor:'Phong cảnh',wonders:'Kỳ quan'};
