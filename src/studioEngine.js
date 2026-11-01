@@ -89,7 +89,9 @@ import { AESTHETIC_TILE_URIS } from "./data/aestheticTileIcons.js";
 import { getBuildingSpriteUri } from "./data/buildingSprites.js";
 import { applyCoastTerrainLayout, getTerrainSprite } from "./data/terrainConfig.js";
 import { TERRAIN_MAP_KEY, readTerrainMap, syncTerrainToGrid, createTerrainMap, writeTerrainMap, isValidTerrainMap } from "./engine/terrainEditing.js";
-import {STARTER_MAP_KEY,MAP_APPLY_KEY,readMapDocument,applyMapDocumentToSave,restartMapGrowth} from './engine/mapEditing.js';
+import {getStarterMapDocument,BUNDLED_STARTER_MAP_REVISION} from './engine/starterMapSource.js';
+import {upgradeSavedTownMap} from './engine/townMapUpgrade.js';
+import {MAP_APPLY_KEY,readMapDocument,applyMapDocumentToSave,restartMapGrowth} from './engine/mapEditing.js';
 import {setActiveMapLocks,isMapLockedCell,isMapRemovableCell,normalizeMapLocks,setCustomMapLayout} from './data/mapLocks.js';
 import {setHarborSites} from './data/harborLayout.js';
 import { WAREHOUSE_TUNING_KEY } from "./engine/warehouseTuning.js";
@@ -227,12 +229,14 @@ export function initIsometricStudio() {
     let defensePanel = null;
     let worldManager=null,premiumManager=null,adventurePanel=null,applyImportedState=null;
     const starterMapGrid = createStarterTownMap32();
-    const loadedSave = loadGameSave(starterMapGrid);
-    const starterDocument=readMapDocument(localStorage,STARTER_MAP_KEY);
+    const storedSave = loadGameSave(starterMapGrid);
+    const loadedSave = upgradeSavedTownMap(storedSave,localStorage);
+    const didMapUpgrade=!!storedSave&&loadedSave!==storedSave;
+    const starterDocument=getStarterMapDocument(localStorage);
     const pendingMapDocument=readMapDocument(localStorage,MAP_APPLY_KEY);
     const baseSave=loadedSave || getDefaultSaveState(starterMapGrid);
     const initialSave = pendingMapDocument ? applyMapDocumentToSave(baseSave,restartMapGrowth(pendingMapDocument))
-      : !loadedSave&&starterDocument?applyMapDocumentToSave(baseSave,restartMapGrowth(starterDocument)):baseSave;
+      : !loadedSave?applyMapDocumentToSave(baseSave,restartMapGrowth(starterDocument)):baseSave;
     if(pendingMapDocument)localStorage.removeItem(MAP_APPLY_KEY);
     let mapLocks=normalizeMapLocks(initialSave.mapLocks);
     let mapScenery=initialSave.mapScenery||{},customMapLayout=initialSave.customMapLayout===true;
@@ -429,6 +433,7 @@ export function initIsometricStudio() {
         version: 2,
         savedAt: Date.now(),
         presetName: 'custom',
+        townMapRevision:BUNDLED_STARTER_MAP_REVISION,
         grid: currentGrid,
         terrainMap,
         fences,
@@ -875,7 +880,7 @@ export function initIsometricStudio() {
     const goldDisplay = document.getElementById('builder-gold-display');
     const goldBadge = document.getElementById('builder-gold-badge');
 
-    function resetToInitialGameState() {
+    function resetToInitialGameState(starter=getStarterMapDocument(localStorage)) {
       worldManager?.init(null);premiumManager?.init(null);adventurePanel?.close();
       cleanOldSavesForV3();
       gameMode = "game";
@@ -976,8 +981,7 @@ export function initIsometricStudio() {
         if (typeof uiModalController.renderQuestList === "function") uiModalController.renderQuestList();
       }
 
-      const customStarter=readMapDocument(localStorage,STARTER_MAP_KEY);
-      if(customStarter&&applyImportedState)applyImportedState(applyMapDocumentToSave(getFullSaveData(),restartMapGrowth(customStarter)));
+      if(applyImportedState)applyImportedState(applyMapDocumentToSave(getFullSaveData(),restartMapGrowth(starter)));
       persistGameState();
       resizeCanvas();
       centerCamera();
@@ -1869,7 +1873,7 @@ export function initIsometricStudio() {
         if (farmToolsManager) farmToolsManager.activateBulkSeedBrush(crop);
       },
       loadImportedState: applyImportedState = (imported,regionTravel=false) => {
-        imported = normalizeVillageSave(imported);
+        imported = normalizeVillageSave(regionTravel?imported:upgradeSavedTownMap(imported,localStorage));
         if(!regionTravel){worldManager?.init(imported.world);premiumManager?.init(imported.premium);}
         currentGrid = imported.grid;
         mapLocks=normalizeMapLocks(imported.mapLocks);setActiveMapLocks(mapLocks);
@@ -1988,6 +1992,7 @@ export function initIsometricStudio() {
       if (applyImportedState) {
         const devSave = {
           ...DEV_FULL_VILLAGE_SAVE,
+          townMapRevision:BUNDLED_STARTER_MAP_REVISION,
           grid: DEV_FULL_VILLAGE_SAVE.grid.map(row => [...row])
         };
         applyTownCenterLayout(devSave.grid);
@@ -4160,7 +4165,7 @@ export function initIsometricStudio() {
 
     // Initialize UI and render - tự động reset mới nếu là người chơi mới hoặc chưa có Save v3
     if (!loadedSave) {
-      resetToInitialGameState();
+      resetToInitialGameState(pendingMapDocument||starterDocument);
     } else {
       updateGoldDisplay();
       updateGemsDisplay();
@@ -4176,6 +4181,10 @@ export function initIsometricStudio() {
         resizeCanvas();
         centerCamera();
       });
+    }
+    if(didMapUpgrade){
+      persistGameState();
+      showToast('🗺️ Đã thay bố cục làng cũ bằng map mới. Vàng, tài nguyên và cấp độ được giữ; món trang trí kim cương được cất về túi.','success');
     }
     // Dev-only: căn chỉnh tòa thị chính trực tiếp bằng phím mũi tên.
     // Mở http://localhost:3000/?nudge=1, Shift + mũi tên để nhảy 5px.

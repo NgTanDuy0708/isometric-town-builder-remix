@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {getDefaultSaveState,STORAGE_KEY_V3,BACKUP_STORAGE_KEY} from './engine/storage.js';
-import {createStarterTownMap32} from './data/starterMap.js';
+import {createBundledStarterMap,getStarterMapDocument,saveLocalStarterMap} from './engine/starterMapSource.js';
 import {ORIGIN_X,ORIGIN_Y,cellToWorld} from './engine/isoMath.js';
 import {TERRAIN_IDS,readTerrainMap,TERRAIN_DRAFT_KEY,syncTerrainToGrid,isValidTerrainMap} from './engine/terrainEditing.js';
 import {getTerrainSprite} from './data/terrainConfig.js';
@@ -19,13 +19,13 @@ type Camera={x:number;y:number;zoom:number};
 const materials=[['grass','Đồng cỏ'],['sea','Nước biển'],['shore','Bờ biển'],['sand','Cát vàng']] as const;
 const tools=[['brush','✎','Cọ đặt','B'],['select','⌖','Chọn vật phẩm','V'],['erase','⌫','Tẩy vật phẩm','E'],['fill','▨','Đổ nền','F'],['rectangle','▭','Vùng nền','G'],['hand','✥','Di chuyển','H']] as const;
 function readSave(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY_V3)||'null');}catch{return null;}}
-function defaultDocument(){return createMapDocument(getDefaultSaveState(createStarterTownMap32()));}
+function defaultDocument(){return createBundledStarterMap();}
 function initialDocument(){
   const draft=readMapDocument(localStorage,MAP_DRAFT_KEY);if(draft)return draft;
   const save=readSave();const town=save?.world?.active==='forest'?save.world.regions.town:save;
-  const doc=town?.grid?createMapDocument(town):readMapDocument(localStorage,STARTER_MAP_KEY)||defaultDocument();
+  const doc=town?.grid?createMapDocument(town):getStarterMapDocument(localStorage);
   const terrain=readTerrainMap(localStorage,TERRAIN_DRAFT_KEY)||readTerrainMap(localStorage);
-  if(terrain){doc.terrainMap=terrain;syncTerrainToGrid(doc.grid,terrain);}
+  if(terrain&&town?.grid){doc.terrainMap=terrain;syncTerrainToGrid(doc.grid,terrain);}
   return doc;
 }
 
@@ -108,14 +108,14 @@ export default function MapEditor(){
   };
   const move=(e:React.PointerEvent<HTMLCanvasElement>)=>{const g=gesture.current;if(g?.pan){moveCamera({...g.camera,x:g.camera.x+e.clientX-g.x,y:g.camera.y+e.clientY-g.y});return;}const cell=cellAt(e);setHover(cell);if(cell&&g&&(cell.row!==g.last.row||cell.col!==g.last.col)){if(g.layer==='terrain'&&g.tool==='brush')update(paintMapTerrain(docRef.current,g.last,cell,TERRAIN_IDS[g.material as keyof typeof TERRAIN_IDS],g.size));else if(g.tool==='brush'||g.tool==='erase'){const distance=Math.max(Math.abs(cell.row-g.last.row),Math.abs(cell.col-g.last.col));for(let i=1;i<=distance;i++)stamp({row:Math.round(g.last.row+(cell.row-g.last.row)*i/distance),col:Math.round(g.last.col+(cell.col-g.last.col)*i/distance)});}g.last=cell;}};
   const end=(e:React.PointerEvent<HTMLCanvasElement>)=>{const g=gesture.current;if(g&&!g.pan&&g.layer==='terrain'&&g.tool==='rectangle')update(paintMapTerrain(docRef.current,g.from,cellAt(e)||g.last,TERRAIN_IDS[g.material as keyof typeof TERRAIN_IDS],1,'rectangle'));gesture.current=null;setRectStart(null);if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);};
-  const saveStarter=()=>{try{writeMapDocument(localStorage,STARTER_MAP_KEY,docRef.current);setDirty(false);setStatus('Đã lưu map khởi đầu. Game mới và nút Chơi lại sẽ dùng bản này.');}catch{setStatus('Không lưu được map khởi đầu. Hãy xuất JSON để giữ bản vẽ.');}};
+  const saveStarter=()=>{try{saveLocalStarterMap(localStorage,docRef.current);setDirty(false);setStatus('Đã lưu mẫu riêng trên địa chỉ này cho Game mới/Chơi lại. Xuất JSON nếu muốn cập nhật map chung của bản game.');}catch{setStatus('Không lưu được map khởi đầu. Hãy xuất JSON để giữ bản vẽ.');}};
   const apply=()=>{try{const previous=localStorage.getItem(STORAGE_KEY_V3);if(previous)localStorage.setItem(BACKUP_STORAGE_KEY,previous);writeMapDocument(localStorage,MAP_APPLY_KEY,docRef.current);setStatus('Đã gửi map vào game. Mở hoặc tải lại tab game để xem; vàng và tài nguyên được giữ.');setDirty(false);}catch{setStatus('Không áp dụng được map. Hãy xuất JSON để giữ bản vẽ.');}};
   const exportMap=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(docRef.current,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='village-initial-map-32x32.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
   const importMap=async(e:React.ChangeEvent<HTMLInputElement>)=>{const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());let next=data;if(data.version===1&&isValidTerrainMap(data.terrain)){next={...structuredClone(docRef.current),terrainMap:data.terrain};syncTerrainToGrid(next.grid,data.terrain);}if(!isValidMapDocument(next))throw Error();checkpoint();update(next);setStatus('Đã nhập map cùng vật phẩm và tùy chọn gỡ.');}catch{setStatus('File không hợp lệ. Chọn JSON map 32 × 32 đã xuất từ trang này.');}e.target.value='';};
   const rule=(value:boolean)=>{setLocked(value);if(selection){checkpoint();const next=setMapRemovalRule(docRef.current,selection.row,selection.col,value,selection.fenceOnly);update(next);setSelection(getMapSelection(next,selection.row,selection.col));}};
   const updateSelected=()=>{if(!selection)return;const base=selection.fenceOnly?eraseMapItem(docRef.current,selection.row,selection.col,true):docRef.current;const result=stampMapItem(base,selection.row,selection.col,selection.id,{level,flipped,locked,animals});if(result.changed){checkpoint();update(result.doc);setSelection(getMapSelection(result.doc,selection.row,selection.col));setStatus('Đã cập nhật vật phẩm đang chọn.');}else if(result.error)setStatus(result.error);};
   return <div className="map-editor">
-    <header className="me-header"><div className="me-brand"><span className="me-logo">◈</span><div><small>ISOMETRIC VILLAGE</small><h1>Xưởng dựng map</h1></div><span className="me-dimension">32 × 32</span></div><div className="me-header-actions"><a href="/" target="_blank" rel="noreferrer">Mở game ↗</a><button onClick={apply}>Áp dụng vào game</button><button className="me-primary" onClick={saveStarter}>Lưu map khởi đầu{dirty?' ·':''}</button></div></header>
+    <header className="me-header"><div className="me-brand"><span className="me-logo">◈</span><div><small>ISOMETRIC VILLAGE</small><h1>Xưởng dựng map</h1></div><span className="me-dimension">32 × 32</span></div><div className="me-header-actions"><a href="/" target="_blank" rel="noreferrer">Mở game ↗</a><button onClick={apply}>Áp dụng vào game</button><button className="me-primary" onClick={saveStarter}>Lưu map khởi đầu (máy này){dirty?' ·':''}</button></div></header>
     <div className="me-workspace"><aside className="me-sidebar">
       <div className="me-layer-tabs"><button className={layer==='items'?'is-active':''} onClick={()=>{setLayer('items');setTool('brush');}}>Vật phẩm ({MAP_ITEMS.length})</button><button className={layer==='terrain'?'is-active':''} onClick={()=>{setLayer('terrain');setTool('brush');}}>Nền đất</button></div>
       <div className="me-quick-items">{[['scene:gate','Cổng thành'],['scene:pier','Cảng biển'],['scene:ship','Tàu biển']].map(([id,label])=><button key={id} onClick={()=>{setLayer('items');setItem(id);setTool('brush');setSelection(null);setLevel(1);}}>{label}</button>)}</div>
@@ -134,8 +134,8 @@ export default function MapEditor(){
       <div className="me-note"><b>Dựng cả trong và ngoài map</b><p>Kéo map để đặt cổng, cảng, tàu, đèn và cây ở cả vùng ngoại vi. Tòa thị chính giữ vị trí trung tâm. Dấu ◆ là vật phẩm không thể gỡ khi chơi; công cụ Tẩy ở đây vẫn sửa được.</p></div>
       <div className="me-files"><button onClick={exportMap}>Xuất JSON ↓</button><button onClick={()=>importRef.current?.click()}>Nhập JSON ↑</button></div><input ref={importRef} type="file" accept="application/json,.json" hidden onChange={importMap}/>
       <button className="me-reset" onClick={()=>{checkpoint();const save=readSave();update(save?.grid?createMapDocument(save):defaultDocument());setStatus('Đã lấy bố cục từ game vào bản nháp.');}}>Lấy map game hiện tại</button>
-      <button className="me-reset" onClick={()=>{const starter=readMapDocument(localStorage,STARTER_MAP_KEY);if(starter){checkpoint();update(starter);setStatus('Đã mở map khởi đầu đã lưu.');}}}>Mở map khởi đầu đã lưu</button>
-      <button className="me-reset" onClick={()=>{checkpoint();update(defaultDocument());setStatus('Bản nháp trở về bố cục mặc định.');}}>Dùng bố cục mặc định</button>
+      <button className="me-reset" onClick={()=>{const starter=readMapDocument(localStorage,STARTER_MAP_KEY);if(starter){checkpoint();update(starter);setStatus('Đã mở mẫu riêng đã lưu trên địa chỉ này; bấm Lưu map khởi đầu để dùng lại mẫu này.');}}}>Mở map khởi đầu đã lưu</button>
+      <button className="me-reset" onClick={()=>{checkpoint();update(defaultDocument());setStatus('Đã mở map mặc định đi kèm bản game.');}}>Dùng map mặc định của game</button>
     </aside><main className="me-main"><div className="me-toolbar"><div className="me-history" data-version={historyVersion}><button onClick={undo} disabled={!undoStack.current.length}>↶ Hoàn tác</button><button onClick={redo} disabled={!redoStack.current.length}>↷</button></div><span className="me-hint">Kéo để đặt · Space để kéo map · Cuộn để zoom</span><div className="me-zoom"><button onClick={()=>zoomAt(1/1.2)}>−</button><span>{Math.round(camera.zoom*100)}%</span><button onClick={()=>zoomAt(1.2)}>+</button><button onClick={fit}>Vừa khung</button></div></div>
       <div className={`me-stage tool-${tool}`} ref={stageRef}><canvas ref={canvasRef} aria-label="Bản đồ đầy đủ vật phẩm 32 hàng 32 cột" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end} onLostPointerCapture={()=>{gesture.current=null;setRectStart(null);}} onPointerLeave={()=>{if(!gesture.current)setHover(null);}} onContextMenu={e=>e.preventDefault()}/><div className="me-compass"><span>SAU [0,0]</span><b>◇</b><span>TRƯỚC [31,31]</span></div></div>
       <footer className="me-status"><span role="status"><i className={dirty?'is-draft':''}/>{status}</span><span>{hover?`Hàng ${hover.row} · Cột ${hover.col}`:`${MAP_ITEMS.length} vật phẩm · 4 loại nền`}</span></footer>

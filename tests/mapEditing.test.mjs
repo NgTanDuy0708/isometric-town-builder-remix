@@ -1,3 +1,6 @@
+import {upgradeSavedTownMap} from '../src/engine/townMapUpgrade.js';
+import {BUNDLED_STARTER_MAP_REVISION} from '../src/engine/starterMapSource.js';
+import {getStarterMapDocument,saveLocalStarterMap} from '../src/engine/starterMapSource.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -127,13 +130,13 @@ test('the actual game bootstrap consumes the saved initial map and pending apply
     const pending=mode==='pending';
     memory.clear();let doc=fresh();doc=stampMapItem(doc,20,20,'b66_iron_mine',{level:3,locked:true}).doc;
     doc=stampMapItem(doc,35,15,'scene:gate',{locked:true}).doc;
-    writeMapDocument(localStorage,pending?MAP_APPLY_KEY:START_KEY,doc);
-    if(pending){const save=getDefaultSaveState();save.economy.playerGold=4321;save.resources.wood=9;saveGameSave(save);}
+    if(pending)writeMapDocument(localStorage,MAP_APPLY_KEY,doc);else saveLocalStarterMap(localStorage,doc);
+    if(pending){const save=getDefaultSaveState();save.townMapRevision=BUNDLED_STARTER_MAP_REVISION;save.economy.playerGold=4321;save.resources.wood=9;saveGameSave(save);}
     if(mode==='reload'){
       const save=applyMapDocumentToSave(getDefaultSaveState(),doc);
-      save.presetName='custom';saveGameSave(save);
+      save.presetName='custom';save.townMapRevision=BUNDLED_STARTER_MAP_REVISION;saveGameSave(save);
     }
-    const context={localStorage,readMapDocument:readDoc,STARTER_MAP_KEY:START_KEY,MAP_APPLY_KEY,applyMapDocumentToSave,restartMapGrowth,
+    const context={upgradeSavedTownMap,getStarterMapDocument,localStorage,readMapDocument:readDoc,STARTER_MAP_KEY:START_KEY,MAP_APPLY_KEY,applyMapDocumentToSave,restartMapGrowth,
       createStarterTownMap32,loadGameSave,getDefaultSaveState,expandGrid16to32,migrateLegacyWarehouseLayout,applyTownCenterLayout,
       normalizeMapLocks,setActiveMapLocks,setCustomMapLayout,setHarborSites};
     vm.createContext(context);vm.runInContext(source.slice(start,end)+'\nresult={grid:currentGrid,save:initialSave};',context);

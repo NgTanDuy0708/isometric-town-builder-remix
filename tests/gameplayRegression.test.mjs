@@ -1,3 +1,6 @@
+import {upgradeSavedTownMap} from '../src/engine/townMapUpgrade.js';
+import {BUNDLED_STARTER_MAP_REVISION} from '../src/engine/starterMapSource.js';
+import {getStarterMapDocument} from '../src/engine/starterMapSource.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -44,7 +47,7 @@ function production(tile = 'b06_bakery', resources = { wheat: 0, bread: 0 }) {
 
 test('valid save loads without legacy blank-map flag and zero tools remain zero', () => {
   storage();
-  const save = getDefaultSaveState(); save.grid[20][20] = 'b01_cottage_red'; save.resources.ironTools = 0;
+  const save = getDefaultSaveState(); save.townMapRevision=BUNDLED_STARTER_MAP_REVISION; save.grid[20][20] = 'b01_cottage_red'; save.resources.ironTools = 0;
   saveGameSave(save);
   const source = fs.readFileSync(new URL('../src/studioEngine.js', import.meta.url), 'utf8');
   // Run the actual bootstrap sections, with storage and map helpers used in production.
@@ -52,7 +55,7 @@ test('valid save loads without legacy blank-map flag and zero tools remain zero'
   const end = source.indexOf('    // Đồng bộ bờ', start);
   const resourceStart = source.indexOf('    let playerResources = initialSave.resources');
   const resourceEnd = source.indexOf('    // Building Levels State', resourceStart);
-  const context = {readMapDocument,STARTER_MAP_KEY,MAP_APPLY_KEY,applyMapDocumentToSave,restartMapGrowth,normalizeMapLocks,setActiveMapLocks,setCustomMapLayout,setHarborSites, createStarterTownMap32, loadGameSave, getDefaultSaveState, expandGrid16to32, migrateLegacyWarehouseLayout, applyTownCenterLayout, localStorage };
+  const context = {upgradeSavedTownMap,getStarterMapDocument,readMapDocument,STARTER_MAP_KEY,MAP_APPLY_KEY,applyMapDocumentToSave,restartMapGrowth,normalizeMapLocks,setActiveMapLocks,setCustomMapLayout,setHarborSites, createStarterTownMap32, loadGameSave, getDefaultSaveState, expandGrid16to32, migrateLegacyWarehouseLayout, applyTownCenterLayout, localStorage };
   vm.createContext(context);
   vm.runInContext(source.slice(start, end) + source.slice(resourceStart, resourceEnd) + '\nresult={tile:currentGrid[20][20], tools:playerResources.ironTools};', context);
   assert.equal(context.result.tile, 'b01_cottage_red'); assert.equal(context.result.tools, 0);
